@@ -1,0 +1,9 @@
+[user]
+        name = Julian Visser
+        email = 12615757+justmejulian@users.noreply.github.com
+[merge]
+        tool = vimdiff
+[init]
+	defaultBranch = main
+[core]
+	editor = nvim
