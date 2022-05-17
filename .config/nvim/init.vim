@@ -47,8 +47,10 @@ set incsearch
 " Enable mouse support
 set mouse+=a
 
-
 set autoindent
+set tabstop=2
+set shiftwidth=4
+set softtabstop=4
 
 " Sane splits
 set splitright
