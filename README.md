@@ -1,13 +1,14 @@
 # Dotfiles
 my collection of dotfiles and scripts
 
-# Setup
+# Setup git bare repo
 ```
 curl -Lks https://raw.githubusercontent.com/justmejulian/.dotfiles/main/.scripts/install.sh?token=GHSAT0AAAAAABRPPHUD3ALAPFLSA2UBCNAWYTWQXNQ
 ```
 
 # ToDo
-- neovim config
-- don't auto expand all commands (config)
-- split .zshrc -> https://github.com/jogendra/dotfiles/blob/master/zsh/zshrc
-- add aliases (see bookmarks)
+- Improve neovim config
+- Don't auto expand all commands 
+  - config
+- Automate installing of US German Keyboard 
+  - https://github.com/patrick-zippenfenig/us-with-german-umlauts
