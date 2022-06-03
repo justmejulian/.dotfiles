@@ -7,3 +7,5 @@
 	defaultBranch = main
 [core]
 	editor = nvim
+[commit]
+	verbose = true
