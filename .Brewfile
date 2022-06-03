@@ -4,21 +4,25 @@ tap "homebrew/cask"
 tap "homebrew/cask-fonts"
 tap "homebrew/core"
 brew "autojump"
+brew "bat"
 brew "blueutil"
+brew "gcc"
+brew "btop"
 brew "python@3.9"
 brew "cocoapods"
 brew "docker", link: false
 brew "docker-machine"
+brew "exa"
 brew "nettle"
 brew "gnutls"
 brew "harfbuzz"
 brew "libass"
 brew "ffmpeg"
 brew "freeimage"
-brew "gcc"
 brew "git"
 brew "kotlin"
 brew "mas"
+brew "mosh"
 brew "neovim"
 brew "node"
 brew "nvm"
@@ -29,8 +33,10 @@ brew "pipenv"
 brew "pyenv"
 brew "python@3.8"
 brew "r"
+brew "rust"
 brew "sbcl"
 brew "starship"
+brew "tmux"
 brew "tree"
 brew "watchman"
 brew "yarn"
@@ -68,6 +74,13 @@ cask "spotify"
 cask "virtualbox"
 cask "visual-studio-code"
 cask "whatsapp"
+mas "Bitwarden", id: 1352778147
+mas "DuckDuckGo Privacy Essentials", id: 1482920575
+mas "GoodNotes", id: 1444383602
+mas "Hush", id: 1544743900
+mas "iPaste", id: 1056935452
 mas "Moom", id: 419330170
+mas "Numbers", id: 409203825
 mas "Pixelmator Pro", id: 1289583905
+mas "Vimari", id: 1480933944
 mas "Xcode", id: 497799835
