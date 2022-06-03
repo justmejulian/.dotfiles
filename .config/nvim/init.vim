@@ -8,6 +8,7 @@ let mapleader = "\<Space>"
 " sh -c 'curl -fLo "${XDG_DATA_HOME:-$HOME/.local/share}"/nvim/site/autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim'
 call plug#begin()
   Plug 'doums/darcula'
+  Plug 'catppuccin/nvim', {'as': 'catppuccin'}
   Plug 'neoclide/coc.nvim', {'branch': 'release'} " .config/coc/extensions/package.json
   Plug 'rafamadriz/friendly-snippets'
   Plug 'folke/which-key.nvim'
@@ -21,6 +22,9 @@ lua << EOF
     -- or leave it empty to use the default settings
     -- refer to the configuration section below
   }
+
+  local catppuccin = require("catppuccin")
+  catppuccin.setup()
 EOF
 " =============================================================================
 " # CONFIG
@@ -115,4 +119,10 @@ let g:coc_snippet_next = '<tab>'
 " # MISC
 " =============================================================================
 " enable colorscheme
-colorscheme darcula
+" colorscheme darcula
+" let g:catppuccin_flavour = "dusk" " latte, frappe, macchiato, mocha
+" let g:catppuccin_flavour = "latte" " latte, frappe, macchiato, mocha
+" let g:catppuccin_flavour = "frappe" " latte, frappe, macchiato, mocha
+" let g:catppuccin_flavour = "macchiato" " latte, frappe, macchiato, mocha
+let g:catppuccin_flavour = "mocha" " latte, frappe, macchiato, mocha
+colorscheme catppuccin
