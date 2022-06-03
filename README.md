@@ -9,7 +9,6 @@ curl -Lks https://raw.githubusercontent.com/justmejulian/.dotfiles/main/.scripts
 # ToDo
 - Improve neovim config
   - move to lua
-  - add nvim-tree
 - Automate more using scripts
   - installing of US German Keyboard 
     - https://github.com/patrick-zippenfenig/us-with-german-umlauts
