@@ -10,8 +10,18 @@ call plug#begin()
   Plug 'doums/darcula'
   Plug 'neoclide/coc.nvim', {'branch': 'release'} " .config/coc/extensions/package.json
   Plug 'rafamadriz/friendly-snippets'
+  Plug 'folke/which-key.nvim'
+  Plug 'preservim/nerdtree' |
+	            \ Plug 'Xuyuanp/nerdtree-git-plugin'
 call plug#end()
 
+lua << EOF
+  require("which-key").setup {
+    -- your configuration comes here
+    -- or leave it empty to use the default settings
+    -- refer to the configuration section below
+  }
+EOF
 " =============================================================================
 " # CONFIG
 " =============================================================================
@@ -76,11 +86,11 @@ inoremap <Right> <ESC>:echoe "Use l"<CR>
 inoremap <Up>    <ESC>:echoe "Use k"<CR>
 inoremap <Down>  <ESC>:echoe "Use j"<CR>
 
-" source neovim
 nnoremap <Leader>sv :source $MYVIMRC<CR>
 
-" Quick-save
 nmap <leader>w :w<CR>
+
+nmap <leader>n :NERDTree<CR>
 
 " Make <tab> used for trigger completion, completion confirm, snippet expand and jump like VSCode.
 " used by coc-snippets
