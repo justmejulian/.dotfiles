@@ -12,16 +12,13 @@ call plug#begin()
   Plug 'neoclide/coc.nvim', {'branch': 'release'} " .config/coc/extensions/package.json
   Plug 'rafamadriz/friendly-snippets'
   Plug 'folke/which-key.nvim'
-  Plug 'preservim/nerdtree' |
-	            \ Plug 'Xuyuanp/nerdtree-git-plugin'
+  Plug 'kyazdani42/nvim-web-devicons' " for file icons
+  Plug 'kyazdani42/nvim-tree.lua'
 call plug#end()
 
 lua << EOF
-  require("which-key").setup {
-    -- your configuration comes here
-    -- or leave it empty to use the default settings
-    -- refer to the configuration section below
-  }
+  require'nvim-tree'.setup {}
+  require("which-key").setup {}
 
   local catppuccin = require("catppuccin")
   catppuccin.setup()
@@ -97,8 +94,11 @@ inoremap <Down>  <ESC>:echoe "Use j"<CR>
 nnoremap <Leader>sv :source $MYVIMRC<CR>
 
 nmap <leader>w :w<CR>
+nmap <leader>q :q<CR>
 
-nmap <leader>n :NERDTree<CR>
+nnoremap <leader>nt :NvimTreeToggle<CR>
+nnoremap <leader>nr :NvimTreeRefresh<CR>
+nnoremap <leader>n :NvimTreeFindFile<CR>
 
 " Make <tab> used for trigger completion, completion confirm, snippet expand and jump like VSCode.
 " used by coc-snippets
