@@ -17,3 +17,9 @@ curl -Lks https://raw.githubusercontent.com/justmejulian/.dotfiles/main/.scripts
     - `defaults read`
 - Don't auto expand all commands 
   - config
+  - maybe use abbr and remove auto expand
+    - https://github.com/olets/zsh-abbr
+- Switch to coq and use native LSP
+  - https://github.com/ms-jpq/coq_nvim
+- improve github cli workflow
+  - https://blog.jez.io/cli-code-review/
