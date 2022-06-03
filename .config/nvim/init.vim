@@ -61,6 +61,7 @@ set autoindent
 set tabstop=2
 set shiftwidth=4
 set softtabstop=4
+set expandtab
 
 " Sane splits
 set splitright
@@ -68,8 +69,11 @@ set splitbelow
 
 " Show those damn hidden characters
 set list
-" Verbose: set listchars=nbsp:¬,eol:¶,extends:»,precedes:«,trail:•
-set listchars=nbsp:¬,trail:•
+
+set showbreak=↪\ 
+" Verbose:
+" set listchars=tab:→\ ,eol:↲,nbsp:␣,trail:•,extends:⟩,precedes:⟨
+set listchars=tab:→\ ,nbsp:␣,trail:•
 
 " =============================================================================
 " # KEYMAPPING
