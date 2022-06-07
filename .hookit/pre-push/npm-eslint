@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+#
+# Just runs npm eslint
+set -euo pipefail
+
+exec npm run eslint

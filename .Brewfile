@@ -3,6 +3,7 @@ tap "homebrew/bundle"
 tap "homebrew/cask"
 tap "homebrew/cask-fonts"
 tap "homebrew/core"
+tap "neonnoon/formula"
 brew "autojump"
 brew "bat"
 brew "blueutil"
@@ -43,6 +44,7 @@ brew "yarn"
 brew "zsh"
 brew "zsh-completions"
 brew "heroku/brew/heroku"
+brew "neonnoon/formula/hookit"
 cask "alt-tab"
 cask "balenaetcher"
 cask "bitwarden"
@@ -80,6 +82,7 @@ mas "GoodNotes", id: 1444383602
 mas "Hush", id: 1544743900
 mas "iPaste", id: 1056935452
 mas "Moom", id: 419330170
+mas "NordVPN", id: 905953485
 mas "Numbers", id: 409203825
 mas "Pixelmator Pro", id: 1289583905
 mas "Vimari", id: 1480933944
