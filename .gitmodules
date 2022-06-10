@@ -7,3 +7,6 @@
 [submodule ".zsh/catppuccin-zsh-syntax-highlighting"]
 	path = .zsh/catppuccin-zsh-syntax-highlighting
 	url = https://github.com/catppuccin/zsh-syntax-highlighting.git
+[submodule ".zsh/zsh-vi-mode"]
+	path = .zsh/zsh-vi-mode
+	url = https://github.com/jeffreytse/zsh-vi-mode.git

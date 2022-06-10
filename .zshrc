@@ -1,3 +1,6 @@
+# Enable vi mode
+bindkey -v
+
 autoload -Uz compinit && compinit
 
 source $HOME/.zsh/aliases.zsh
@@ -9,7 +12,6 @@ source $HOME/.zsh/autoExpandAlias.zsh
 source $HOME/.zsh/exports.zsh
 source $HOME/.zsh/catppuccin-zsh-syntax-highlighting/catppuccin-zsh-syntax-highlighting.zsh #must load before zsh-syntax-highlighting
 source $HOME/.zsh/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+source $HOME/.zsh/zsh-vi-mode/zsh-vi-mode.plugin.zsh
 
 eval "$(starship init zsh)"
-
-source <(kubectl completion zsh)
