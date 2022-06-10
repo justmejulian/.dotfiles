@@ -7,6 +7,7 @@ source $HOME/.zsh/brew.zsh
 source $HOME/.zsh/historysearch.zsh
 source $HOME/.zsh/autoExpandAlias.zsh
 source $HOME/.zsh/exports.zsh
+source $HOME/.zsh/catppuccin-zsh-syntax-highlighting/catppuccin-zsh-syntax-highlighting.zsh #must load before zsh-syntax-highlighting
 source $HOME/.zsh/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 
 eval "$(starship init zsh)"
