@@ -4,3 +4,6 @@
 [submodule ".config/kitty/kitty"]
 	path = .config/kitty/catppuccin
 	url = https://github.com/catppuccin/kitty.git
+[submodule ".zsh/catppuccin-zsh-syntax-highlighting"]
+	path = .zsh/catppuccin-zsh-syntax-highlighting
+	url = https://github.com/catppuccin/zsh-syntax-highlighting.git
