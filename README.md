@@ -1,12 +1,49 @@
 # Dotfiles
 my collection of dotfiles and scripts
 
-# Setup git bare repo
+## Set up
+
+### Install git
+Try to run git from the terminal. [If you don’t have it installed already, it will prompt you to install it.](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
 ```
-curl -Lks https://raw.githubusercontent.com/justmejulian/.dotfiles/main/.scripts/install.sh?token=GHSAT0AAAAAABRPPHUD3ALAPFLSA2UBCNAWYTWQXNQ
+git --version
 ```
 
-# ToDo
+### SSH key
+Create .ssh dir
+```
+mkdir ~/.ssh
+cd ~/.ssh
+```
+
+Generate a new SSH key
+```
+ssh-keygen -t ed25519 -C "your_email@example.com"
+```
+
+Copy new key and [paste as new Key in Github](https://github.com/settings/ssh/new)
+```
+cat ~/.ssh/id_ed25519.pub | pbcopy
+```
+
+### Setup git bare repo
+```
+/bin/bash -c "$(curl -Lks "https://raw.githubusercontent.com/justmejulian/.dotfiles/main/.scripts/install.sh?token=GHSAT0AAAAAABRPPHUD3ALAPFLSA2UBCNAWYTWQXNQ")"
+```
+
+### Install Homebrew
+[brew.sh](https://brew.sh)
+```
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+```
+Make sure you follow the __Next Steps__
+
+Install packages
+```
+brew bundle install --file ~/.Brewfile
+```
+
+## ToDo
 - Improve neovim config
   - move to lua
 - Automate more using scripts
