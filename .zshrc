@@ -2,6 +2,9 @@
 bindkey -v
 
 autoload -Uz compinit && compinit
+zstyle ':completion:*' matcher-list 'm:{a-z}={A-Za-z}'
+
+fpath=( ~/.zsh/completion $fpath )
 
 source $HOME/.zsh/aliases.zsh
 source $HOME/.zsh/git.zsh
