@@ -15,3 +15,6 @@ source $HOME/.zsh/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 source $HOME/.zsh/zsh-vi-mode/zsh-vi-mode.plugin.zsh
 
 eval "$(starship init zsh)"
+
+export ZELLIJ_AUTO_ATTACH=true
+eval "$(zellij setup --generate-auto-start zsh)"
