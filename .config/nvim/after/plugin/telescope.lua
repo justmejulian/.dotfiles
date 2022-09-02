@@ -15,7 +15,8 @@ vim.keymap.set('n', '<Leader>ff',
   function()
     builtin.find_files({
       no_ignore = false,
-      hidden = true
+      hidden = true,
+      file_ignore_patterns = { "node_modules" }
     })
   end, { desc = "telescope find_files" })
 vim.keymap.set('n', '<Leader>fg', function()
@@ -41,3 +42,4 @@ vim.keymap.set("n", "<Leader>fe", function()
     layout_config = { height = 40 }
   })
 end, { desc = "telescope file_browser" })
+
