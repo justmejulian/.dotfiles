@@ -30,6 +30,7 @@ packer.startup(function(use)
   use 'L3MON4D3/LuaSnip'
   use 'saadparwaiz1/cmp_luasnip'
   use "rafamadriz/friendly-snippets"
+  use "hrsh7th/cmp-nvim-lsp-signature-help"
 
   use {
     'nvim-treesitter/nvim-treesitter',

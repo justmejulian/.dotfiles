@@ -49,18 +49,13 @@ brew bundle install --file ~/.Brewfile
 ```
 
 ### Neovim
-Install [vim-plug](https://github.com/junegunn/vim-plug)
+Install [packer](https://github.com/wbthomason/packer.nvim)
 ```
-sh -c 'curl -fLo "${XDG_DATA_HOME:-$HOME/.local/share}"/nvim/site/autoload/plug.vim --create-dirs \
-       https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim'
-```
-
-```
-cd ~/.config/coc/extensions
-npm install
+git clone --depth 1 https://github.com/wbthomason/packer.nvim\
+ ~/.local/share/nvim/site/pack/packer/start/packer.nvim
 ```
 
-Reload neovim and `:PlugInstall` to install plugins.
+Reload neovim and `:PackerInstall` to install plugins.
 
 ### Set modifier keys
 
