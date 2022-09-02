@@ -10,3 +10,12 @@ mason.setup({
 lspconfig.setup {
   ensure_installed = { "sumneko_lua", "tailwindcss" },
 }
+require('lspconfig').tsserver.setup({
+  settings = {
+    suggest = {
+      completeFunctionCalls = true
+    }
+  }
+})
+
+vim.keymap.set('n', '<Leader>m', '<Cmd>Mason<CR>', {desc="Mason"})

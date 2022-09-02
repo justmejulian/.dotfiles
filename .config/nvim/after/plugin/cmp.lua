@@ -18,10 +18,14 @@ cmp.setup({
       select = true
     }),
   }),
+  window = {
+      documentation = cmp.config.window.bordered(),
+  },
   sources = cmp.config.sources({
     { name = 'luasnip' },
     { name = 'nvim_lsp' },
     { name = 'buffer' },
+    { name = 'nvim_lsp_signature_help'}
   }),
   formatting = {
     format = lspkind.cmp_format({ with_text = false, maxwidth = 50 })
