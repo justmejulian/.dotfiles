@@ -3,19 +3,10 @@ if (not status) then return end
 local status2, lspconfig = pcall(require, "mason-lspconfig")
 if (not status2) then return end
 
-mason.setup({
-
-})
+mason.setup({})
 
 lspconfig.setup {
   ensure_installed = { "sumneko_lua", "tailwindcss" },
 }
-require('lspconfig').tsserver.setup({
-  settings = {
-    suggest = {
-      completeFunctionCalls = true
-    }
-  }
-})
 
 vim.keymap.set('n', '<Leader>m', '<Cmd>Mason<CR>', {desc="Mason"})
