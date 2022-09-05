@@ -18,8 +18,6 @@ keybinds:
           key: [ Alt: 'e',]
         - action: [SwitchToMode: Move,]
           key: [ Alt: 'm',]
-        - action: [NewPane: ]
-          key: [ Alt: 'n',]
         - action: [MoveFocusOrTab: Left,]
           key: [ Alt: 'h',]
         - action: [MoveFocusOrTab: Right,]
@@ -86,6 +84,8 @@ keybinds:
           key: [Char: 'f',]
         - action: [TogglePaneFrames,]
           key: [Char: 'z',]
+        - action: [ToggleFloatingPanes, SwitchToMode: Normal,]
+          key: [Char: 'w']
     move:
         - unbind: true
         - action: [SwitchToMode: Normal,]
@@ -180,6 +180,12 @@ keybinds:
         - unbind: true
     session:
         - unbind: true
+        - action: [SwitchToMode: Normal,]
+          key: [Char: "\n", Esc]
+        - action: [Quit,]
+          key: [Alt: 'q',]
+        - action: [Detach,]
+          key: [Alt: 'd',]
     locked:
         - unbind: true
 themes:
