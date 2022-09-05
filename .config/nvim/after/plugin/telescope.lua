@@ -10,13 +10,12 @@ end
 telescope.setup {}
 
 telescope.load_extension("file_browser")
-
 vim.keymap.set('n', '<Leader>ff',
   function()
     builtin.find_files({
       no_ignore = false,
       hidden = true,
-      file_ignore_patterns = { "node_modules" }
+      file_ignore_patterns = { "node_modules", ".git"}
     })
   end, { desc = "telescope find_files" })
 vim.keymap.set('n', '<Leader>fg', function()
