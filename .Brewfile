@@ -7,6 +7,7 @@ brew "ack"
 brew "python@3.10"
 brew "autojump"
 brew "bat"
+brew "difftastic"
 brew "docker", link: false
 brew "docker-machine"
 brew "exa"
