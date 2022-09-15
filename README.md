@@ -23,7 +23,7 @@ ssh-keygen -t ed25519 -C "your_email@example.com"
 
 Copy new key and [paste as new Key in Github](https://github.com/settings/ssh/new)
 ```
-cat ~/.ssh/id_ed25519.pub | pbcopy
+pbcopy < ~/.ssh/id_ed25519.pub
 ```
 
 ### Setup git bare repo
