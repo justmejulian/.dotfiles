@@ -23,7 +23,7 @@ alias gstl='git stash list'
 alias gstp='git stash pop'
 
 # Config -> dotfiles bare repo
-alias config='/usr/bin/git --git-dir=$HOME/.dotfiles/ --work-tree=$HOME'
+alias config='git --git-dir=$HOME/.dotfiles/ --work-tree=$HOME'
 alias c='config'
 alias cps='config push'
 alias cs='config status'
