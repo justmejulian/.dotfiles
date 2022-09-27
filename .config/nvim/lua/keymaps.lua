@@ -12,3 +12,5 @@ keymap.set('n','<Down>', '<ESC>:echoe "Use j"<CR>')
 
 keymap.set('n', '<leader>w', ':w<CR>')
 keymap.set('n', '<leader>q', ':q<CR>')
+
+keymap.set('n', '<leader>p', ':lua vim.lsp.buf.formatting()<CR>', { desc = 'Prettier' })

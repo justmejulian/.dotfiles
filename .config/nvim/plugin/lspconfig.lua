@@ -6,7 +6,7 @@ if (not status) then return end
 local protocol = require('vim.lsp.protocol')
 
 vim.api.nvim_create_autocmd(
-    { "BufWritePre"},
+    { "BufWritePre" },
     { pattern = { "*.tsx", "*.ts", "*.js", "*.jsx" }, command = "EslintFixAll" }
 )
 -- Use an on_attach function to only map the following keys
