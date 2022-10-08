@@ -5,7 +5,9 @@ git.setup({
   keymaps = {
     -- Open blame window
     blame = "<Leader>gb",
-    -- Open file/folder in git repository
-    browse = "<Leader>go",
+    -- Close blame window
+    quit_blame = "q",
+    -- Opens a new diff that compares against the current index
+    diff = "<Leader>gd",
   }
 })

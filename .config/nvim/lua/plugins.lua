@@ -17,18 +17,22 @@ packer.startup(function(use)
 
   use "williamboman/mason.nvim"
   use 'williamboman/mason-lspconfig.nvim'
+  use "jayp0521/mason-null-ls.nvim"
 
+  use "jose-elias-alvarez/null-ls.nvim"
+
+  use 'neovim/nvim-lspconfig' -- LSP
+  use 'onsails/lspkind-nvim' -- vscode-like pictograms
+  use "hrsh7th/cmp-nvim-lsp-signature-help"
+
+  use 'hrsh7th/nvim-cmp' -- Completion
   use 'hrsh7th/cmp-buffer' -- nvim-cmp source for buffer words
   use 'hrsh7th/cmp-nvim-lsp' -- nvim-cmp source for neovim's built-in LSP
-  use 'hrsh7th/nvim-cmp' -- Completion
-  use 'neovim/nvim-lspconfig' -- LSP
-  use 'MunifTanjim/prettier.nvim' -- Prettier plugin for Neovim's built-in LSP client
+  use "hrsh7th/cmp-nvim-lua"
 
-  use 'onsails/lspkind-nvim' -- vscode-like pictograms
   use 'L3MON4D3/LuaSnip'
   use 'saadparwaiz1/cmp_luasnip'
   use "rafamadriz/friendly-snippets"
-  use "hrsh7th/cmp-nvim-lsp-signature-help"
 
   use {
     'nvim-treesitter/nvim-treesitter',
