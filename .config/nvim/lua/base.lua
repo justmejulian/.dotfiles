@@ -8,8 +8,8 @@ vim.opt.laststatus = 2
 vim.opt.mouse = vim.opt.mouse + 'a'
 
 vim.opt.tabstop = 2
-vim.opt.shiftwidth = 4
-vim.opt.softtabstop = 4
+vim.opt.shiftwidth = 2
+vim.opt.softtabstop = 2
 vim.opt.expandtab = true
 
 vim.opt.splitbelow = true
@@ -23,7 +23,8 @@ vim.opt.listchars = {
     eol = '↵',
     tab = '--→',
 }
-]]--
+]]
+--
 vim.opt.listchars = {
     nbsp = '␣',
     trail = '•',

@@ -62,7 +62,31 @@ masonLspconfig.setup_handlers {
 mason.setup({})
 
 masonLspconfig.setup {
-    ensure_installed = { "sumneko_lua", "tsserver", "eslint", "cssls", "html", "pylsp", "prettier", "tailwindcss" },
+    ensure_installed = { "sumneko_lua", "tsserver", "eslint", "cssls", "html", "pylsp", "tailwindcss" },
+    automatic_installation = false,
 }
 
 vim.keymap.set('n', '<Leader>m', '<Cmd>Mason<CR>', { desc = "Mason" })
+
+
+
+local status4, null_ls = pcall(require, "null-ls")
+local status5, mason_null_ls = pcall(require, "mason-null-ls")
+if not status4 or not status5 then
+    return
+end
+
+mason_null_ls.setup({
+    ensure_installed = { 'jq', 'prettierd', 'markdownlint' },
+    automatic_installation = false,
+})
+
+mason_null_ls.setup_handlers {
+    function(source_name)
+        -- all sources with no handler get passed here
+        null_ls.register(null_ls.builtins.formatting[source_name])
+    end,
+}
+
+-- will setup any installed and configured sources above
+null_ls.setup()
