@@ -23,5 +23,3 @@ eval "$(pyenv init -)"
 
 eval "$(starship init zsh)"
 
-export ZELLIJ_AUTO_ATTACH=true
-eval "$(zellij setup --generate-auto-start zsh)"
