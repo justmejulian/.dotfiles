@@ -1,6 +1,6 @@
 local status, telescope = pcall(require, "telescope")
 if (not status) then return end
-local actions = require('telescope.actions')
+local themes = require('telescope.themes')
 local builtin = require("telescope.builtin")
 
 local function telescope_buffer_dir()
@@ -36,6 +36,7 @@ vim.keymap.set('n', '<Leader>fg', function() builtin.live_grep() end, { desc = "
 vim.keymap.set('n', '<Leader>fb', function() builtin.buffers() end, { desc = "telescope buffers" })
 vim.keymap.set('n', '<Leader>fh', function() builtin.help_tags() end, { desc = "telescope help_tags" })
 vim.keymap.set('n', '<Leader>fd', function() builtin.diagnostics() end, { desc = "telescope diagnostics" })
+vim.keymap.set('n', '<Leader>fs', function() builtin.grep_string() end, { desc = "telescope find string under cursor" })
 vim.keymap.set("n", "<Leader>fe", function()
   telescope.extensions.file_browser.file_browser({
     path = "%:p:h",
@@ -44,9 +45,12 @@ vim.keymap.set("n", "<Leader>fe", function()
     hidden = true,
     grouped = true,
     initial_mode = "normal",
-    layout_config = { height = 40 }
   })
 end, { desc = "telescope file_browser" })
+
+vim.keymap.set('n', '<leader>gs',
+  function() builtin.git_status(themes.get_dropdown()) end,
+  { desc = "git telescope status" })
 
 vim.keymap.set('n', 'gd', function() builtin.lsp_definitions() end, { desc = "telescope lsp_definitions" })
 vim.keymap.set('n', '<Leader>fi', function() builtin.lsp_implementations() end,
