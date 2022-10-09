@@ -63,7 +63,7 @@ mason.setup({})
 
 masonLspconfig.setup {
     ensure_installed = { "sumneko_lua", "tsserver", "eslint", "cssls", "html", "pylsp", "tailwindcss" },
-    automatic_installation = false,
+    automatic_installation = true,
 }
 
 vim.keymap.set('n', '<Leader>m', '<Cmd>Mason<CR>', { desc = "Mason" })
@@ -78,7 +78,7 @@ end
 
 mason_null_ls.setup({
     ensure_installed = { 'jq', 'prettierd', 'markdownlint' },
-    automatic_installation = false,
+    automatic_installation = true,
 })
 
 mason_null_ls.setup_handlers {
