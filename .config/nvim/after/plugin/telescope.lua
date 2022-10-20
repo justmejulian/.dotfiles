@@ -52,7 +52,6 @@ vim.keymap.set('n', '<leader>gs',
   function() builtin.git_status(themes.get_dropdown()) end,
   { desc = "git telescope status" })
 
-vim.keymap.set('n', 'gd', function() builtin.lsp_definitions() end, { desc = "telescope lsp_definitions" })
 vim.keymap.set('n', '<Leader>fi', function() builtin.lsp_implementations() end,
   { desc = "telescope lsp_implementations" })
 vim.keymap.set('n', 'gr', function() builtin.lsp_references() end, { desc = "telescope lsp_references" })
