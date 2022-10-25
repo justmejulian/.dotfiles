@@ -1,10 +1,11 @@
 # Enable vi mode
 bindkey -v
 
-autoload -Uz compinit && compinit
-zstyle ':completion:*' matcher-list 'm:{a-z}={A-Za-z}'
+fpath=($HOMEBREW_PREFIX/share/zsh/site-functions $fpath)
 
-fpath=( ~/.zsh/completion $fpath )
+autoload -Uz compinit
+compinit
+zstyle ':completion:*' matcher-list 'm:{a-z}={A-Za-z}'
 
 source $HOME/.zsh/aliases.zsh
 source $HOME/.zsh/git.zsh
