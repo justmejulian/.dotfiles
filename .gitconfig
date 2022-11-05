@@ -1,17 +1,11 @@
 [user]
     name = Julian Visser
     email = 12615757+justmejulian@users.noreply.github.com
-[merge]
-    tool = difftastic
-[difftool]
-    prompt = false
-[difftool "difftastic"]
-    cmd = difft "$LOCAL" "$REMOTE"
+[diff]
+    external = difft
 [init]
     defaultBranch = main
 [core]
     editor = nvim
 [commit]
     verbose = true
-[diff]
-    external = difft
