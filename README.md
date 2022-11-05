@@ -9,16 +9,28 @@ Try to run git from the terminal. [If you don’t have it installed already, it 
 git --version
 ```
 
+### xcode
+Helps solve a couple problems, including `"clang" command requires the command line developer tools.`
+```
+xcodebuild -runFirstLaunch
+```
+
 ### SSH key
 Create .ssh dir
 ```
 mkdir ~/.ssh
 cd ~/.ssh
+eval "$(ssh-agent -s)"
 ```
 
 Generate a new SSH key
 ```
-ssh-keygen -t ed25519 -C "your_email@example.com"
+ssh-keygen -t ed25519 -C "12615757+justmejulian@users.noreply.github.com"
+```
+
+Add it to keychain
+```
+ssh-add --apple-use-keychain ~/.ssh/id_ed25519
 ```
 
 Copy new key and [paste as new Key in Github](https://github.com/settings/ssh/new)
@@ -27,13 +39,9 @@ pbcopy < ~/.ssh/id_ed25519.pub
 ```
 
 ### Setup git bare repo
+Clones, sets up config alias and updates submodules.
 ```
 /bin/bash -c "$(curl -Lks "https://raw.githubusercontent.com/justmejulian/.dotfiles/main/.scripts/install.sh?token=GHSAT0AAAAAABRPPHUD3ALAPFLSA2UBCNAWYTWQXNQ")"
-```
-
-Update submodules
-```
-config submodule update --init
 ```
 
 ### Install Homebrew
@@ -60,37 +68,35 @@ Reload neovim and `:PackerInstall` to install plugins.
 ### Set modifier keys
 
 ## ToDo
-- Improve neovim config
-  - move to lua
 - Automate more using scripts
   - installing of US German Keyboard 
     - https://github.com/patrick-zippenfenig/us-with-german-umlauts
+    -  git clone https://github.com/patrick-zippenfenig/us-with-german-umlauts.git
+    - cd us-with-german-umlauts
+    - sudo mv US-with-German-Umlauts.bundle /Library/Keyboard\ Layouts/
+- git hooks
+- git diff
+- zsh package manager
 - Add macos defaults
   - add a lockfile to see what changed
     - `defaults read`
     - https://macos-defaults.com
-- Don't auto expand all commands 
-  - config
-  - maybe use abbr and remove auto expand
-    - https://github.com/olets/zsh-abbr
-- Switch to coq and use native LSP
-  - https://github.com/ms-jpq/coq_nvim
+    - https://www.defaults-write.com/
+    - defaults write com.apple.finder "AppleShowAllFiles" -bool "true" && killall Finder
+    - defaults write NSGlobalDomain "AppleShowAllExtensions" -bool "true" && killall Finder
+    - defaults write com.apple.dock "mru-spaces" -bool "false" && killall Dock
+    - defaults write com.apple.TextEdit "RichText" -bool "false" && killall TextEdit
+    - defaults write com.apple.finder "FXPreferredViewStyle" -string "Nlsv" && killall Finder
+    -  defaults write com.apple.finder "FXEnableExtensionChangeWarning" -bool "false" && killall Finder
+    - defaults write com.apple.dock "tilesize" -int "40" && killall Dock
 - improve github cli workflow
   - https://blog.jez.io/cli-code-review/
-- autocomplete javascript
-  - https://github.com/williamboman/mason.nvim/discussions/57
-```
-local lspconfig = require("lspconfig")
-
-require("mason-lspconfig").setup_handlers {
-    -- This is a default handler that will be called for each installed server (also for new servers that are installed during a session)
-    function (server_name)
-       lspconfig[server.name].setup {}
-   end,
-   -- You can also override the default handler for specific servers by providing them as keys, like so:
-   ["rust_analyzer"] = function ()
-     require("rust-tools").setup {}
-   end
-}
-```
-  - https://stackoverflow.com/questions/63038349/visual-studio-code-autocomplete-add-parentheses-after-method-in-js-file
+- checkin .zshprofile
+- automate neovim treesitter stuff
+- better structure to this repo
+- finicky.js
+- make sure tracking everything
+ - config status ~/.config -u
+ - config status ~/.ssh -u
+ - config status ~/.scripts -u
+- better which key descriptons
