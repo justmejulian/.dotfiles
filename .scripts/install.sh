@@ -5,4 +5,5 @@ function config {
    /usr/bin/git --git-dir=$HOME/.dotfiles/ --work-tree=$HOME $@
 }
 config checkout
+config submodule update --init
 config config status.showUntrackedFiles no
