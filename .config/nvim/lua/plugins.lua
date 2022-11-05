@@ -38,6 +38,15 @@ packer.startup(function(use)
     'nvim-treesitter/nvim-treesitter',
     run = ':TSUpdate'
   }
+
+  use {
+    "ThePrimeagen/refactoring.nvim",
+    requires = {
+      { "nvim-lua/plenary.nvim" },
+      { "nvim-treesitter/nvim-treesitter" }
+    }
+  }
+
   use 'kyazdani42/nvim-web-devicons' -- File icons
   use 'windwp/nvim-autopairs'
   use 'windwp/nvim-ts-autotag'
@@ -48,6 +57,8 @@ packer.startup(function(use)
 
   use 'lewis6991/gitsigns.nvim'
   use 'dinhhuy258/git.nvim' -- For git blame & browse
+
+  use "napmn/react-extract.nvim"
 
   use 'folke/which-key.nvim'
 end)
