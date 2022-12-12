@@ -8,7 +8,7 @@ vim.cmd [[packadd packer.nvim]]
 
 packer.startup(function(use)
   use 'wbthomason/packer.nvim'
-  -- Your plugins go here
+
   use { "catppuccin/nvim", as = "catppuccin" }
 
   use 'nvim-lua/plenary.nvim' -- Common utilities
