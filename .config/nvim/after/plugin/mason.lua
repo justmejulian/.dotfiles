@@ -111,14 +111,10 @@ end
 mason_null_ls.setup({
   ensure_installed = { 'jq', 'prettierd', 'markdownlint' },
   automatic_installation = true,
+  automatic_setup = true,
 })
-
-mason_null_ls.setup_handlers {
-  function(source_name)
-    -- all sources with no handler get passed here
-    null_ls.register(null_ls.builtins.formatting[source_name])
-  end,
-}
 
 -- will setup any installed and configured sources above
 null_ls.setup()
+
+mason_null_ls.setup_handlers()
