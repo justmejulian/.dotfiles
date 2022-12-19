@@ -23,11 +23,24 @@ alias gstc='git stash clear'
 alias gstl='git stash list'
 alias gstp='git stash pop'
 
+# worktree
+alias gw='git worktree'
+alias gwl='git worktree list'
+alias gwp='git worktree prune'
+alias gwr='git worktree remove'
+alias gwa='(){ git worktree add $1 $1;}'
+
+gfd() {
+  preview="git diff $@ --color=always -- {-1}"
+  git diff $@ --name-only | fzf -m --ansi --preview $preview
+}
+
 # Config -> dotfiles bare repo
 alias config='git --git-dir=$HOME/.dotfiles/ --work-tree=$HOME'
 alias c='config'
-alias cps='config push'
 alias cs='config status'
 alias cc='config commit'
 alias ca='config add'
 alias cap='config add --patch'
+alias clu="config status -u ." # list untracked files in current folder
+alias cus="config submodule update --remote"
