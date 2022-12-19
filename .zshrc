@@ -15,7 +15,7 @@ source $HOME/.zsh/pyenv.zsh
 source $HOME/.zsh/historysearch.zsh
 source $HOME/.zsh/autoExpandAlias.zsh
 source $HOME/.zsh/exports.zsh
-source $HOME/.zsh/catppuccin-zsh-syntax-highlighting/catppuccin-zsh-syntax-highlighting.zsh #must load before zsh-syntax-highlighting
+source $HOME/.zsh/catppuccin-zsh-syntax-highlighting/themes/catppuccin_mocha-zsh-syntax-highlighting.zsh
 source $HOME/.zsh/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 source $HOME/.zsh/zsh-vi-mode/zsh-vi-mode.plugin.zsh
 
