@@ -42,6 +42,7 @@ packer.startup(function(use)
 
 
   use 'lewis6991/gitsigns.nvim' -- can also use for blame
+  use { 'sindrets/diffview.nvim', requires = 'nvim-lua/plenary.nvim' }
 
 
   use 'kyazdani42/nvim-web-devicons' -- File icons
