@@ -6,8 +6,12 @@ if (not status) then return end
 local protocol = require('vim.lsp.protocol')
 
 vim.api.nvim_create_autocmd(
-  { "BufWritePre" },
-  { pattern = { "*.tsx", "*.ts", "*.js", "*.jsx" }, command = "EslintFixAll" }
+  "BufWritePre",
+  {
+    pattern = { "*.tsx", "*.ts", "*.js", "*.jsx" },
+    command = "EslintFixAll",
+    group = vim.api.nvim_create_augroup('MyAutocmdsJavaScripFormatting', {})
+  }
 )
 
 protocol.CompletionItemKind = {

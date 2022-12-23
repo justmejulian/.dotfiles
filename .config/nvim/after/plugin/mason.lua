@@ -51,7 +51,6 @@ local on_attach = function(client, bufnr)
   vim.keymap.set('n', 'gd', function() vim.lsp.buf.definition { on_list = on_list } end, { desc = "lsp definition" })
   vim.keymap.set('n', 'K', vim.lsp.buf.hover, { desc = "lsp hover" })
   vim.keymap.set('n', '<C-k>', vim.lsp.buf.signature_help, { desc = "lsp signature_help" })
-  vim.keymap.set('n', '<space>rn', vim.lsp.buf.rename, { desc = "lsp rename" })
   vim.keymap.set('n', '<space>ca', vim.lsp.buf.code_action, { desc = "lsp code_action" })
   vim.keymap.set('n', '<space>p', function() vim.lsp.buf.format { async = true } end, { desc = "lsp format" })
   -- some key maps defined in telescope
