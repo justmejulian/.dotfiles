@@ -63,4 +63,7 @@ packer.startup(function(use)
   }
 
   use 'folke/which-key.nvim'
+
+  use 'terrortylor/nvim-comment'
+  use 'smjonas/inc-rename.nvim'
 end)
