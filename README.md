@@ -100,3 +100,5 @@ Reload neovim and `:PackerInstall` to install plugins.
  - config status ~/.ssh -u
  - config status ~/.scripts -u
 - better which key descriptons
+  - add a util function that creates kepmaps
+- use gitsigns to see blame and the use git diff to get the whole commit

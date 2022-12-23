@@ -15,6 +15,7 @@ alias gd='git diff'
 
 alias gp='git push'
 alias gl='git pull'
+alias glm='git pull origin master'
 
 alias gs='git status'
 
@@ -41,6 +42,7 @@ alias c='config'
 alias cs='config status'
 alias cc='config commit'
 alias ca='config add'
+alias cca='config commit -v --amend'
 alias cap='config add --patch'
 alias clu="config status -u ." # list untracked files in current folder
 alias cus="config submodule update --remote"

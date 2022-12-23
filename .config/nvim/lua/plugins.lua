@@ -24,6 +24,7 @@ packer.startup(function(use)
   use 'neovim/nvim-lspconfig' -- LSP
   use 'onsails/lspkind-nvim' -- vscode-like pictograms
   use "hrsh7th/cmp-nvim-lsp-signature-help"
+  use 'j-hui/fidget.nvim'
 
   use 'hrsh7th/nvim-cmp' -- Completion
   use 'hrsh7th/cmp-buffer' -- nvim-cmp source for buffer words
