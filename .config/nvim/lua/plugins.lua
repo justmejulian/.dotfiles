@@ -66,4 +66,5 @@ packer.startup(function(use)
 
   use 'terrortylor/nvim-comment'
   use 'smjonas/inc-rename.nvim'
+  use 'echasnovski/mini.surround'
 end)
