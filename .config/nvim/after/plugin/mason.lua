@@ -116,4 +116,4 @@ mason_null_ls.setup({
 -- will setup any installed and configured sources above
 null_ls.setup()
 
-mason_null_ls.setup_handlers()
+mason_null_ls.setup_handlers({})
