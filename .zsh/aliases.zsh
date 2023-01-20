@@ -1,3 +1,5 @@
+alias sz='source ~/.zshrc'
+
 alias cat='bat'
 alias ls='exa'
 alias ll='exa -la'
