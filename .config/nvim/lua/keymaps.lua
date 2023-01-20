@@ -18,3 +18,8 @@ keymap.set({"n", "v"}, "<leader>y", [["+y]])
 
 keymap.set('n', '<leader>w', ':w<CR>')
 keymap.set('n', '<leader>q', ':q<CR>')
+
+keymap.set("n", "<C-J>", "<C-W><C-J>", { silent = true })
+keymap.set("n", "<C-K>", "<C-W><C-K>", { silent = true })
+keymap.set("n", "<C-L>", "<C-W><C-L>", { silent = true })
+keymap.set("n", "<C-H>", "<C-W><C-H>", { silent = true })
