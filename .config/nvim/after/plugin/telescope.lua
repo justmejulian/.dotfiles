@@ -28,17 +28,6 @@ vim.keymap.set('n', '<Leader>ff', function()
   })
 end, { desc = "telescope find_files" })
 
-vim.keymap.set('n', '<Leader>fp', function()
-  builtin.lsp_definitions({
-    jump_type = "never",
-  })
-end, { desc = "telescope lsp_definitions preview" })
-
-vim.keymap.set('n', '<Leader>fg', function() builtin.live_grep() end, { desc = "telescope live_grep" })
-vim.keymap.set('n', '<Leader>fb', function() builtin.buffers() end, { desc = "telescope buffers" })
-vim.keymap.set('n', '<Leader>fh', function() builtin.help_tags() end, { desc = "telescope help_tags" })
-vim.keymap.set('n', '<Leader>fd', function() builtin.diagnostics() end, { desc = "telescope diagnostics" })
-vim.keymap.set('n', '<Leader>fs', function() builtin.grep_string() end, { desc = "telescope find string under cursor" })
 vim.keymap.set("n", "<Leader>fe", function()
   telescope.extensions.file_browser.file_browser({
     path = "%:p:h",
@@ -50,9 +39,14 @@ vim.keymap.set("n", "<Leader>fe", function()
   })
 end, { desc = "telescope file_browser" })
 
-vim.keymap.set('n', '<leader>gs', function() builtin.git_status() end, { desc = "git telescope status" })
+vim.keymap.set('n', '<Leader>fg', builtin.live_grep, { desc = "telescope live_grep" })
+vim.keymap.set('n', '<Leader>fs', builtin.grep_string, { desc = "telescope find string under cursor" })
 
-vim.keymap.set('n', '<Leader>fi', function() builtin.lsp_implementations() end,
-  { desc = "telescope lsp_implementations" })
+vim.keymap.set('n', '<Leader>fb', builtin.buffers, { desc = "telescope buffers" })
+vim.keymap.set('n', '<Leader>fh', builtin.help_tags, { desc = "telescope help_tags" })
+vim.keymap.set('n', '<Leader>fd', builtin.diagnostics, { desc = "telescope diagnostics" })
 
-vim.keymap.set('n', 'gr', function() builtin.lsp_references() end, { desc = "telescope lsp_references" })
+vim.keymap.set('n', '<Leader>fi', builtin.lsp_implementations, { desc = "telescope lsp_implementations" })
+
+vim.keymap.set('n', '<Leader>gs', builtin.git_status, { desc = "telescope git status" })
+vim.keymap.set('n', 'gr', builtin.lsp_references, { desc = "telescope lsp_references" })
