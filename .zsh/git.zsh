@@ -14,11 +14,14 @@ alias gco='git checkout'
 alias gd='git diff'
 
 alias gp='git push'
+alias gpf='git push --force'
+
 alias gl='git pull'
 alias glm='git pull origin master'
 
 alias gs='git status'
 
+alias gst='git stash'
 alias gsta='git stash apply'
 alias gstc='git stash clear'
 alias gstl='git stash list'
