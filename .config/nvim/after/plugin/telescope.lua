@@ -42,6 +42,24 @@ end, { desc = "telescope file_browser" })
 vim.keymap.set('n', '<Leader>fg', builtin.live_grep, { desc = "telescope live_grep" })
 vim.keymap.set('n', '<Leader>fs', builtin.grep_string, { desc = "telescope find string under cursor" })
 
+function vim.getVisualSelection()
+  vim.cmd('noau normal! "vy"')
+  local text = vim.fn.getreg('v')
+  vim.fn.setreg('v', {})
+
+  text = string.gsub(text, "\n", "")
+  if #text > 0 then
+    return text
+  else
+    return ''
+  end
+end
+
+vim.keymap.set('v', '<Leader>fs', function()
+  local text = vim.getVisualSelection()
+  builtin.live_grep({ default_text = text })
+end, { desc = "telescope find string under cursor" })
+
 vim.keymap.set('n', '<Leader>fb', builtin.buffers, { desc = "telescope buffers" })
 vim.keymap.set('n', '<Leader>fh', builtin.help_tags, { desc = "telescope help_tags" })
 vim.keymap.set('n', '<Leader>fd', builtin.diagnostics, { desc = "telescope diagnostics" })
