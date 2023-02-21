@@ -29,15 +29,11 @@ alias gstp='git stash pop'
 
 # worktree
 alias gw='git worktree'
+alias gwc='gwt clone'
 alias gwl='git worktree list'
-alias gwp='git worktree prune'
-alias gwr='git worktree remove'
-alias gwa='(){ git worktree add $1 $1;}'
-
-gfd() {
-  preview="git diff $@ --color=always -- {-1}"
-  git diff $@ --name-only | fzf -m --ansi --preview $preview
-}
+alias gwr='gwt remove'
+alias gwa='gwt checkout -b'
+alias gwco='gwt checkout'
 
 # Config -> dotfiles bare repo
 alias config='git --git-dir=$HOME/.dotfiles/ --work-tree=$HOME'
