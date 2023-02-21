@@ -18,6 +18,7 @@ source $HOME/.zsh/exports.zsh
 source $HOME/.zsh/catppuccin-zsh-syntax-highlighting/themes/catppuccin_mocha-zsh-syntax-highlighting.zsh
 source $HOME/.zsh/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 source $HOME/.zsh/zsh-vi-mode/zsh-vi-mode.plugin.zsh
+source $HOME/.zsh/git-worktree/main.zsh
 
 command -v ghcup >/dev/null || export PATH="$HOME/.ghcup/bin:$PATH"
 
