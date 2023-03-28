@@ -61,4 +61,6 @@ packer.startup(function(use)
   use "napmn/react-extract.nvim"
 
   use 'folke/which-key.nvim'
+
+  use 'ThePrimeagen/vim-be-good'
 end)

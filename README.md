@@ -100,3 +100,6 @@ Reload neovim and `:PackerInstall` to install plugins.
  - config status ~/.ssh -u
  - config status ~/.scripts -u
 - better which key descriptons
+- make sure using pyenv for python and not custom python versions from brew
+  0 https://wilsonmar.github.io/pyenv/
+  - smae for node usnign nvm and java using whatever  
