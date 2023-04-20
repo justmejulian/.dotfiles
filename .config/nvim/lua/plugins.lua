@@ -22,12 +22,12 @@ packer.startup(function(use)
   use "jose-elias-alvarez/null-ls.nvim"
 
   use 'neovim/nvim-lspconfig' -- LSP
-  use 'onsails/lspkind-nvim' -- vscode-like pictograms
+  use 'onsails/lspkind-nvim'  -- vscode-like pictograms
   use "hrsh7th/cmp-nvim-lsp-signature-help"
   use 'j-hui/fidget.nvim'
 
-  use 'hrsh7th/nvim-cmp' -- Completion
-  use 'hrsh7th/cmp-buffer' -- nvim-cmp source for buffer words
+  use 'hrsh7th/nvim-cmp'     -- Completion
+  use 'hrsh7th/cmp-buffer'   -- nvim-cmp source for buffer words
   use 'hrsh7th/cmp-nvim-lsp' -- nvim-cmp source for neovim's built-in LSP
   use "hrsh7th/cmp-nvim-lua"
 
@@ -63,6 +63,7 @@ packer.startup(function(use)
   }
 
   use 'folke/which-key.nvim'
+  use "andrewferrier/debugprint.nvim"
 
   use 'terrortylor/nvim-comment'
   use 'smjonas/inc-rename.nvim'
