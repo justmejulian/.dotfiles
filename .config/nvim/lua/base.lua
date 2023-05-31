@@ -7,6 +7,9 @@ vim.wo.relativenumber = true
 vim.o.ignorecase = true
 vim.o.smartcase = true
 
+vim.opt.spelllang = 'en_gb'
+vim.opt.spell = true
+
 vim.opt.laststatus = 2
 
 vim.opt.mouse = vim.opt.mouse + 'a'
@@ -30,15 +33,27 @@ vim.opt.listchars = {
 ]]
 --
 vim.opt.listchars = {
-    nbsp = '␣',
-    trail = '•',
-    tab = '--→',
+  nbsp = '␣',
+  trail = '•',
+  tab = '--→',
 }
 
 -- highlight yanked text for 200ms using the "Visual" highlight group
-vim.cmd[[
-augroup highlight_yank
-autocmd!
-au TextYankPost * silent! lua vim.highlight.on_yank({higroup="Visual", timeout=200})
-augroup END
+vim.cmd [[
+  augroup highlight_yank
+  autocmd!
+  au TextYankPost * silent! lua vim.highlight.on_yank({higroup="Visual", timeout=200})
+  augroup END
 ]]
+
+vim.api.nvim_create_user_command("CopyApath", function()
+  local path = vim.fn.expand("%:p")
+  vim.fn.setreg("+", path)
+  vim.notify('Copied "' .. path .. '" to the clipboard!')
+end, {})
+
+vim.api.nvim_create_user_command("CopyRpath", function()
+  local path = vim.fn.expand("%:.")
+  vim.fn.setreg("+", path)
+  vim.notify('Copied "' .. path .. '" to the clipboard!')
+end, {})
