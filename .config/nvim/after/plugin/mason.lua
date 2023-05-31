@@ -5,6 +5,9 @@ if (not status2) then return end
 local status3, lspconfig = pcall(require, "lspconfig")
 if (not status3) then return end
 
+local navbuddy = require("nvim-navbuddy")
+navbuddy.setup { lsp = { auto_attach = true } }
+
 -- Use an on_attach function to only map the following keys
 -- after the language server attaches to the current buffer
 local on_attach = function(client, bufnr)
@@ -69,8 +72,8 @@ masonLspconfig.setup_handlers {
   end,
 
   -- You can also override the default handler for specific servers by providing them as keys, like so:
-  ["sumneko_lua"] = function()
-    lspconfig.sumneko_lua.setup({
+  ["lua_ls"] = function()
+    lspconfig.lua_ls.setup({
       on_attach = on_attach,
       capabilities = capabilities,
       settings = {
@@ -93,7 +96,7 @@ masonLspconfig.setup_handlers {
 mason.setup({})
 
 masonLspconfig.setup {
-  ensure_installed = { "sumneko_lua", "tsserver", "eslint", "cssls", "html", "pylsp", "tailwindcss" },
+  ensure_installed = { "lua_ls", "tsserver", "eslint", "cssls", "html", "pylsp", "tailwindcss" },
   automatic_installation = true,
 }
 
@@ -101,19 +104,39 @@ vim.keymap.set('n', '<Leader>m', '<Cmd>Mason<CR>', { desc = "Mason" })
 
 
 
-local status4, null_ls = pcall(require, "null-ls")
-local status5, mason_null_ls = pcall(require, "mason-null-ls")
-if not status4 or not status5 then
-  return
-end
+-- Null-Ls for formatting
+local null_ls = require 'null-ls'
+null_ls.setup {
+  sources = {
+    -- Eslint
+    null_ls.builtins.code_actions.eslint_d,
+    null_ls.builtins.formatting.eslint_d.with {
+      condition = function(utils)
+        return utils.root_has_file { '.eslintrc.js', '.eslintrc.json' }
+      end,
+    },
+    null_ls.builtins.diagnostics.eslint_d.with {
+      condition = function(utils)
+        return utils.root_has_file { '.eslintrc.js', '.eslintrc.json' }
+      end,
+    },
 
-mason_null_ls.setup({
-  ensure_installed = { 'jq', 'prettierd', 'markdownlint' },
+    -- Markdown.
+    null_ls.builtins.formatting.markdownlint,
+    null_ls.builtins.diagnostics.markdownlint.with {
+      extra_args = { '--disable', 'line-length' },
+    },
+
+    -- Prettier and spelling
+    null_ls.builtins.formatting.prettierd,
+    null_ls.builtins.completion.spell, -- You still need to execute `:set spell`
+  },
+}
+
+-- Install linting and formating apps using Mason.
+local mason_nullls = require 'mason-null-ls'
+mason_nullls.setup {
+  ensure_installed = { 'stylua', 'jq', 'prettierd', 'markdownlint' },
   automatic_installation = true,
   automatic_setup = true,
-})
-
--- will setup any installed and configured sources above
-null_ls.setup()
-
-mason_null_ls.setup_handlers({})
+}
