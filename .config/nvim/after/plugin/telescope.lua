@@ -63,6 +63,7 @@ end, { desc = "telescope find string under cursor" })
 vim.keymap.set('n', '<Leader>fb', builtin.buffers, { desc = "telescope buffers" })
 vim.keymap.set('n', '<Leader>fh', builtin.help_tags, { desc = "telescope help_tags" })
 vim.keymap.set('n', '<Leader>fd', builtin.diagnostics, { desc = "telescope diagnostics" })
+vim.keymap.set('n', '<Leader>fr', builtin.resume, { desc = "telescope resume last search" })
 
 vim.keymap.set('n', '<Leader>fi', builtin.lsp_implementations, { desc = "telescope lsp_implementations" })
 
