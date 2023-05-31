@@ -27,4 +27,6 @@ keymap.set("n", "<C-H>", "<C-W><C-H>", { silent = true })
 keymap.set('n', '<CR>', 'm`o<Esc>``')
 keymap.set('n', '<S-CR>', 'm`O<Esc>``')
 
-keymap.set('n', '<ESC>', ':noh<Esc>``')
+keymap.set('n', '<ESC>', ':noh<Esc>')
+
+keymap.set('n', '<leader>cp', ':CopyRpath<Esc>')
