@@ -10,3 +10,5 @@
     excludesfile = /Users/julian.visser/.gitignore_global
 [commit]
     verbose = true
+[push]
+    autoSetupRemote = true
