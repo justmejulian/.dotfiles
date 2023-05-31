@@ -20,6 +20,9 @@ alias gl='git pull'
 alias glm='git pull origin master'
 
 alias gs='git status'
+alias glg='git log --oneline -n 10'
+alias glgs='git log --oneline --stat -n 10'
+alias glgd='git log --oneline --stat -p'
 
 alias gst='git stash'
 alias gsta='git stash apply'

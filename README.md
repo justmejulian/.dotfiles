@@ -66,39 +66,3 @@ git clone --depth 1 https://github.com/wbthomason/packer.nvim\
 Reload neovim and `:PackerInstall` to install plugins.
 
 ### Set modifier keys
-
-## ToDo
-- Automate more using scripts
-  - installing of US German Keyboard 
-    - https://github.com/patrick-zippenfenig/us-with-german-umlauts
-    -  git clone https://github.com/patrick-zippenfenig/us-with-german-umlauts.git
-    - cd us-with-german-umlauts
-    - sudo mv US-with-German-Umlauts.bundle /Library/Keyboard\ Layouts/
-- git hooks
-- git diff
-- zsh package manager
-- Add macos defaults
-  - add a lockfile to see what changed
-    - `defaults read`
-    - https://macos-defaults.com
-    - https://www.defaults-write.com/
-    - defaults write com.apple.finder "AppleShowAllFiles" -bool "true" && killall Finder
-    - defaults write NSGlobalDomain "AppleShowAllExtensions" -bool "true" && killall Finder
-    - defaults write com.apple.dock "mru-spaces" -bool "false" && killall Dock
-    - defaults write com.apple.TextEdit "RichText" -bool "false" && killall TextEdit
-    - defaults write com.apple.finder "FXPreferredViewStyle" -string "Nlsv" && killall Finder
-    -  defaults write com.apple.finder "FXEnableExtensionChangeWarning" -bool "false" && killall Finder
-    - defaults write com.apple.dock "tilesize" -int "40" && killall Dock
-- improve github cli workflow
-  - https://blog.jez.io/cli-code-review/
-- checkin .zshprofile
-- automate neovim treesitter stuff
-- better structure to this repo
-- finicky.js
-- make sure tracking everything
- - config status ~/.config -u
- - config status ~/.ssh -u
- - config status ~/.scripts -u
-- better which key descriptons
-  - add a util function that creates kepmaps
-- use gitsigns to see blame and the use git diff to get the whole commit
