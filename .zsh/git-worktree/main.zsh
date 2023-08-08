@@ -2,13 +2,14 @@ baseLocation=~/.zsh/git-worktree
 function gwt () {
     # todo: add error handeling
     # todo: add completion and help
+    root=$(git root)
     case "$1" in
       clone)
         zx $baseLocation/git-clone.mjs $2;;
 
       checkout)
         if [[ "$2" == "-b" ]]; then
-          if [[ $(pwd) == $(git root) ]]; then
+          if [[ $(pwd) == $root ]]; then
             echo "You have to be in a worktree to create new branch"
             return
           fi
@@ -18,19 +19,29 @@ function gwt () {
         else
           name=$2
         fi
-        cd $(git root)
+        cd $root
         git worktree add $name $name
         # todo: run hook
         ;;
 
       switch)
-        selectedWorktree=$(zx $baseLocation/git-wt-ls.mjs $2 | fzf)
+        if [ -z "$2" ]; then
+          selectedWorktreePath=$(zx $baseLocation/git-wt-ls.mjs $2 | fzf)
+        else
+          selectedWorktreePath=$root'/'$2
+        fi
         # cd if worktree selected
-        [ -z "$selectedWorktree" ] || cd $selectedWorktree
+        [ -z "$selectedWorktreePath" ] || cd $selectedWorktreePath
         ;;
 
       remove)
-        selectedWorktree=$(zx $baseLocation/git-wt-ls.mjs $2 | fzf)
+        if [ -z "$2" ]; then
+          selectedWorktreePath=$(zx $baseLocation/git-wt-ls.mjs $2 | fzf)
+          selectedWorktree=${selectedWorktreePath//"$root"/}
+        else
+          selectedWorktreePath=$root'/'$2
+          selectedWorktree=$2
+        fi
         git worktree remove $selectedWorktree
         git worktree prune
         git branch -d $selectedWorktree
