@@ -30,13 +30,18 @@ alias gstc='git stash clear'
 alias gstl='git stash list'
 alias gstp='git stash pop'
 
+# list zombie branches
+alias glz=$'git fetch && git remote prune origin && git branch -vv | grep \': gone]\' | awk \'{ if ($1 !="+") print $1; else print $2; }\''
+
 # worktree
 alias gw='git worktree'
 alias gwc='gwt clone'
 alias gwl='git worktree list'
+alias gws='gwt switch'
 alias gwr='gwt remove'
 alias gwa='gwt checkout -b'
 alias gwco='gwt checkout'
+alias gwrz=$'glz | xargs -I % zsh -c \'source $HOME/.zsh/git-worktree/main.zsh; gwt remove %;\''
 
 # Config -> dotfiles bare repo
 alias config='git --git-dir=$HOME/.dotfiles/ --work-tree=$HOME'
