@@ -8,3 +8,14 @@ create simlink
 ```
 ln -s ~/.config/finicky/config.js ~/.finicky.js
 ```
+
+## Open all files from slack in Chrome
+
+```
+    {
+      // Open any link clicked in Slack in Google Chrome
+      match: ({ opener }) =>
+        opener.bundleId === "com.tinyspeck.slackmacgap",
+      browser: "Google Chrome"
+    },
+```
