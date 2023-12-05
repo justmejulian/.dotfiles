@@ -1,7 +1,23 @@
+local ipc = require("hs.ipc")
+
 hs.autoLaunch(true)
 hs.consoleOnTop(false)
 hs.dockIcon(false)
 hs.menuIcon(true)
+
+local binPath = '/opt/homebrew'
+if ipc.cliStatus(binPath) then
+  print("Hammerspoon cli already loaded")
+else
+  ipc.cliUninstall(binPath, false) -- clean up
+  if ipc.cliInstall(binPath, false) then
+    print("Loaded Hammerspoon Cli")
+    -- can be used like this
+    -- hs -c "hs.alert.show('Hello, world!')"
+  else
+    print("Failed to load Hammerspoon cli")
+  end
+end
 
 -- Using https://hyperkey.app/
 local hyper = { "cmd", "alt", "ctrl" }        -- Hyper key
@@ -31,6 +47,14 @@ local apps = {
     name = 'Safari',
     summonKey = 'p', -- p for "private"
   },
+  {
+    name = 'xCode',
+    summonKey = 'x',
+  },
+  {
+    name = 'Docker',
+    summonKey = 'd',
+  }
 }
 
 -- hs.fnutils.each(apps, function(app)
@@ -44,7 +68,8 @@ local function launchOrFocusOrRotate(app)
   local focusedWindow = hs.window.focusedWindow()
   -- If already focused, try to find the next window
   if focusedWindow and focusedWindow:application():name() == app then
-    local appWindows = hs.application.get(app):allWindows()
+    local appBundleID = focusedWindow:application():bundleID()
+    local appWindows = hs.application.get(appBundleID):allWindows()
     if #appWindows > 0 then
       -- It seems that this list order changes after one window get focused,
       -- let's directly bring the last one to focus every time
@@ -115,7 +140,7 @@ local function moveWindowToNextSpace()
   local next_space_index = getNextSpaceIndex(cur_screen_spaces, cur_space_id)
   local next_space_id = getSpaceIdByIndex(next_space_index, cur_screen_spaces, cur_screen_id)
   hs.spaces.moveWindowToSpace(win:id(), next_space_id) -- move window to next space
-  hs.spaces.gotoSpace(next_space_id) -- move to next space
+  hs.spaces.gotoSpace(next_space_id)                   -- move to next space
 end
 
 local function moveWindowToLastSpace()
@@ -125,11 +150,24 @@ local function moveWindowToLastSpace()
   local cur_space_id = hs.spaces.activeSpaceOnScreen(cur_screen_id)
   local all_spaces = hs.spaces.allSpaces()
   local cur_screen_spaces = all_spaces[cur_screen_id]
-  local next_space_index = getLastSpaceIndex(cur_screen_spaces, cur_space_id)
-  local next_space_id = getSpaceIdByIndex(next_space_index, cur_screen_spaces, cur_screen_id)
-  hs.spaces.moveWindowToSpace(win:id(), next_space_id) -- move window to next space
-  hs.spaces.gotoSpace(next_space_id) -- move to next space
+  local last_space_index = getLastSpaceIndex(cur_screen_spaces, cur_space_id)
+  local last_space_id = getSpaceIdByIndex(last_space_index, cur_screen_spaces, cur_screen_id)
+  hs.spaces.moveWindowToSpace(win:id(), last_space_id)
+  hs.spaces.gotoSpace(last_space_id)
 end
 
 hs.hotkey.bind(cmdalt, 'n', function() moveWindowToNextSpace() end)
 hs.hotkey.bind(cmdaltshift, 'n', function() moveWindowToLastSpace() end)
+
+-- local function closeCurrentSpace()
+--   local cur_screen = hs.screen.mainScreen()
+--   local cur_screen_id = cur_screen:getUUID()
+--   local cur_space_id = hs.spaces.activeSpaceOnScreen(cur_screen_id)
+--   local all_spaces = hs.spaces.allSpaces()
+--   local cur_screen_spaces = all_spaces[cur_screen_id]
+--   local last_space_index = getLastSpaceIndex(cur_screen_spaces, cur_space_id)
+--   local last_space_id = getSpaceIdByIndex(last_space_index, cur_screen_spaces, cur_screen_id)
+--   hs.spaces.gotoSpace(last_space_id)
+--   hs.spaces.removeSpace(cur_space_id)
+-- end
+-- hs.hotkey.bind(cmdalt, 'c', function() closeCurrentSpace() end)
