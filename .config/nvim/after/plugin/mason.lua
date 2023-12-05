@@ -10,7 +10,7 @@ navbuddy.setup { lsp = { auto_attach = true } }
 
 -- Use an on_attach function to only map the following keys
 -- after the language server attaches to the current buffer
-local on_attach = function(client, bufnr)
+local on_attach = function(_, bufnr)
   -- Enable completion triggered by <c-x><c-o>
   vim.api.nvim_buf_set_option(bufnr, 'omnifunc', 'v:lua.vim.lsp.omnifunc')
 
@@ -54,16 +54,15 @@ local on_attach = function(client, bufnr)
   vim.keymap.set('n', 'gd', function() vim.lsp.buf.definition { on_list = on_list } end, { desc = "lsp definition" })
   vim.keymap.set('n', 'K', vim.lsp.buf.hover, { desc = "lsp hover" })
   vim.keymap.set('n', '<C-k>', vim.lsp.buf.signature_help, { desc = "lsp signature_help" })
-  vim.keymap.set('n', '<space>ca', vim.lsp.buf.code_action, { desc = "lsp code_action" })
-  vim.keymap.set('n', '<space>p', function() vim.lsp.buf.format { async = true } end, { desc = "lsp format" })
-  -- some key maps defined in telescope
+  vim.keymap.set('n', '<Leader>ca', vim.lsp.buf.code_action, { desc = "lsp code_action" })
+  vim.keymap.set('n', '<D-f>', function() vim.lsp.buf.format { async = true } end, { desc = "lsp format" })
 end
 
 -- Set up completion using nvim_cmp with LSP source
 local capabilities = require("cmp_nvim_lsp").default_capabilities()
 
 masonLspconfig.setup_handlers {
-  -- This is a default handler that will be called for each installed server (also for new servers that are installed during a session)
+  -- Default handler
   function(server_name)
     lspconfig[server_name].setup {
       on_attach = on_attach,
@@ -71,7 +70,26 @@ masonLspconfig.setup_handlers {
     }
   end,
 
-  -- You can also override the default handler for specific servers by providing them as keys, like so:
+  -- Override the default handler for specific servers
+  ["tsserver"] = function()
+    require 'lspconfig'.tsserver.setup {
+      settings = {
+        documentFormatting = true,
+        codeActionsOnSave = {
+          ["source.organizeImports"] = true,
+          ["source.fixAll"] = true,
+          ["source.removeUnused"] = true,
+          ["source.addMissingImports"] = true,
+          ["source.removeUnusedImports"] = true,
+          ["source.sortImports"] = true,
+        },
+        hint = {
+          enable = true,
+        },
+      }
+    }
+  end,
+
   ["lua_ls"] = function()
     lspconfig.lua_ls.setup({
       on_attach = on_attach,
