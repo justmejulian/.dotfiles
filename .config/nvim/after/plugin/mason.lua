@@ -114,47 +114,68 @@ masonLspconfig.setup_handlers {
 mason.setup({})
 
 masonLspconfig.setup {
-  ensure_installed = { "lua_ls", "tsserver", "eslint", "cssls", "html", "pylsp", "tailwindcss" },
+  ensure_installed = { "astro", "lua_ls", "tsserver", "eslint", "cssls", "html", "pylsp", "tailwindcss" },
   automatic_installation = true,
 }
 
 vim.keymap.set('n', '<Leader>m', '<Cmd>Mason<CR>', { desc = "Mason" })
 
+-- Custom LSPs
 
+lspconfig["sourcekit"].setup({
+  capabilities = capabilities,
+  on_attach = on_attach,
+  cmd = {
+    "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/sourcekit-lsp",
+  },
+  root_dir = function(filename, _)
+    local root_dir =
+        lspconfig.util.root_pattern('buildServer.json', 'Package.swift', 'compile_commands.json', '.git')(filename)
+    return root_dir
+  end,
+})
 
 -- Null-Ls for formatting
 local null_ls = require 'null-ls'
+-- Added .null-ls-root in the directory you want to mark as the project root for null-ls.
 null_ls.setup {
+  -- log_level = "trace", -- Uncomment to debug
   sources = {
-    -- Eslint
     null_ls.builtins.code_actions.eslint_d,
     null_ls.builtins.formatting.eslint_d.with {
       condition = function(utils)
-        return utils.root_has_file { '.eslintrc.js', '.eslintrc.json' }
+        return utils.root_has_file { '.eslintrc.mjs', '.eslintrc.js', '.eslintrc.json' }
       end,
     },
     null_ls.builtins.diagnostics.eslint_d.with {
       condition = function(utils)
-        return utils.root_has_file { '.eslintrc.js', '.eslintrc.json' }
+        return utils.root_has_file { '.eslintrc.mjs', '.eslintrc.js', '.eslintrc.json' }
       end,
     },
 
-    -- Markdown.
     null_ls.builtins.formatting.markdownlint,
     null_ls.builtins.diagnostics.markdownlint.with {
       extra_args = { '--disable', 'line-length' },
     },
 
-    -- Prettier and spelling
-    null_ls.builtins.formatting.prettierd,
+    null_ls.builtins.formatting.prettierd.with({
+      extra_filetypes = { "astro" },
+      condition = function(utils)
+        return utils.root_has_file({ '.prettierrc', '.prettierrc.json', '.prettierrc.yml', '.prettierrc.js',
+          'prettier.config.js', 'prettier.config.cjs' })
+      end,
+    }),
     null_ls.builtins.completion.spell, -- You still need to execute `:set spell`
+    null_ls.builtins.diagnostics.codespell, -- smart, but misses some
   },
 }
 
--- Install linting and formating apps using Mason.
+local coponent
+
+-- Install linting and formatting apps using Mason.
 local mason_nullls = require 'mason-null-ls'
 mason_nullls.setup {
-  ensure_installed = { 'stylua', 'jq', 'prettierd', 'markdownlint' },
+  ensure_installed = { 'stylua', 'jq', 'prettierd', 'markdownlint', 'eslint_d', 'codespell' },
   automatic_installation = true,
   automatic_setup = true,
 }
