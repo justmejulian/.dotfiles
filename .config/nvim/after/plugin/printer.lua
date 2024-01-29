@@ -12,3 +12,6 @@ vim.keymap.set({ "n", "v" }, "<Leader>rp", function() return printer.debugprint(
 vim.keymap.set({ "n", "v" }, "<Leader>rP", function() return printer.debugprint({ variable = true, above = true }) end, {
   expr = true,
 })
+
+vim.keymap.set({ "n" }, "<Leader>rf",
+  function() require("telescope.builtin").grep_string { default_text = "DEBUGPRINT" } end)
