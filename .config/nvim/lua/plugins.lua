@@ -1,71 +1,138 @@
-local status, packer = pcall(require, "packer")
+local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
+if not vim.loop.fs_stat(lazypath) then
+  vim.fn.system({
+    "git",
+    "clone",
+    "--filter=blob:none",
+    "https://github.com/folke/lazy.nvim.git",
+    "--branch=stable", -- latest stable release
+    lazypath,
+  })
+end
+
+vim.opt.rtp:prepend(lazypath)
+
+local status, lazy = pcall(require, "lazy")
 if (not status) then
-  print("Packer is not installed")
+  print("Lazy is not installed")
   return
 end
 
-vim.cmd [[packadd packer.nvim]]
-
-packer.startup(function(use)
-  use 'wbthomason/packer.nvim'
-
-  use { "catppuccin/nvim", as = "catppuccin" }
-
-  use 'nvim-lua/plenary.nvim' -- Common utilities
-
-  use 'nvim-lualine/lualine.nvim'
-
-  use "williamboman/mason.nvim"
-  use 'williamboman/mason-lspconfig.nvim'
-  use "jayp0521/mason-null-ls.nvim"
-
-  use "jose-elias-alvarez/null-ls.nvim"
-
-  use 'neovim/nvim-lspconfig' -- LSP
-  use 'onsails/lspkind-nvim'  -- vscode-like pictograms
-  use "hrsh7th/cmp-nvim-lsp-signature-help"
-  use 'j-hui/fidget.nvim'
-
-  use 'hrsh7th/nvim-cmp'     -- Completion
-  use 'hrsh7th/cmp-buffer'   -- nvim-cmp source for buffer words
-  use 'hrsh7th/cmp-nvim-lsp' -- nvim-cmp source for neovim's built-in LSP
-  use "hrsh7th/cmp-nvim-lua"
-
-  use 'L3MON4D3/LuaSnip'
-  use 'saadparwaiz1/cmp_luasnip'
-  use "rafamadriz/friendly-snippets"
-
-  use {
+local plugins = {
+  { "catppuccin/nvim",        name = "catppuccin" },
+  'nvim-lua/plenary.nvim',
+  'nvim-lualine/lualine.nvim',
+  "williamboman/mason.nvim",
+  'williamboman/mason-lspconfig.nvim',
+  "jayp0521/mason-null-ls.nvim",
+  {
+    "nvimtools/none-ls.nvim",
+    dependencies = {
+      "nvimtools/none-ls-extras.nvim",
+    },
+  },
+  'neovim/nvim-lspconfig',
+  'onsails/lspkind-nvim',
+  "hrsh7th/cmp-nvim-lsp-signature-help",
+  'j-hui/fidget.nvim',
+  'hrsh7th/nvim-cmp',
+  'hrsh7th/cmp-buffer',
+  'hrsh7th/cmp-nvim-lsp',
+  "hrsh7th/cmp-nvim-lua",
+  'L3MON4D3/LuaSnip',
+  'saadparwaiz1/cmp_luasnip',
+  "rafamadriz/friendly-snippets",
+  {
     'nvim-treesitter/nvim-treesitter',
-    run = ':TSUpdate'
-  }
-
-
-  use 'lewis6991/gitsigns.nvim' -- can also use for blame
-  use { 'sindrets/diffview.nvim', requires = 'nvim-lua/plenary.nvim' }
-
-
-  use 'kyazdani42/nvim-web-devicons' -- File icons
-  use 'windwp/nvim-autopairs'
-  use 'windwp/nvim-ts-autotag'
-  use 'norcalli/nvim-colorizer.lua'
-
-  use 'nvim-telescope/telescope.nvim'
-  use 'nvim-telescope/telescope-file-browser.nvim'
-
-  use "napmn/react-extract.nvim"
-  use {
+    build = ':TSUpdate'
+  },
+  'lewis6991/gitsigns.nvim',
+  { 'sindrets/diffview.nvim', dependencies = 'nvim-lua/plenary.nvim' },
+  'kyazdani42/nvim-web-devicons',
+  'windwp/nvim-autopairs',
+  'windwp/nvim-ts-autotag',
+  'norcalli/nvim-colorizer.lua',
+  'nvim-telescope/telescope.nvim',
+  'nvim-telescope/telescope-file-browser.nvim',
+  "napmn/react-extract.nvim",
+  {
     "ThePrimeagen/refactoring.nvim",
-    requires = {
+    dependencies = {
       { "nvim-lua/plenary.nvim" },
       { "nvim-treesitter/nvim-treesitter" }
     }
-  }
+  },
+  ({
+    'ckolkey/ts-node-action',
+    dependencies = { 'nvim-treesitter' },
+  }),
+  "andrewferrier/debugprint.nvim",
+  'terrortylor/nvim-comment',
+  'smjonas/inc-rename.nvim',
+  'echasnovski/mini.surround',
+  {
+    "SmiteshP/nvim-navbuddy",
+    dependencies = {
+      "neovim/nvim-lspconfig",
+      "SmiteshP/nvim-navic",
+      "MunifTanjim/nui.nvim"
+    }
+  },
+  'lervag/vimtex',
+  'folke/which-key.nvim',
+  'github/copilot.vim',
+  'jinh0/eyeliner.nvim',
+  "m4xshen/hardtime.nvim",
 
-  use 'folke/which-key.nvim'
-  use "andrewferrier/debugprint.nvim"
+  {
+    "folke/noice.nvim",
+    event = "VeryLazy",
+    opts = {},
+    dependencies = {
+      "MunifTanjim/nui.nvim",
+      "rcarriga/nvim-notify",
+    }
+  },
+  {
+    "luckasRanarison/nvim-devdocs",
+    dependencies = {
+      "nvim-lua/plenary.nvim",
+      "nvim-telescope/telescope.nvim",
+      "nvim-treesitter/nvim-treesitter",
+    },
+    opts = {}
+  },
+  "saccarosium/neomarks",
+  {
+    'mikesmithgh/kitty-scrollback.nvim',
+    enabled = true,
+    lazy = true,
+    cmd = { 'KittyScrollbackGenerateKittens', 'KittyScrollbackCheckHealth' },
+    event = { 'User KittyScrollbackLaunch' },
+    -- version = '*', -- latest stable version, may have breaking changes if major version changed
+    -- version = '^2.0.0', -- pin major version, include fixes and features that do not have breaking changes
+    config = function()
+      require('kitty-scrollback').setup()
+    end,
+  },
+  {
+    'pwntester/octo.nvim',
+    requires = {
+      'nvim-lua/plenary.nvim',
+      'nvim-telescope/telescope.nvim',
+      'nvim-tree/nvim-web-devicons',
+    },
+    config = function()
+      require "octo".setup()
+    end
+  },
 
-  use 'terrortylor/nvim-comment'
-  use 'smjonas/inc-rename.nvim'
-  use 'echasnovski/mini.surround'
-end)
+  "wojciech-kulik/xcodebuild.nvim",
+
+  'ThePrimeagen/vim-be-good',
+  'nvim-treesitter/playground'
+}
+
+local opts = {}
+
+lazy.setup(plugins, opts)
