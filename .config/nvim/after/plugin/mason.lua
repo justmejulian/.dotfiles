@@ -142,12 +142,13 @@ null_ls.setup {
   -- log_level = "trace", -- Uncomment to debug
   sources = {
     null_ls.builtins.code_actions.eslint_d,
-    null_ls.builtins.formatting.eslint_d.with {
+    -- Todo: think of replacing with eslint lsp
+    require("none-ls.formatting.eslint_d").with {
       condition = function(utils)
         return utils.root_has_file { '.eslintrc.mjs', '.eslintrc.js', '.eslintrc.json' }
       end,
     },
-    null_ls.builtins.diagnostics.eslint_d.with {
+    require("none-ls.diagnostics.eslint_d").with {
       condition = function(utils)
         return utils.root_has_file { '.eslintrc.mjs', '.eslintrc.js', '.eslintrc.json' }
       end,
@@ -165,12 +166,10 @@ null_ls.setup {
           'prettier.config.js', 'prettier.config.cjs' })
       end,
     }),
-    null_ls.builtins.completion.spell, -- You still need to execute `:set spell`
+    null_ls.builtins.completion.spell,      -- You still need to execute `:set spell`
     null_ls.builtins.diagnostics.codespell, -- smart, but misses some
   },
 }
-
-local coponent
 
 -- Install linting and formatting apps using Mason.
 local mason_nullls = require 'mason-null-ls'
