@@ -9,6 +9,7 @@ vim.o.smartcase = true
 
 vim.opt.spelllang = 'en_gb'
 vim.opt.spell = true
+vim.opt.spelloptions = "camel"
 
 vim.opt.laststatus = 2
 
@@ -32,11 +33,22 @@ vim.opt.listchars = {
 }
 ]]
 --
+
 vim.opt.listchars = {
   nbsp = '␣',
   trail = '•',
   tab = '--→',
 }
+
+vim.filetype.add({
+  filename = {
+    [".env"] = "dotenv",
+  },
+  pattern = {
+    [".env"] = "dotenv",
+    [".env.*"] = "dotenv",
+  },
+})
 
 -- highlight yanked text for 200ms using the "Visual" highlight group
 vim.cmd [[
@@ -57,3 +69,11 @@ vim.api.nvim_create_user_command("CopyRpath", function()
   vim.fn.setreg("+", path)
   vim.notify('Copied "' .. path .. '" to the clipboard!')
 end, {})
+
+
+-- Automatically set the title of the terminal tab to the current file
+vim.api.nvim_create_autocmd({ "VimLeavePre" }, {
+  callback = function()
+    os.execute('kitten @ set-tab-title')
+  end
+})

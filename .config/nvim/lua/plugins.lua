@@ -33,19 +33,28 @@ local plugins = {
   },
   'neovim/nvim-lspconfig',
   'onsails/lspkind-nvim',
-  "hrsh7th/cmp-nvim-lsp-signature-help",
   'j-hui/fidget.nvim',
-  'hrsh7th/nvim-cmp',
-  'hrsh7th/cmp-buffer',
-  'hrsh7th/cmp-nvim-lsp',
-  "hrsh7th/cmp-nvim-lua",
+  {
+    "hrsh7th/nvim-cmp",
+    lazy = false,
+    priority = 100,
+    dependencies = {
+      "hrsh7th/cmp-nvim-lsp-signature-help",
+      'hrsh7th/nvim-cmp',
+      'hrsh7th/cmp-buffer',
+      'hrsh7th/cmp-nvim-lsp',
+      "hrsh7th/cmp-nvim-lua",
+      'saadparwaiz1/cmp_luasnip',
+      "kndndrj/nvim-dbee"
+    },
+  },
   'L3MON4D3/LuaSnip',
-  'saadparwaiz1/cmp_luasnip',
   "rafamadriz/friendly-snippets",
   {
     'nvim-treesitter/nvim-treesitter',
     build = ':TSUpdate'
   },
+  "nvim-treesitter/nvim-treesitter-context",
   'lewis6991/gitsigns.nvim',
   { 'sindrets/diffview.nvim', dependencies = 'nvim-lua/plenary.nvim' },
   'kyazdani42/nvim-web-devicons',
@@ -126,6 +135,7 @@ local plugins = {
       require "octo".setup()
     end
   },
+  "tris203/precognition.nvim",
 
   "wojciech-kulik/xcodebuild.nvim",
 

@@ -2,15 +2,28 @@ local status, printer = pcall(require, "debugprint")
 if (not status) then return end
 
 printer.setup({
-  create_keymaps = false,
-  create_commands = true
-})
-
-vim.keymap.set({ "n", "v" }, "<Leader>rp", function() return printer.debugprint({ variable = true }) end, {
-  expr = true,
-})
-vim.keymap.set({ "n", "v" }, "<Leader>rP", function() return printer.debugprint({ variable = true, above = true }) end, {
-  expr = true,
+  keymaps = {
+    normal = {
+      plain_below = nil,
+      plain_above = nil,
+      variable_below = "<Leader>rp",
+      variable_above = "<Leader>rP",
+      variable_below_alwaysprompt = nil,
+      variable_above_alwaysprompt = nil,
+      textobj_below = nil,
+      textobj_above = nil,
+      toggle_comment_debug_prints = nil,
+      delete_debug_prints = nil,
+    },
+    visual = {
+      variable_below = "g?v",
+      variable_above = "g?V",
+    },
+  },
+  commands = {
+    toggle_comment_debug_prints = "ToggleCommentDebugPrints",
+    delete_debug_prints = "DeleteDebugPrints",
+  },
 })
 
 vim.keymap.set({ "n" }, "<Leader>rf",
