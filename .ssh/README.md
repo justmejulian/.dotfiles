@@ -1,4 +1,10 @@
-# Handling Multiple Github Accounts on MacOS
+# ssh
+
+## SSH key for github
+
+https://docs.github.com/en/authentication/connecting-to-github-with-ssh/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent
+
+## Handling Multiple Github Accounts on MacOS
 https://gist.github.com/Jonalogy/54091c98946cfe4f8cdab2bea79430f9
 
 Create the ssh keys and add the to github.

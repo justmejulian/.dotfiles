@@ -17,7 +17,12 @@ ep() {
   inside_git_repo="$(git rev-parse --is-inside-work-tree 2>/dev/null)"
 
   if [ "$inside_git_repo" ]; then
-    gitroot=$(basename $(git rev-parse --show-toplevel))
+    gitroot=$(basename $(git root) 2>/dev/null)
+
+    if [ "$gitroot" ]; then
+    else
+      gitroot=$(basename $(git rev-parse --show-toplevel))
+    fi
 
 
     if [[ $foldername == $gitroot ]]; then

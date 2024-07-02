@@ -14,7 +14,7 @@ alias gco='git checkout'
 alias gd='git diff'
 
 alias gp='git push'
-alias gpf='git push --force'
+alias gpf='git push --force-with-lease'
 
 alias gl='git pull'
 alias glm='git pull origin master'
