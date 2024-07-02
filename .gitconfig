@@ -12,3 +12,10 @@
     verbose = true
 [push]
     autoSetupRemote = true
+[alias]
+    stash = stash --all
+[rerere]
+    enabled = true
+
+[includeIf "gitdir:~/git/private/**"]
+    path = ~/git/private/.gitconfig

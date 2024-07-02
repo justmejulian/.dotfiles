@@ -72,7 +72,7 @@ masonLspconfig.setup_handlers {
 
   -- Override the default handler for specific servers
   ["tsserver"] = function()
-    require 'lspconfig'.tsserver.setup {
+    lspconfig.tsserver.setup {
       settings = {
         documentFormatting = true,
         codeActionsOnSave = {
@@ -86,6 +86,14 @@ masonLspconfig.setup_handlers {
         hint = {
           enable = true,
         },
+        noErrorTruncation = true,
+        includeInlayParameterNameHints = "all",
+        includeInlayParameterNameHintsWhenArgumentMatchesName = true,
+        includeInlayFunctionParameterTypeHints = true,
+        includeInlayVariableTypeHints = true,
+        includeInlayPropertyDeclarationTypeHints = true,
+        includeInlayFunctionLikeReturnTypeHints = true,
+        includeInlayEnumMemberValueHints = true,
       }
     }
   end,
@@ -98,30 +106,45 @@ masonLspconfig.setup_handlers {
         Lua = {
           -- Tells Lua that a global variable named vim exists to not have warnings when configuring neovim
           diagnostics = {
-            globals = { "vim" },
+            globals = {
+              "vim",
+              "hs" -- for Hammerspoon
+            },
           },
           workspace = {
             -- Make the server aware of Neovim runtime files
             library = vim.api.nvim_get_runtime_file("", true),
             checkThirdParty = false
           },
+          -- somehow does not work yet
+          hint = {
+            enable = true,
+          },
         },
       },
     })
+  end,
+
+  ["typst_lsp"] = function()
+    lspconfig.typst_lsp.setup {
+      settings = {
+        exportPdf = "never" -- Choose onType, onSave or never.
+        -- serverPath = "" -- Normally, there is no need to uncomment it.
+      }
+    }
   end,
 }
 
 mason.setup({})
 
 masonLspconfig.setup {
-  ensure_installed = { "astro", "lua_ls", "tsserver", "eslint", "cssls", "html", "pylsp", "tailwindcss" },
+  ensure_installed = { "astro", "lua_ls", "tsserver", "eslint", "cssls", "html", "pylsp", "tailwindcss", "typst_lsp" },
   automatic_installation = true,
 }
 
 vim.keymap.set('n', '<Leader>m', '<Cmd>Mason<CR>', { desc = "Mason" })
 
 -- Custom LSPs
-
 lspconfig["sourcekit"].setup({
   capabilities = capabilities,
   on_attach = on_attach,

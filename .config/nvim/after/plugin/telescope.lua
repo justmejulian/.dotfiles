@@ -20,6 +20,12 @@ telescope.setup {
     file_browser = {
       -- disables netrw and use telescope-file-browser in its place
       hijack_netrw = true,
+      path = "%:p:h",
+      cwd = telescope_buffer_dir(),
+      respect_gitignore = false,
+      hidden = true,
+      grouped = true,
+      initial_mode = "normal",
     },
   },
 }
@@ -34,16 +40,7 @@ vim.keymap.set('n', ';f', function()
   })
 end, { desc = "telescope find_files" })
 
-vim.keymap.set("n", ";e", function()
-  telescope.extensions.file_browser.file_browser({
-    path = "%:p:h",
-    cwd = telescope_buffer_dir(),
-    respect_gitignore = false,
-    hidden = true,
-    grouped = true,
-    initial_mode = "normal",
-  })
-end, { desc = "telescope file_browser" })
+vim.keymap.set("n", ";e", telescope.extensions.file_browser.file_browser, { desc = "telescope file_browser" })
 
 vim.keymap.set('n', ';g', builtin.live_grep, { desc = "telescope live_grep" })
 vim.keymap.set('n', ';s', builtin.grep_string, { desc = "telescope find string under cursor" })
