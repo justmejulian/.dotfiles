@@ -1,9 +1,9 @@
 alias sz='source ~/.zshrc'
 
 alias cat='bat'
-alias ls='exa'
-alias ll='exa -la'
-alias lg='exa -la --git'
+alias ls='eza'
+alias ll='eza -la'
+alias lg='eza -la --git'
 alias grep="grep --color='auto'"
 alias z="zellij"
 cdl() { cd "${@}" ; ls ;}

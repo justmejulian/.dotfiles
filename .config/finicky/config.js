@@ -45,6 +45,10 @@ module.exports = {
       browser: "Google Chrome"
     },
     {
+      match: /^https?:\/\/bitbucket\.org\/.*$/,
+      browser: "Google Chrome"
+    },
+    {
       // Open any link clicked in Slack in Google Chrome
       match: ({ opener }) =>
         opener.bundleId === "com.tinyspeck.slackmacgap",

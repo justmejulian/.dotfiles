@@ -1,40 +1,29 @@
 {
-    "global": {
-        "show_in_menu_bar": true
-    },
     "profiles": [
         {
-            "name": "Default",
             "complex_modifications": {
                 "rules": [
                     {
-                      "description": "Hyper Key (⌃⌥⌘)",
-                      "manipulators": [
-                        {
-                          "description": "Caps Lock -> Hyper Key",
-                          "from": {
-                            "key_code": "caps_lock"
-                          },
-                          "to": [
+                        "description": "Hyper Key (⌃⌥⌘)",
+                        "manipulators": [
                             {
-                              "key_code": "left_control",
-                              "modifiers": [
-                                "left_command",
-                                "left_option"
-                              ]
+                                "description": "Caps Lock -> Hyper Key",
+                                "from": { "key_code": "caps_lock" },
+                                "to": [
+                                    {
+                                        "key_code": "left_control",
+                                        "modifiers": ["left_command", "left_option"]
+                                    }
+                                ],
+                                "to_if_alone": [{ "key_code": "escape" }],
+                                "type": "basic"
                             }
-                          ],
-                          "to_if_alone": [
-                            {
-                              "key_code": "escape"
-                            }
-                          ],
-                          "type": "basic"
-                        }
-                      ]
+                        ]
                     }
                 ]
-            }
+            },
+            "name": "Default",
+            "selected": true
         }
     ]
 }

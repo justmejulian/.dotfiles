@@ -71,31 +71,9 @@ masonLspconfig.setup_handlers {
   end,
 
   -- Override the default handler for specific servers
-  ["tsserver"] = function()
-    lspconfig.tsserver.setup {
-      settings = {
-        documentFormatting = true,
-        codeActionsOnSave = {
-          ["source.organizeImports"] = true,
-          ["source.fixAll"] = true,
-          ["source.removeUnused"] = true,
-          ["source.addMissingImports"] = true,
-          ["source.removeUnusedImports"] = true,
-          ["source.sortImports"] = true,
-        },
-        hint = {
-          enable = true,
-        },
-        noErrorTruncation = true,
-        includeInlayParameterNameHints = "all",
-        includeInlayParameterNameHintsWhenArgumentMatchesName = true,
-        includeInlayFunctionParameterTypeHints = true,
-        includeInlayVariableTypeHints = true,
-        includeInlayPropertyDeclarationTypeHints = true,
-        includeInlayFunctionLikeReturnTypeHints = true,
-        includeInlayEnumMemberValueHints = true,
-      }
-    }
+  -- need node v16
+  ["vtsls"] = function()
+    lspconfig.vtsls.setup({})
   end,
 
   ["lua_ls"] = function()
@@ -138,7 +116,7 @@ masonLspconfig.setup_handlers {
 mason.setup({})
 
 masonLspconfig.setup {
-  ensure_installed = { "astro", "lua_ls", "tsserver", "eslint", "cssls", "html", "pylsp", "tailwindcss", "typst_lsp" },
+  ensure_installed = { "astro", "lua_ls", "vtsls", "eslint", "cssls", "html", "pylsp", "tailwindcss", "typst_lsp" },
   automatic_installation = true,
 }
 
@@ -158,6 +136,18 @@ lspconfig["sourcekit"].setup({
   end,
 })
 
+lspconfig["vtsls"].setup {
+  on_attach = on_attach,
+  root_dir = lspconfig.util.root_pattern("package.json", "tsconfig.ts"),
+  single_file_support = false
+}
+
+lspconfig["denols"].setup {
+  on_attach = on_attach,
+  root_dir = lspconfig.util.root_pattern("deno.json", "deno.jsonc"),
+}
+
+
 -- Null-Ls for formatting
 local null_ls = require 'null-ls'
 -- Added .null-ls-root in the directory you want to mark as the project root for null-ls.
@@ -168,12 +158,12 @@ null_ls.setup {
     -- Todo: think of replacing with eslint lsp
     require("none-ls.formatting.eslint_d").with {
       condition = function(utils)
-        return utils.root_has_file { '.eslintrc.mjs', '.eslintrc.js', '.eslintrc.json' }
+        return utils.root_has_file { '.eslintrc.cjs', '.eslintrc.mjs', '.eslintrc.js', '.eslintrc.json' }
       end,
     },
     require("none-ls.diagnostics.eslint_d").with {
       condition = function(utils)
-        return utils.root_has_file { '.eslintrc.mjs', '.eslintrc.js', '.eslintrc.json' }
+        return utils.root_has_file { '.eslintrc.cjs', '.eslintrc.mjs', '.eslintrc.js', '.eslintrc.json' }
       end,
     },
 
