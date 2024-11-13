@@ -59,6 +59,8 @@ vim.filetype.add({
   },
 })
 
+vim.treesitter.language.register('bash', 'dotenv')
+
 -- highlight yanked text for 200ms using the "Visual" highlight group
 vim.cmd [[
   augroup highlight_yank
