@@ -56,6 +56,11 @@ local on_attach = function(_, bufnr)
   vim.keymap.set('n', '<C-k>', vim.lsp.buf.signature_help, { desc = "lsp signature_help" })
   vim.keymap.set('n', '<Leader>ca', vim.lsp.buf.code_action, { desc = "lsp code_action" })
   vim.keymap.set('n', '<D-f>', function() vim.lsp.buf.format { async = true } end, { desc = "lsp format" })
+
+  if vim.lsp.inlay_hint then
+    vim.keymap.set('n', '<Leader>ih', function() vim.lsp.buf.inlay_hins(0, nil) end, { desc = "lsp inlay_hints" })
+  end
+  --vim.keymap.set('n', '<leader>di', function() vim.lsp.buf.code_action('source.organizeImports.ts'), opts)
 end
 
 -- Set up completion using nvim_cmp with LSP source
