@@ -12,21 +12,22 @@ cmp.setup({
   mapping = cmp.mapping.preset.insert({
     ["<C-k>"] = cmp.mapping.select_prev_item(),
     ["<C-j>"] = cmp.mapping.select_next_item(),
-    ['<C-Space>'] = cmp.mapping.complete(),
     ['<C-e>'] = cmp.mapping.close(),
-    ['<CR>'] = cmp.mapping.confirm({
-      select = true
+    ['<Enter>'] = cmp.mapping.confirm({
+      select = true,
     }),
   }),
   window = {
     documentation = cmp.config.window.bordered(),
   },
   sources = cmp.config.sources({
+    { name = "cmp-dbee" },
+    { name = 'luasnip' },
     { name = 'nvim_lsp' },
     { name = "nvim_lua" },
-    { name = 'luasnip' },
     { name = 'buffer' },
-    { name = 'nvim_lsp_signature_help' }
+    { name = 'nvim_lsp_signature_help' },
+    { name = "copilot", group_index = 2 },
   }),
   formatting = {
     format = lspkind.cmp_format({ with_text = false, maxwidth = 50 })
