@@ -1,3 +1,12 @@
+local home_dir = "/Users/julian.visser"
+
+-- Set node version to use for LSP
+-- test using :!node -v
+local node_bin =  "/.nvm/versions/node/v20.18.0/bin"
+vim.g.node_host_prog = home_dir .. node_bin .. "/node"
+
+vim.cmd("let $PATH = '" .. home_dir .. node_bin .. ":' . $PATH")
+
 vim.g.mapleader = " "
 
 vim.wo.number = true
@@ -49,6 +58,8 @@ vim.filetype.add({
     [".env.*"] = "dotenv",
   },
 })
+
+vim.treesitter.language.register('bash', 'dotenv')
 
 -- highlight yanked text for 200ms using the "Visual" highlight group
 vim.cmd [[

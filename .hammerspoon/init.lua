@@ -54,6 +54,14 @@ local apps = {
   {
     name = 'Docker',
     summonKey = 'd',
+  },
+  {
+    name = 'Finder',
+    summonKey = 'f',
+  },
+  {
+    name = 'Docker Desktop',
+    summonKey = 'd',
   }
 }
 
