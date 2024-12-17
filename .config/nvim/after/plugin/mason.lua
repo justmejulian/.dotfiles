@@ -71,8 +71,8 @@ masonLspconfig.setup_handlers {
   end,
 
   -- Override the default handler for specific servers
-  ["tsserver"] = function()
-    lspconfig.tsserver.setup {
+  ["ts_ls"] = function()
+    lspconfig.ts_ls.setup {
       settings = {
         documentFormatting = true,
         codeActionsOnSave = {
@@ -138,7 +138,7 @@ masonLspconfig.setup_handlers {
 mason.setup({})
 
 masonLspconfig.setup {
-  ensure_installed = { "astro", "lua_ls", "tsserver", "eslint", "cssls", "html", "pylsp", "tailwindcss", "typst_lsp" },
+  ensure_installed = { "astro", "lua_ls", "ts_ls", "eslint", "cssls", "html", "pylsp", "tailwindcss" },
   automatic_installation = true,
 }
 
