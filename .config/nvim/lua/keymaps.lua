@@ -34,6 +34,3 @@ keymap.set('n', '<S-CR>', 'm`O<Esc>``')
 keymap.set('n', '<ESC>', ':noh<Esc>', { silent = true })
 
 keymap.set('n', '<leader>cp', ':CopyRpath<Esc>')
-
-keymap.set('n', '<leader>gce', ':Copilot enable<Esc>:echoe "Yip"<CR>')
-keymap.set('n', '<leader>gcd', ':Copilot disable<Esc>:echoe "Nope"<CR>')
