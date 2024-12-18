@@ -81,6 +81,11 @@ vim.api.nvim_create_user_command("CopyRpath", function()
   vim.notify('Copied "' .. path .. '" to the clipboard!')
 end, {})
 
+vim.api.nvim_create_user_command( 'SplitSentences', function()
+    vim.cmd([[%s/[.!?] /.\r/g]])
+  end,
+  { desc = "Place each sentence on a new line in the current buffer" }
+)
 
 -- Automatically set the title of the terminal tab to the current file
 vim.api.nvim_create_autocmd({ "VimLeavePre" }, {
