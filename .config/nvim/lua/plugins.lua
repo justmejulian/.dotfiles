@@ -89,19 +89,8 @@ local plugins = {
   },
   'lervag/vimtex',
   'folke/which-key.nvim',
-  'github/copilot.vim',
   'jinh0/eyeliner.nvim',
   "m4xshen/hardtime.nvim",
-
-  {
-    "folke/noice.nvim",
-    event = "VeryLazy",
-    opts = {},
-    dependencies = {
-      "MunifTanjim/nui.nvim",
-      "rcarriga/nvim-notify",
-    }
-  },
   {
     "luckasRanarison/nvim-devdocs",
     dependencies = {
