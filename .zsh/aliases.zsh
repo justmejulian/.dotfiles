@@ -1,11 +1,15 @@
 alias sz='source ~/.zshrc'
 
 alias cat='bat'
+
 alias ls='eza'
 alias ll='eza -la'
 alias lg='eza -la --git'
+
+alias j='z'
+
 alias grep="grep --color='auto'"
-alias z="zellij"
+
 cdl() { cd "${@}" ; ls ;}
 
 alias nd="nvim -c 'DiffviewOpen' ."
