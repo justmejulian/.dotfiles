@@ -24,6 +24,7 @@ source $HOME/.zsh/git-worktree/main.zsh
 command -v ghcup >/dev/null || export PATH="$HOME/.ghcup/bin:$PATH"
 
 eval "$(starship init zsh)"
+eval "$(zoxide init zsh)"
 
 #export ZELLIJ_AUTO_ATTACH=true
 #eval "$(zellij setup --generate-auto-start zsh)"
