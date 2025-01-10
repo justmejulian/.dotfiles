@@ -1,4 +1,5 @@
 # Dotfiles
+
 my collection of dotfiles and scripts
 
 ## Set up
@@ -30,7 +31,7 @@ ssh-keygen -t ed25519 -C "12615757+justmejulian@users.noreply.github.com"
 
 Add it to keychain
 ```
-ssh-add --apple-use-keychain ~/.ssh/id_ed25519
+ssh-add ~/.ssh/id_ed25519
 ```
 
 Copy new key and [paste as new Key in Github](https://github.com/settings/ssh/new)
@@ -42,6 +43,11 @@ pbcopy < ~/.ssh/id_ed25519.pub
 Clones, sets up config alias and updates submodules.
 ```
 /bin/bash -c "$(curl -Lks "https://raw.githubusercontent.com/justmejulian/.dotfiles/main/.scripts/install.sh?token=GHSAT0AAAAAABRPPHUD3ALAPFLSA2UBCNAWYTWQXNQ")"
+```
+
+Set remote url:
+```
+config remote set-url origin git@github.com:justmejulian/.dotfiles.git
 ```
 
 ### Install Homebrew
@@ -56,13 +62,109 @@ Install packages
 brew bundle install --file ~/.Brewfile
 ```
 
-### Neovim
-Install [packer](https://github.com/wbthomason/packer.nvim)
+### Keyboard
+
+Install [Mac US keyboard layout with German Umlauts](https://github.com/patrick-zippenfenig/us-with-german-umlauts).
+
 ```
-git clone --depth 1 https://github.com/wbthomason/packer.nvim\
- ~/.local/share/nvim/site/pack/packer/start/packer.nvim
+curl -sL https://api.github.com/repos/patrick-zippenfenig/us-with-german-umlauts/tarball/master | sudo tar xz --exclude=README.md --strip=1 -C /Library/Keyboard\ Layouts/
 ```
 
-Reload neovim and `:PackerInstall` to install plugins.
+#### Hyperkey
 
-### Set modifier keys
+[⌃⌥⌘](https://hyperkey.app/)
+
+- Remap `caps lock` to hyper key
+- quick press `caps lock` to `esc`
+- do not include shift in hyper key
+
+#### Window Resizing
+
+Using built-in:
+
+```
+System Settings > Keyboard > Shortcuts > App Shortcuts > Click the "+" button > Set Application to "All Applications"
+```
+
+
+Add the following:
+(Yes just Left/Right, like the exact menu command name)
+
+```
+Left  -> Hyper + Left Arrow
+Right -> Hyper + Right Arrow
+```
+
+Maybe look at [AeroSpace](https://github.com/nikitabobko/AeroSpace)
+
+Or handle with [Raycast](https://www.albertosadde.com/blog/raycast/)
+
+### Menu Bar
+
+Use [Ice](https://github.com/jordanbaird/Ice) to hide unwanted MenuBar Items.
+
+### Dev Env
+
+#### Node
+
+Make sure `nvm` is installed.
+
+```
+nvm -v
+```
+
+Install the latest node version.
+
+```
+nvm install node
+```
+
+#### python
+
+```
+pyenv install 3.13.1
+pyenv global 3.13.1
+```
+
+#### Java
+
+add version to JAVA_HOME
+
+```
+export JAVA_HOME=`/usr/libexec/java_home -v 12.0.1`
+```
+
+#### Neovim
+
+Make sure all it setup.
+
+```
+checkhealth
+```
+
+Set the correct node version.
+
+```
+todo
+```
+
+### Raycast
+
+https://www.stefanimhoff.de/raycast/
+
+
+### Possible Errors
+
+#### zsh
+
+```
+zsh compinit: insecure directories, run compaudit for list
+```
+
+Running `compaudit` will show you which files.
+
+Loop through all those files and give them the correct permissions.
+
+```
+for f in $(compaudit);do sudo chmod -R 755 $f;done;
+```
