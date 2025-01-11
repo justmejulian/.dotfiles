@@ -9,7 +9,6 @@ zstyle ':completion:*' matcher-list 'm:{a-z}={A-Za-z}'
 
 source $HOME/.zsh/aliases.zsh
 source $HOME/.zsh/git.zsh
-source $HOME/.zsh/autojump.zsh
 source $HOME/.zsh/brew.zsh
 source $HOME/.zsh/pyenv.zsh
 source $HOME/.zsh/nvm.zsh
