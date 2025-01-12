@@ -62,6 +62,10 @@ local apps = {
   {
     name = 'Docker Desktop',
     summonKey = 'd',
+  },
+  {
+    name = 'ChatGPT',
+    summonKey = 'c',
   }
 }
 
