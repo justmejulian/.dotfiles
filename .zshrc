@@ -1,8 +1,10 @@
 # Enable vi mode
 bindkey -v
 
-fpath=($HOMEBREW_PREFIX/share/zsh/site-functions $fpath)
+fpath=($HOMEBREW_PREFIX/share/zsh-completions $fpath)
 
+# https://docs.brew.sh/Shell-Completion#configuring-completions-in-zsh
+fpath=($HOMEBREW_PREFIX/share/zsh/site-functions $fpath)
 autoload -Uz compinit
 compinit
 zstyle ':completion:*' matcher-list 'm:{a-z}={A-Za-z}'
