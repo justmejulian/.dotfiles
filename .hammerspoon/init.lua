@@ -36,16 +36,16 @@ local apps = {
     summonKey = 'o',
   },
   {
-    name = 'Kitty',
-    summonKey = 'k',
-  },
-  {
     name = 'Google Chrome',
     summonKey = 'i', -- i for "internet"
   },
+  -- {
+  --   name = 'Safari',
+  --   summonKey = 'i',
+  -- },
   {
-    name = 'Safari',
-    summonKey = 'p', -- p for "private"
+    name = 'Ghostty',
+    summonKey = 'k',
   },
   {
     name = 'xCode',
@@ -66,6 +66,14 @@ local apps = {
   {
     name = 'ChatGPT',
     summonKey = 'c',
+  },
+  {
+    name = 'Bitwarden',
+    summonKey = 'b',
+  },
+  {
+    name = 'Intellij IDEA',
+    summonKey = 'j',
   }
 }
 
@@ -101,10 +109,10 @@ hs.fnutils.each(apps, function(app)
 end)
 
 -- Move between windows
-hs.hotkey.bind(cmdalt, 'h', function() hs.window.focusedWindow():focusWindowWest() end)
-hs.hotkey.bind(cmdalt, 'l', function() hs.window.focusedWindow():focusWindowEast() end)
-hs.hotkey.bind(cmdalt, 'j', function() hs.window.focusedWindow():focusWindowNorth() end)
-hs.hotkey.bind(cmdalt, 'k', function() hs.window.focusedWindow():focusWindowSouth() end)
+hs.hotkey.bind(hyper, 'h', function() hs.window.focusedWindow():focusWindowWest() end)
+hs.hotkey.bind(hyper, 'l', function() hs.window.focusedWindow():focusWindowEast() end)
+-- hs.hotkey.bind(cmdalt, 'j', function() hs.window.focusedWindow():focusWindowNorth() end)
+-- hs.hotkey.bind(cmdalt, 'k', function() hs.window.focusedWindow():focusWindowSouth() end)
 
 -- Move window to next screen
 hs.hotkey.bind(cmdalt, 'm', function()
