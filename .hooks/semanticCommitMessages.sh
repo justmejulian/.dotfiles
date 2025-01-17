@@ -32,12 +32,12 @@ fi
 # Extract the commit type (e.g., feat:)
 commit_type=$(echo "$selected" | awk '{print $1}')
 
+# Extract the body starting from the second line and append to the original commit message
+tail -n +2 "$COMMIT_MSG_FILE" >> "$COMMIT_MSG_FILE.bak"
+
 # Prepend the commit type to the commit message
-
-echo $COMMIT_MSG_FILE
-
 echo "$commit_type " > "$COMMIT_MSG_FILE"
-# cat "$COMMIT_MSG_FILE.bak" >> "$COMMIT_MSG_FILE" 2>/dev/null || true
 
-# Remove top line of .bak
-tail -n +2 "$COMMIT_MSG_FILE.bak" >> "$COMMIT_MSG_FILE" 2>/dev/null || true
+cat "$COMMIT_MSG_FILE.bak" >> "$COMMIT_MSG_FILE" 2>/dev/null || true
+
+rm "$COMMIT_MSG_FILE.bak"
