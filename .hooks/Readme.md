@@ -4,9 +4,9 @@ This folder contains some scripts that I find useful as [git hooks](https://git-
 
 ## How to use
 
-Copy the hook into the  `.git/hooks` folder of a repo.
-Then rename it to match the hook you want to use.
+Create the hook you want to use and source my hook into it.
 
 ```
-cp semanticCommitMessages.sh ~/git/cool-repo/.git/hooks/prepare-commit-msg
+cd cool-repo
+echo "source '$PWD/semanticCommitMessages.sh'" >> .git/hooks/prepare-commit-msg
 ```
