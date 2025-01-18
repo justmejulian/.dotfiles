@@ -43,3 +43,9 @@ defaults write com.omnigroup.OmniFocus2 NSUserKeyEquivalents -dict-add "Show Nex
 ```
 defaults read
 ```
+
+## Todo
+
+Create some diff thing -> https://emmer.dev/blog/automate-your-macos-defaults/
+
+Add more commands. You can watch what is run with this tool. -> https://github.com/catilac/plistwatch
