@@ -35,6 +35,9 @@ defaults write NSGlobalDomain AppleShowAllExtensions -bool true
 # Finder: show path bar
 defaults write com.apple.finder ShowPathbar -bool true
 
+# Finder: View > as list
+defaults write com.apple.finder FXPreferredViewStyle -string "nlsv"
+
 # Keyboard: enable moving focus with Tab
 defaults write NSGlobalDomain AppleKeyboardUIMode -int "0"
 
@@ -51,8 +54,12 @@ defaults write com.apple.Safari WebContinuousSpellCheckingEnabled -bool true
 # Disable auto-correct
 defaults write com.apple.Safari WebAutomaticSpellingCorrectionEnabled -bool false
 
-# Bluetooth menu bar
-defaults write  com.apple.controlcenter "NSStatusItem Visible Bluetooth" -int 1
+# Bluetooth: always show in menu bar
+defaults -currentHost write com.apple.controlcenter Bluetooth -int 18
+# Sound: always show in menu bar
+defaults -currentHost write com.apple.controlcenter Sound -int 18
+# Battery - show percentage
+defaults -currentHost write com.apple.controlcenter BatteryShowPercentage -bool true
 
 ###############################################################################
 # Kill affected applications                                                  #
