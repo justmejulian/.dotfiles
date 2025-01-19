@@ -1,6 +1,4 @@
-print('hello from base.lua')
 local home_dir = "/Users/julian.visser"
-
 -- Set node version to use for LSP
 -- test using :!node -v
 local node_bin =  "/.nvm/versions/node/v20.18.0/bin"

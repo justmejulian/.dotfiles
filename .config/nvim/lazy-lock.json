@@ -1,11 +1,13 @@
 {
-  "blink.cmp": { "branch": "main", "commit": "2144c58280e29a1d1ce7c43a8436e65f36f8861e" },
+  "blink.cmp": { "branch": "main", "commit": "1cc3b1a908fbcfd15451c4772759549724f38524" },
   "catppuccin": { "branch": "main", "commit": "f67b886d65a029f12ffa298701fb8f1efd89295d" },
   "friendly-snippets": { "branch": "main", "commit": "efff286dd74c22f731cdec26a70b46e5b203c619" },
   "lazy.nvim": { "branch": "main", "commit": "d8f26efd456190241afd1b0f5235fe6fdba13d4a" },
   "lazydev.nvim": { "branch": "main", "commit": "8620f82ee3f59ff2187647167b6b47387a13a018" },
+  "mason-lspconfig.nvim": { "branch": "main", "commit": "e942edf5c85b6a2ab74059ea566cac5b3e1514a4" },
+  "mason.nvim": { "branch": "main", "commit": "e2f7f9044ec30067bc11800a9e266664b88cda22" },
   "nvim-cmp": { "branch": "main", "commit": "8c82d0bd31299dbff7f8e780f5e06d2283de9678" },
   "nvim-lspconfig": { "branch": "master", "commit": "14b5a806c928390fac9ff4a5630d20eb902afad8" },
   "nvim-treesitter": { "branch": "master", "commit": "4423f3053964461656c7432fd33f205ef88a6168" },
-  "snacks.nvim": { "branch": "main", "commit": "6815739114c04ca052e225eb702651b7d2911e56" }
+  "snacks.nvim": { "branch": "main", "commit": "903431903b0151f97f45087353ebe8fa1cb8ef80" }
 }
