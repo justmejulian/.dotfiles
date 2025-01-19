@@ -12,7 +12,7 @@ return {
     "williamboman/mason-lspconfig.nvim",
     config = function()
       require("mason-lspconfig").setup {
-          ensure_installed = { "lua_ls" },
+        ensure_installed = { "lua_ls" },
       }
     end
   },
@@ -31,7 +31,9 @@ return {
     },
     config = function()
       local capabilities = require('blink.cmp').get_lsp_capabilities()
-      require("lspconfig").lua_ls.setup { capabilites = capabilities }
+      local lspconfig = require("lspconfig")
+
+      require('config.plugins.lsp.lua_ls').setup(lspconfig, capabilities)
     end
   }
 }
