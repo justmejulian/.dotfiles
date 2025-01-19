@@ -4,7 +4,10 @@ return {
     opts = {
       view_options = {
         show_hidden = false,
-      }
+      },
+      keymaps = {
+        ["<CR>"] = { "actions.select", opts = { close = true } },
+      },
     },
     dependencies = { "nvim-tree/nvim-web-devicons" },
     config = function ()
