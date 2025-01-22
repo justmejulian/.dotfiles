@@ -4,17 +4,13 @@ return {
     cmd = "Mason",
     keys = { { "<leader>cm", "<cmd>Mason<cr>", desc = "Mason" } },
     build = ":MasonUpdate",
-    config = function()
-      require("mason").setup({})
-    end,
+    opts = {}
   },
   {
     "williamboman/mason-lspconfig.nvim",
-    config = function()
-      require("mason-lspconfig").setup {
-        ensure_installed = { "lua_ls" },
-      }
-    end
+    opts = {
+      ensure_installed = { "lua_ls" },
+    }
   },
   {
     "neovim/nvim-lspconfig",
