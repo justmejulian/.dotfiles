@@ -18,7 +18,7 @@ keymap.set('n', '<C-u>', '<C-u>zz')
 
 keymap.set("n", "gF", "<C-w>vgf", { silent = true })
 
-keymap.set({ "n", "v" }, "<leader>y", [["+y]])
+keymap.set({ "n", "v" }, "<leader>y", [["+y]], { desc = 'Copy to Clipboard' })
 keymap.set("v", "p", [["_dP]])
 
 keymap.set('n', '<D-s>', ':w<CR>')
@@ -29,9 +29,4 @@ keymap.set("n", "<C-K>", "<C-W><C-K>", { silent = true })
 keymap.set("n", "<C-L>", "<C-W><C-L>", { silent = true })
 keymap.set("n", "<C-H>", "<C-W><C-H>", { silent = true })
 
-keymap.set('n', '<CR>', 'm`o<Esc>``')
-keymap.set('n', '<S-CR>', 'm`O<Esc>``')
-
 keymap.set('n', '<ESC>', ':noh<Esc>', { silent = true })
-
-keymap.set('n', '<leader>cp', ':CopyRpath<Esc>')
