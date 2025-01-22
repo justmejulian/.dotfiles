@@ -22,7 +22,7 @@ return {
       ['<C-f>'] = { 'scroll_documentation_down', 'fallback' },
     },
     completion = {
-    list = {
+      list = {
         selection = {
           -- disable auto selection for cmd
           preselect = function(ctx) return ctx.mode ~= 'cmdline' end,
@@ -35,7 +35,16 @@ return {
       nerd_font_variant = 'mono'
     },
     sources = {
-      default = { 'lsp', 'path', 'snippets', 'buffer' },
+      default = { "lazydev", "lsp", "path", "snippets", "buffer" },
+      providers = {
+        lazydev = {
+          name = "LazyDev",
+          module = "lazydev.integrations.blink",
+          -- make lazydev completions top priority (see `:h blink.cmp`)
+          score_offset = 100,
+        },
+      },
+
     },
   },
   opts_extend = { "sources.default" }

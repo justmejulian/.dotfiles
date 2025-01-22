@@ -2,7 +2,7 @@ return {
   {
     "williamboman/mason.nvim",
     cmd = "Mason",
-    keys = { { "<leader>cm", "<cmd>Mason<cr>", desc = "Mason" } },
+    keys = { { "<leader>m", "<cmd>Mason<cr>", desc = "Mason" } },
     build = ":MasonUpdate",
     opts = {}
   },
@@ -29,7 +29,8 @@ return {
       local capabilities = require('blink.cmp').get_lsp_capabilities()
       local lspconfig = require("lspconfig")
 
-      require('config.plugins.lsp.lua_ls').setup(lspconfig, capabilities)
+      require('config.plugins.lsp.lua').setup(lspconfig, capabilities)
+      require('config.plugins.lsp.bash').setup(lspconfig, capabilities)
     end
   }
 }
