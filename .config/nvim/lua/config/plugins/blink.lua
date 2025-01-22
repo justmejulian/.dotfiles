@@ -21,6 +21,7 @@ return {
       ['<C-b>'] = { 'scroll_documentation_up', 'fallback' },
       ['<C-f>'] = { 'scroll_documentation_down', 'fallback' },
     },
+    signature = { enabled = true },
     completion = {
       list = {
         selection = {
@@ -35,6 +36,7 @@ return {
       nerd_font_variant = 'mono'
     },
     sources = {
+      -- todo: add luasnip https://github.com/Saghen/blink.cmp/blob/main/README.md#luasnip
       default = { "lazydev", "lsp", "path", "snippets", "buffer" },
       providers = {
         lazydev = {
