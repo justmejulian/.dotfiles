@@ -10,10 +10,8 @@ vim.filetype.add({
 
 vim.treesitter.language.register('bash', 'dotenv')
 
-local function setup(lspconfig, capabilities)
-  lspconfig.bashls.setup { capabilites = capabilities }
-end
-
 return {
-  setup = setup
+  setup = function(lspconfig, capabilities)
+    lspconfig.bashls.setup { capabilites = capabilities }
+  end
 }
