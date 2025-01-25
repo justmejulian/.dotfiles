@@ -22,13 +22,8 @@ return {
   keys = {
     {
       ";e",
-      function()
-        require('oil').open_float()
-        require('oil.util').run_after_load(0, function()
-          require('oil').open_preview()
-        end)
-      end,
-      desc = "Explore"
+      "<cmd>Oil<cr>",
+      desc = "Explore",
     },
   },
 }
