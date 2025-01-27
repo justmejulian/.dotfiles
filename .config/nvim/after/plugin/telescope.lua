@@ -74,3 +74,31 @@ vim.keymap.set('n', 'gr', builtin.lsp_references, { desc = "telescope lsp_refere
 
 vim.keymap.set('n', ';i', builtin.lsp_implementations, { desc = "telescope lsp_implementations" })
 vim.keymap.set('n', ';t', builtin.lsp_type_definitions, { desc = "telescope lsp_type_definitions" })
+
+vim.keymap.set('n', '<leader>f', '<cmd>GetRelatedFiles<cr>', { desc = "telescope related files" })
+
+local function get_related_files()
+  local file_path = vim.fn.expand('%:p') -- Get the full path of the current file
+  local params = {
+    command = 'els.getRelatedFiles',
+    arguments = {
+      file_path, -- First argument: the file path
+      { includeMeta = false }, -- Optional flags, default to not include metadata
+    },
+  }
+
+  vim.lsp.buf_request(0, 'workspace/executeCommand', params, function(err, result, ctx, config)
+    if err then
+      vim.notify('Error: ' .. err.message, vim.log.levels.ERROR)
+      return
+    end
+
+    if result and #result > 0 then
+      vim.notify('Related Files:\n' .. vim.inspect(result), vim.log.levels.INFO)
+    else
+      vim.notify('No related files found.', vim.log.levels.INFO)
+    end
+  end)
+end
+
+vim.api.nvim_create_user_command('GetRelatedFiles', get_related_files, {})
