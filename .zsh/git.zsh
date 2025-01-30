@@ -8,6 +8,7 @@ alias gb='git branch'
 
 alias gc='git commit -v'
 alias gca='git commit -v --amend'
+alias gcf='git commit -v --fixup='
 
 alias gco='git checkout'
 
@@ -29,6 +30,9 @@ alias gsta='git stash apply'
 alias gstc='git stash clear'
 alias gstl='git stash list'
 alias gstp='git stash pop'
+
+alias gr="git rebase -i --autosquash master"
+alias grc="git rebase --continue"
 
 # list zombie branches
 alias glz=$'git fetch && git remote prune origin && git branch -vv | grep \': gone]\' | awk \'{ if ($1 !="+") print $1; else print $2; }\''
