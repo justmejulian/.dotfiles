@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Get branch name
+# Get issue_name
 branch_name=$(git branch --show-current)
 
 issue_name=""
