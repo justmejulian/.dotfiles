@@ -1,7 +1,16 @@
 #!/bin/bash
 
-# Add Semantic Commit Messages Type
+# Get branch name
+branch_name=$(git branch --show-current)
 
+issue_name=""
+if [[ $branch_name =~ ([A-Z]+-[0-9]+) ]]; then
+    issue_name="${BASH_REMATCH[1]}"
+fi
+
+
+# Add Semantic Commit Messages Type
+#
 # Types: https://gist.github.com/joshbuchea/6f47e86d2510bce28f8e7f42ae84c716#semantic-commit-messages
 commit_types=(
     "feat: new feature for the user, not a new feature for build script"
@@ -36,7 +45,7 @@ commit_type=$(echo "$selected" | awk '{print $1}')
 tail -n +2 "$COMMIT_MSG_FILE" >> "$COMMIT_MSG_FILE.bak"
 
 # Prepend the commit type to the commit message
-echo "$commit_type " > "$COMMIT_MSG_FILE"
+echo "$issue_name $commit_type " > "$COMMIT_MSG_FILE"
 
 cat "$COMMIT_MSG_FILE.bak" >> "$COMMIT_MSG_FILE" 2>/dev/null || true
 
