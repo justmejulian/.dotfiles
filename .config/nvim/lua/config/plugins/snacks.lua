@@ -1,6 +1,8 @@
 return {
   "folke/snacks.nvim",
   opts = {
+    scope = {
+    },
     picker = {
       matcher = {
         frecency = true,
