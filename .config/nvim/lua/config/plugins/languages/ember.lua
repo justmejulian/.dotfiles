@@ -1,0 +1,88 @@
+local function get_related_files(callback)
+  local file_path = vim.fn.expand('%:p') -- Get the full path of the current file
+  local params = {
+    command = 'els.getRelatedFiles',
+    arguments = {
+      file_path,               -- First argument: the file path
+      { includeMeta = false }, -- Optional flags, default to not include metadata
+    },
+  }
+
+  vim.lsp.buf_request(0, 'workspace/executeCommand', params, function(err, results, ctx, config)
+    if err then
+      vim.notify('Error: ' .. err.message, vim.log.levels.ERROR)
+      return
+    end
+
+    local items = {}
+
+    if results and #results > 0 then
+      for index, result in pairs(results) do
+        table.insert(items, {
+          text = result,
+          file = result, -- Full path for use later
+          index = index, -- Store original index
+        })
+      end
+    end
+
+    if next(items) ~= nil then
+      callback(items)
+    end
+  end)
+end
+
+return {
+  {
+    'nvim-treesitter/nvim-treesitter',
+    opts = { languages = { 'javascript', 'typescript', 'html', 'css', 'glimmer' } },
+  },
+  {
+    'williamboman/mason-lspconfig.nvim',
+    dependencies = {
+      "williamboman/mason.nvim",
+    },
+    opts = { languages = { 'ember', 'glint' } },
+  },
+  {
+    "neovim/nvim-lspconfig",
+    opts = {
+      servers = {
+        ember = {},
+        glint = {}
+      }
+    }
+  },
+  {
+    "folke/snacks.nvim",
+    keys = {
+      {
+        "<leader>cr",
+        function()
+          local picker = require("snacks.picker")
+
+          get_related_files(function(items)
+            if not items or #items == 0 then
+              vim.notify("No related files found.", vim.log.levels.WARN)
+              return
+            end
+
+            -- Create Snacks picker
+            Snacks.picker.pick({
+              title = "Related Files",
+              items = items,
+              format = "file",
+              actions = {
+                confirm = function(picker, item)
+                  picker:close()
+                  vim.cmd("edit " .. item.file) -- Open the selected file
+                end,
+              },
+            })
+          end)
+        end,
+        desc = "Select [R]elated Files"
+      },
+    }
+  }
+}
