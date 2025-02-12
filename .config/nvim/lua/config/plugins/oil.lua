@@ -39,5 +39,10 @@ return {
       "<cmd>Oil<cr>",
       desc = "Explore",
     },
+    {
+      ";ns",
+      "<cmd>Oil~/.local/state/nvim/swap <cr>",
+      desc = "Open NVIM [s]wap"
+    },
   },
 }

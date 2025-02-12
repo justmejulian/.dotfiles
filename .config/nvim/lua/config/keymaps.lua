@@ -29,4 +29,7 @@ keymap.set("n", "<C-K>", "<C-W><C-K>", { silent = true })
 keymap.set("n", "<C-L>", "<C-W><C-L>", { silent = true })
 keymap.set("n", "<C-H>", "<C-W><C-H>", { silent = true })
 
+keymap.set("n", "[b", "<cmd>bprevious<cr>", { desc = "Prev Buffer" })
+keymap.set("n", "]b", "<cmd>bnext<cr>", { desc = "Next Buffer" })
+
 keymap.set('n', '<ESC>', ':noh<Esc>', { silent = true })
