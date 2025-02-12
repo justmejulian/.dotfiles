@@ -3,27 +3,16 @@ return {
     "nvim-treesitter/nvim-treesitter",
     build = ":TSUpdate",
     lazy = false,
-    config = function()
+    dependencies = {
+      "nvim-treesitter/nvim-treesitter-textobjects",
+    },
+    opts_extend = { 'languages' }, -- extend not merge
+    opts = {
+        languages = {},
+    },
+    config = function(_, opts)
       require('nvim-treesitter.configs').setup({
-        -- todo: auto add by language
-        ensure_installed = {
-          'regex',
-          'markdown',
-          'markdown_inline',
-          'bash',
-          'astro',
-          "tsx",
-          'typescript',
-          "php",
-          "json",
-          "yaml",
-          "css",
-          "html",
-          "python",
-          "vimdoc",
-          "lua",
-          "typst"
-        },
+        ensure_installed = opts.languages,
         sync_install = false,
         highlight = { enable = true },
         indent = { enable = true },
