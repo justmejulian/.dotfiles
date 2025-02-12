@@ -1,6 +1,5 @@
 return {
   'echasnovski/mini.surround',
   version = '*',
-  opts = {
-  }
+  opts = {}
 }
