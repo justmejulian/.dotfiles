@@ -3,4 +3,4 @@
 require("config.base")
 require("config.lazy")
 require("config.keymaps")
-require("config.user_commands")
+require("config.commands")
