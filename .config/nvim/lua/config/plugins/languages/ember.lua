@@ -1,3 +1,6 @@
+local path = require("utils.path")
+local case = require("utils.case")
+
 local function get_related_files(callback)
   local file_path = vim.fn.expand('%:p') -- Get the full path of the current file
   local params = {
@@ -67,12 +70,12 @@ return {
               return
             end
 
-            -- Create Snacks picker
-            Snacks.picker.pick({
+            picker.pick({
               title = "Related Files",
               items = items,
               format = "file",
               actions = {
+                -- todo add open in split
                 confirm = function(picker, item)
                   picker:close()
                   vim.cmd("edit " .. item.file) -- Open the selected file
