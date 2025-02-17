@@ -44,6 +44,7 @@ return {
     { "gy",         function() Snacks.picker.lsp_type_definitions() end, desc = "Goto T[y]pe Definition" },
 
     { "<leader>cs", function() Snacks.picker.lsp_symbols() end,          desc = "LSP [S]ymbols" },
+    { "<leader>cc", "<cmd>CopyRelativePath<cr>",                         desc = "[C]opyRelativePath" },
 
     -- NVIM
     {
