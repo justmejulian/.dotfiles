@@ -86,6 +86,28 @@ return {
         end,
         desc = "Select [R]elated Files"
       },
+      {
+        "gR",
+        function()
+          local picker = require("snacks.picker")
+          local relative_path = path.get_relative_path()
+          local path_without_ext = relative_path:gsub("%.hbs$", "")
+          if not path_without_ext:match("^app/components/") then
+            vim.notify("Not inside app/components/, skipping...", vim.log.levels.WARN)
+            return nil
+          end
+
+          -- Remove "app/components/"
+          local cleaned_path = path_without_ext:gsub("^app/components/", "")
+          local formatted = cleaned_path
+              :gsub("/", "::")                          -- Replace `/` with `::`
+              :gsub("(%a[%w%-]*)", case.to_pascal_case) -- Convert each segment to PascalCase
+          picker.grep({
+            search = formatted,
+          })
+        end,
+        desc = "get [R]eferenced Files"
+      },
     }
   }
 }
