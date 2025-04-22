@@ -1,5 +1,9 @@
 return {
   {
+    'stevearc/conform.nvim',
+    opts = { formatters_by_ft = { typst = { 'typstyle' } } },
+  },
+  {
     'nvim-treesitter/nvim-treesitter',
     opts = { languages = { 'typst' } },
   },
@@ -7,12 +11,10 @@ return {
     'neovim/nvim-lspconfig',
     opts = {
       servers = {
-        tinymist = {},
+        tinymist = {
+          post_setup = function() end,
+        },
       },
     },
-  },
-  {
-    'stevearc/conform.nvim',
-    opts = { formatters_by_ft = { typst = { 'typstyle' } } },
   },
 }

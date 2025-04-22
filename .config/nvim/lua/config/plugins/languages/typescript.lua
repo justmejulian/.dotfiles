@@ -11,7 +11,9 @@ return {
     'neovim/nvim-lspconfig',
     opts = {
       servers = {
-        vtsls = {},
+        vtsls = {
+          post_setup = function() end,
+        },
       },
     },
   },
