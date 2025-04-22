@@ -48,8 +48,12 @@ return {
     'neovim/nvim-lspconfig',
     opts = {
       servers = {
-        ember = {},
-        glint = {},
+        ember = {
+          post_setup = function() end,
+        },
+        glint = {
+          post_setup = function() end,
+        },
       },
     },
   },

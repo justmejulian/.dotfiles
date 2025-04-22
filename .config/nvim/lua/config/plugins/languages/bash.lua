@@ -20,7 +20,9 @@ return {
     'neovim/nvim-lspconfig',
     opts = {
       servers = {
-        bashls = {},
+        bashls = {
+          post_setup = function() end,
+        },
       },
     },
   },
