@@ -1,26 +1,26 @@
 return {
   {
     -- replace with https://github.com/zbirenbaum/copilot.lua
-    "github/copilot.vim"
+    'github/copilot.vim',
   },
   {
-    "olimorris/codecompanion.nvim",
+    'olimorris/codecompanion.nvim',
     dependencies = {
-      "nvim-lua/plenary.nvim",
-      "nvim-treesitter/nvim-treesitter",
+      'nvim-lua/plenary.nvim',
+      'nvim-treesitter/nvim-treesitter',
     },
     opts = {
       strategies = {
         chat = {
-          adapter = "copilot",
+          adapter = 'copilot',
         },
         inline = {
-          adapter = "copilot",
+          adapter = 'copilot',
         },
         agent = {
-          adapter = "copilot",
+          adapter = 'copilot',
         },
       },
-    }
-  }
+    },
+  },
 }
