@@ -6,13 +6,13 @@ return {
     dependencies = {
       "nvim-treesitter/nvim-treesitter-textobjects",
     },
-    opts_extend = { 'languages' }, -- extend not merge
+    -- opts_extend = { 'languages' }, -- extend not merge
     opts = {
-        languages = {},
+      ensure_installed = {},
     },
     config = function(_, opts)
-      require('nvim-treesitter.configs').setup({
-        ensure_installed = opts.languages,
+      require("nvim-treesitter.configs").setup({
+        ensure_installed = opts.ensure_installed,
         sync_install = false,
         highlight = { enable = true },
         indent = { enable = true },
@@ -27,6 +27,6 @@ return {
           },
         },
       })
-    end
-  }
+    end,
+  },
 }
