@@ -3,7 +3,7 @@ return {
   dependencies = { 'nvim-tree/nvim-web-devicons' },
   opts = {
     options = {
-      theme = "catppuccin",
+      theme = 'catppuccin',
     },
     sections = {
       lualine_c = {
@@ -11,9 +11,9 @@ return {
           'filename',
           file_status = true,
           path = 1,
-        }
+        },
       },
       lualine_y = { 'encoding', 'fileformat', 'filetype' },
-    }
-  }
+    },
+  },
 }

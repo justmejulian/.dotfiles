@@ -1,12 +1,12 @@
-return { 
-  "catppuccin/nvim", 
-  name = "catppuccin", 
+return {
+  'catppuccin/nvim',
+  name = 'catppuccin',
   priority = 1000,
   opts = {
-    flavour = "mocha"
+    flavour = 'mocha',
   },
   -- config is executed when the plugin loaded
-  config = function() 
-    vim.api.nvim_command "colorscheme catppuccin"
-  end
+  config = function()
+    vim.api.nvim_command 'colorscheme catppuccin'
+  end,
 }
