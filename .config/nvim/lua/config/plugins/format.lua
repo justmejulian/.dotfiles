@@ -13,7 +13,7 @@ end
 
 return {
   {
-    'williamboman/mason.nvim',
+    'mason-org/mason.nvim',
   },
   {
     'zapling/mason-conform.nvim',
@@ -41,6 +41,8 @@ return {
           if formatters ~= nil then
             fidget.notify('Formatting with ' .. formatters)
             conform.format { bufnr = args.buf }
+          else
+            fidget.notify('No formatters found for ' .. vim.bo[args.buf].filetype)
           end
         end,
       })

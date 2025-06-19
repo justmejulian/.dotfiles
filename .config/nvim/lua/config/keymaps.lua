@@ -1,7 +1,7 @@
 local keymap = vim.keymap
 
 -- Reload configuration without restart nvim
-keymap.set('n', '<leader>rl', ':so %<CR>', { desc = 'Reload Config' })
+keymap.set('n', '<leader>n', ':so %<CR>', { desc = 'Reload [N]eovim [C]onfig' })
 
 keymap.set('i', '<Left>', '<ESC>:echoe "Use h"<CR>')
 keymap.set('i', '<Right>', '<ESC>:echoe "Use l"<CR>')

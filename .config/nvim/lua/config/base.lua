@@ -3,9 +3,9 @@ vim.g.mapleader = ' '
 -- Set node version to use for LSP
 -- test using :!node -v
 local home_dir = '/Users/julian.visser'
-local node_bin = '/.nvm/versions/node/v23.5.0//bin'
+local node_bin = '/.nvm/versions/node/v23.5.0/bin'
 vim.g.node_host_prog = home_dir .. node_bin .. '/node'
-vim.cmd("let $PATH = '" .. home_dir .. node_bin .. ":' . $PATH")
+-- vim.cmd("let $PATH = '" .. home_dir .. node_bin .. ":' . $PATH")
 
 vim.wo.number = true
 vim.wo.relativenumber = true
