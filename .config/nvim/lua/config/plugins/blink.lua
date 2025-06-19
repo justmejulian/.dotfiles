@@ -1,8 +1,5 @@
 return {
   {
-    'olimorris/codecompanion.nvim',
-  },
-  {
     'saghen/blink.cmp',
     dependencies = 'rafamadriz/friendly-snippets',
     version = 'v0.*',
@@ -47,7 +44,7 @@ return {
       },
       sources = {
         -- todo: add luasnip https://github.com/Saghen/blink.cmp/blob/main/README.md#luasnip
-        default = { 'lazydev', 'lsp', 'path', 'snippets', 'buffer', 'codecompanion' },
+        default = { 'lazydev', 'lsp', 'path', 'snippets', 'buffer' },
         providers = {
           lazydev = {
             name = 'LazyDev',
