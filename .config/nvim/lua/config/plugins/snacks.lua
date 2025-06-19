@@ -1,3 +1,4 @@
+-- Snacks is defined in lua.lua
 return {
   'folke/snacks.nvim',
   opts = {
