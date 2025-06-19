@@ -1,9 +1,9 @@
 return {
   {
-    'williamboman/mason.nvim',
+    'mason-org/mason.nvim',
   },
   {
-    'williamboman/mason-lspconfig.nvim',
+    'mason-org/mason-lspconfig.nvim',
   },
   {
     'neovim/nvim-lspconfig',
@@ -40,13 +40,14 @@ return {
         vim.lsp.buf.declaration,
         desc = 'lsp declaration',
       },
-      {
-        'gd',
-        function()
-          vim.lsp.buf.definition { on_list = on_list }
-        end,
-        desc = 'lsp definition',
-      },
+      -- Handled in snacks.nvim
+      -- {
+      --   'gd',
+      --   function()
+      --     vim.lsp.buf.definition { on_list = on_list }
+      --   end,
+      --   desc = 'lsp definition',
+      -- },
       {
         'K',
         vim.lsp.buf.hover,
