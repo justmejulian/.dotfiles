@@ -18,9 +18,10 @@ return {
 
       mason.setup()
 
+      local ensure_installed = vim.tbl_keys(opts.servers)
+
       mason_lspconfig.setup {
-        -- automatically install servers set in lspconfig
-        ensure_installed = {},
+        ensure_installed = ensure_installed,
         automatic_installation = true,
       }
 
@@ -28,7 +29,12 @@ return {
       local lspconfig = require 'lspconfig'
       for name, server in pairs(opts.servers) do
         -- fidget.notify('Setting up LSP ' .. name)
-        lspconfig[name].setup { capabilities }
+        vim.lsp.enable(name)
+        vim.lsp.inlay_hint.enable()
+        vim.lsp.config(name, {
+          capabilities = capabilities,
+          settings = server.settings or {},
+        })
         if server.post_setup ~= nil then
           server.post_setup()
         end
