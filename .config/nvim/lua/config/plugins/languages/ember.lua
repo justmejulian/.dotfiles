@@ -45,7 +45,6 @@ return {
         html = { 'prettierd' },
         css = { 'prettierd' },
         glimmer = { 'prettierd' },
-        handlebars = { 'prettierd' },
       },
     },
   },
@@ -60,9 +59,10 @@ return {
         ember = {
           post_setup = function() end,
         },
-        glint = {
-          post_setup = function() end,
-        },
+        -- glint = {
+        --   disable_auto_install = true,
+        --   post_setup = function() end,
+        -- },
       },
     },
   },
@@ -81,7 +81,7 @@ return {
             end
 
             picker.pick {
-              title = 'Related Files',
+              title = '[R]elated Files',
               items = items,
               format = 'file',
               actions = {
