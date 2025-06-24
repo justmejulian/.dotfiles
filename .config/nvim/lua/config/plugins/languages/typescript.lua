@@ -1,7 +1,10 @@
 return {
   {
     'stevearc/conform.nvim',
-    opts = { formatters_by_ft = { javascript = { 'prettierd' } } },
+    opts = { formatters_by_ft = {
+      javascript = { 'prettierd' },
+      typescript = { 'prettierd' },
+    } },
   },
   {
     'nvim-treesitter/nvim-treesitter',
@@ -12,7 +15,37 @@ return {
     opts = {
       servers = {
         vtsls = {
-          post_setup = function() end,
+          settings = {
+            vtsls = {
+              experimental = {
+                maxInlayHintLength = 30,
+              },
+            },
+            typescript = {
+              inlayHints = {
+                enumMemberValues = { enabled = true },
+                functionLikeReturnTypes = { enabled = true },
+                parameterNames = { enabled = 'literals' },
+                parameterTypes = { enabled = true },
+                propertyDeclarationTypes = { enabled = true },
+                variableTypes = { enabled = false },
+              },
+            },
+            javascript = {
+              inlayHints = {
+                enumMemberValues = { enabled = true },
+                functionLikeReturnTypes = { enabled = true },
+                parameterNames = { enabled = 'literals' },
+                parameterTypes = { enabled = true },
+                propertyDeclarationTypes = { enabled = true },
+                variableTypes = { enabled = false },
+              },
+            },
+          },
+
+          post_setup = function()
+            vim.lsp.inlay_hint.enable(true)
+          end,
         },
       },
     },
