@@ -5,6 +5,7 @@ return {
     opts = {
       spec = {
         { '<leader>c', group = '[C]ode', mode = { 'n', 'x' } },
+        { '<leader>cl', group = '[L]ogs', mode = { 'n', 'x' } },
         -- { '<leader>d', group = '[D]ocument' },
         { '<leader>t', group = '[T]oggle' },
         { '<leader>g', group = '[G]it', mode = { 'n', 'v' } },

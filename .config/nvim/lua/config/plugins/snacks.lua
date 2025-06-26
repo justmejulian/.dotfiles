@@ -133,7 +133,6 @@ return {
       end,
       desc = 'LSP [S]ymbols',
     },
-    { '<leader>cc', '<cmd>CopyRelativePath<cr>', desc = '[C]opyRelativePath' },
 
     -- NVIM
     {
