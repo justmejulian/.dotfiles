@@ -18,7 +18,10 @@ return {
 
       mason.setup()
 
-      local ensure_installed = vim.tbl_keys(opts.servers)
+      local ensure_installed = vim.tbl_filter(function(name)
+        local server = opts.servers[name]
+        return not server.disable_auto_install
+      end, vim.tbl_keys(opts.servers))
 
       mason_lspconfig.setup {
         ensure_installed = ensure_installed,
@@ -64,11 +67,11 @@ return {
         vim.lsp.buf.signature_help,
         desc = 'lsp signature_help',
       },
-      {
-        '<leader>ca',
-        vim.lsp.buf.code_action,
-        desc = 'lsp code_action',
-      },
+      -- {
+      --   '<leader>ca',
+      --   vim.lsp.buf.code_action,
+      --   desc = 'lsp code_action',
+      -- },
       {
         '<leader>f',
         function()
@@ -83,9 +86,38 @@ return {
         end,
         desc = 'lsp format',
       },
-      { '<leader>dn', vim.diagnostic.goto_next, { desc = 'diagnostic next' } },
-      { '<leader>dp', vim.diagnostic.goto_prev, { desc = 'diagnostic prev' } },
-      { '<leader>df', vim.diagnostic.open_float, { desc = 'diagnostic float' } },
+      {
+        '<leader>dn',
+        function()
+          vim.diagnostic.jump { count = 1, float = true }
+        end,
+        desc = 'diagnostic next',
+      },
+      {
+        '<leader>dp',
+        function()
+          vim.diagnostic.jump { count = -1, float = true }
+        end,
+        desc = 'diagnostic prev',
+      },
+      { '<leader>df', vim.diagnostic.open_float, desc = 'diagnostic float' },
+    },
+  },
+  {
+    'rachartier/tiny-code-action.nvim',
+    dependencies = { 'folke/snacks.nvim' },
+    event = 'LspAttach',
+    opts = {
+      picker = 'snacks',
+    },
+    keys = {
+      {
+        '<leader>ca',
+        function()
+          require('tiny-code-action').code_action {}
+        end,
+        desc = 'lsp code action',
+      },
     },
   },
 }

@@ -1,7 +1,7 @@
 local keymap = vim.keymap
 
 -- Reload configuration without restart nvim
-keymap.set('n', '<leader>n', ':so %<CR>', { desc = 'Reload [N]eovim [C]onfig' })
+keymap.set('n', '<leader>nr', ':so %<CR>', { desc = '[N]eovim [R]eload Config' })
 
 keymap.set('i', '<Left>', '<ESC>:echoe "Use h"<CR>')
 keymap.set('i', '<Right>', '<ESC>:echoe "Use l"<CR>')
@@ -33,3 +33,5 @@ keymap.set('n', '[b', '<cmd>bprevious<cr>', { desc = 'Prev Buffer' })
 keymap.set('n', ']b', '<cmd>bnext<cr>', { desc = 'Next Buffer' })
 
 keymap.set('n', '<ESC>', ':noh<Esc>', { silent = true })
+
+keymap.set('n', '<leader>cp', '<cmd>CopyAbsolutePath<cr>', { desc = '[C]opyAbsolute[P]ath' })
