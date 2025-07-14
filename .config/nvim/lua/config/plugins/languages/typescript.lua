@@ -11,36 +11,26 @@ return {
     opts = { languages = { 'javascript', 'typescript' } },
   },
   {
+    'Sebastian-Nielsen/better-type-hover',
+    ft = { 'typescript', 'typescriptreact', 'javascript', 'javascriptreact' },
+    opts = {
+      openTypeDocKeymap = '<S-K>',
+    },
+  },
+  {
     'neovim/nvim-lspconfig',
     opts = {
       servers = {
         vtsls = {
+          -- https://github.com/yioneko/vtsls/blob/main/packages/service/configuration.schema.json
           settings = {
             vtsls = {
               experimental = {
                 maxInlayHintLength = 30,
               },
             },
-            typescript = {
-              inlayHints = {
-                enumMemberValues = { enabled = true },
-                functionLikeReturnTypes = { enabled = true },
-                parameterNames = { enabled = 'literals' },
-                parameterTypes = { enabled = true },
-                propertyDeclarationTypes = { enabled = true },
-                variableTypes = { enabled = false },
-              },
-            },
-            javascript = {
-              inlayHints = {
-                enumMemberValues = { enabled = true },
-                functionLikeReturnTypes = { enabled = true },
-                parameterNames = { enabled = 'literals' },
-                parameterTypes = { enabled = true },
-                propertyDeclarationTypes = { enabled = true },
-                variableTypes = { enabled = false },
-              },
-            },
+            typescript = js_ts_settings,
+            javascript = js_ts_settings,
           },
 
           post_setup = function()

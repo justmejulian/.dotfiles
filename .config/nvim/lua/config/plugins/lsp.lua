@@ -25,15 +25,14 @@ return {
 
       mason_lspconfig.setup {
         ensure_installed = ensure_installed,
-        automatic_installation = true,
+        automatic_enable = false,
       }
 
       local capabilities = require('blink.cmp').get_lsp_capabilities()
       local lspconfig = require 'lspconfig'
       for name, server in pairs(opts.servers) do
-        -- fidget.notify('Setting up LSP ' .. name)
+        fidget.notify('Setting up LSP ' .. name)
         vim.lsp.enable(name)
-        vim.lsp.inlay_hint.enable()
         vim.lsp.config(name, {
           capabilities = capabilities,
           settings = server.settings or {},
