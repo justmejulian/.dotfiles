@@ -29,14 +29,39 @@ Generate a new SSH key
 ssh-keygen -t ed25519 -C "12615757+justmejulian@users.noreply.github.com"
 ```
 
-Add it to keychain
-```
-ssh-add ~/.ssh/id_ed25519
-```
 
 Copy new key and [paste as new Key in Github](https://github.com/settings/ssh/new)
 ```
 pbcopy < ~/.ssh/id_ed25519.pub
+```
+
+Create `~/.ssh/config` file and add key to github.
+
+```
+Host github.com
+   HostName github.com
+   User git
+   IdentityFile ~/.ssh/id_ed25519
+```
+
+
+#### Addind to keychain
+
+If you are using passphrases, then you might want to add it to keychain.
+
+See [Github](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent)
+
+Make sure you are using the mac ssh-add:
+
+```
+❯ which ssh-add
+/usr/bin/ssh-add
+```
+
+Add to keychain:
+
+```
+ssh-add --apple-use-keychain ~/.ssh/id_ed25519
 ```
 
 ### Setup git bare repo
@@ -68,6 +93,14 @@ Install [Mac US keyboard layout with German Umlauts](https://github.com/patrick-
 
 ```
 curl -sL https://api.github.com/repos/patrick-zippenfenig/us-with-german-umlauts/tarball/master | sudo tar xz --exclude=README.md --strip=1 -C /Library/Keyboard\ Layouts/
+```
+
+Then edit plist file.
+
+Todo: solve this with `defaults`
+
+```
+open ~/Library/Preferences/com.apple.HIToolbox.plist
 ```
 
 #### Hyperkey
@@ -120,6 +153,8 @@ nvm install node
 ```
 
 #### python
+
+- [ ] Replace with [uv](https://docs.astral.sh/uv/getting-started/)
 
 ```
 pyenv install 3.13.1
