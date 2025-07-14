@@ -149,5 +149,56 @@ return {
       end,
       desc = '[E]xplore NVIM local',
     },
+    {
+      '<leader>td',
+      function()
+        local params = vim.lsp.util.make_position_params()
+
+        vim.lsp.buf_request(0, 'textDocument/typeDefinition', params, function(err, result, _, _)
+          if err then
+            vim.notify('LSP error: ' .. err.message, vim.log.levels.ERROR)
+            return
+          end
+          if not result or vim.tbl_isempty(result) then
+            vim.notify('No type definitions found', vim.log.levels.INFO)
+            return
+          end
+
+          -- Normalize to list of locations
+          local locations = vim.tbl_islist(result) and result or { result }
+
+          -- Use the first location
+          local loc = locations[1]
+          local fname = vim.uri_to_fname(loc.uri)
+          local range = loc.range
+
+          Snacks.win {
+            file = fname,
+            width = 0.6,
+            height = 0.6,
+            title = 'Type Definition',
+            row = 0.2,
+            col = 0.2,
+            focus = true,
+            wo = {
+              wrap = false,
+              spell = false,
+              signcolumn = 'yes',
+              statuscolumn = ' ',
+              conceallevel = 3,
+            },
+            on_open = function(bufnr, winid)
+              vim.api.nvim_set_current_win(winid)
+              vim.api.nvim_win_set_cursor(winid, {
+                range.start.line + 1,
+                range.start.character,
+              })
+            end,
+          }
+          vim.lsp.buf.type_definition()
+        end)
+      end,
+      desc = 'Type Definition in Snacks.win',
+    },
   },
 }
