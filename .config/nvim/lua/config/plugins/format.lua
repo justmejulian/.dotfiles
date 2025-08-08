@@ -9,8 +9,6 @@ local function getFormatterNames(formatters)
   return table.concat(names, ',')
 end
 
--- todo create an code folder
-
 return {
   {
     'mason-org/mason.nvim',
@@ -24,7 +22,6 @@ return {
     opts = { formatters_by_ft = {} },
     config = function(_, opts)
       local fidget = require 'fidget'
-      -- fidget.notify('Setting up formatters' .. vim.inspect(opts))
 
       local mason = require 'mason'
       local mason_conform = require 'mason-conform'
@@ -40,7 +37,11 @@ return {
           local formatters = getFormatterNames(list_formatters)
           if formatters ~= nil then
             fidget.notify('Formatting with ' .. formatters)
-            conform.format { bufnr = args.buf }
+            conform.format({ bufnr = args.buf }, function(err)
+              -- if err then
+              --   fidget.notify('Formatting failed: ' .. err, 'error')
+              -- end
+            end)
           else
             fidget.notify('No formatters found for ' .. vim.bo[args.buf].filetype)
           end

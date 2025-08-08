@@ -2,8 +2,8 @@ return {
   {
     'stevearc/conform.nvim',
     opts = { formatters_by_ft = {
-      astro = { 'prettierd' },
-      typescriptreact = { 'prettierd' },
+      astro = { 'prettier' },
+      typescriptreact = { 'prettier' },
     } },
   },
   {
