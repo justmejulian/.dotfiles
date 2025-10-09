@@ -6,7 +6,7 @@ macos-option-as-alt = false
 
 window-title-font-family = "JetBrainsMono Nerd Font Mono"
 
-theme = catppuccin-mocha
+theme = Catppuccin Mocha
 
 window-new-tab-position = end
 macos-titlebar-style = tabs
