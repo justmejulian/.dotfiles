@@ -48,3 +48,9 @@ vim.opt.listchars = {
 }
 
 vim.o.autoread = true
+
+-- Undo
+-- Enable persistent undo
+vim.opt.undofile = true
+-- Store undo history in ~/.local/share/nvim/undo
+vim.opt.undodir = vim.fn.stdpath 'data' .. '/undo'

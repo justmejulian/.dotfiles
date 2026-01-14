@@ -79,13 +79,6 @@ return {
         desc = 'lsp format',
       },
       {
-        ';df',
-        function()
-          vim.lsp.buf.format { async = true }
-        end,
-        desc = 'lsp format',
-      },
-      {
         '<leader>dn',
         function()
           vim.diagnostic.jump { count = 1, float = true }

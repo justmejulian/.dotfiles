@@ -18,7 +18,7 @@ keymap.set('n', '<C-u>', '<C-u>zz')
 
 keymap.set('n', 'gF', '<C-w>vgf', { silent = true })
 
-keymap.set({ 'n', 'v' }, '<leader>y', [["+y]], { desc = 'Copy to Clipboard' })
+keymap.set({ 'n', 'v' }, '<D-c>', [["+y]], { desc = 'Copy to Clipboard' })
 keymap.set('v', 'p', [["_dP]])
 
 keymap.set('n', '<D-s>', ':w<CR>')
