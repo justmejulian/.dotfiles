@@ -1,0 +1,25 @@
+return {
+  -- {
+  --   dir = '/Users/julianvisser/Documents/git/private/ember.nvim',
+  --   -- 'justmejulian/ember.nvim',
+  --   opts = {
+  --     picker = 'snacks.picker',
+  --   },
+  --   keys = {
+  --     {
+  --       '<leader>cr',
+  --       function()
+  --         require('ember').get_related_files()
+  --       end,
+  --       desc = 'Select [R]elated Files',
+  --     },
+  --     {
+  --       'gR',
+  --       function()
+  --         require('ember').get_kind_usages()
+  --       end,
+  --       desc = 'get [R]eferenced Files',
+  --     },
+  --   },
+  -- },
+}

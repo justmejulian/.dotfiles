@@ -2,7 +2,8 @@ return {
   {
     'saghen/blink.cmp',
     dependencies = 'rafamadriz/friendly-snippets',
-    version = 'v0.*',
+    version = '0.*',
+
     --- todo
     opts_extend = { 'sources.default' },
     opts = {

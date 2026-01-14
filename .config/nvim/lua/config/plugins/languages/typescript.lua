@@ -1,3 +1,18 @@
+local js_ts_settings = {
+  updateImportsOnFileMove = { enabled = 'always' },
+  suggest = {
+    completeFunctionCalls = true,
+  },
+  inlayHints = {
+    enumMemberValues = { enabled = true },
+    functionLikeReturnTypes = { enabled = true },
+    parameterNames = { enabled = 'literals' },
+    parameterTypes = { enabled = true },
+    propertyDeclarationTypes = { enabled = true },
+    variableTypes = { enabled = false },
+  },
+}
+
 return {
   {
     'stevearc/conform.nvim',
@@ -25,8 +40,13 @@ return {
           -- https://github.com/yioneko/vtsls/blob/main/packages/service/configuration.schema.json
           settings = {
             vtsls = {
+              enableMoveToFileCodeAction = true,
+              autoUseWorkspaceTsdk = true,
               experimental = {
                 maxInlayHintLength = 30,
+                completion = {
+                  enableServerSideFuzzyMatch = true,
+                },
               },
             },
             typescript = js_ts_settings,
@@ -34,7 +54,9 @@ return {
           },
 
           post_setup = function()
-            vim.lsp.inlay_hint.enable(true)
+            local fidget = require 'fidget'
+            fidget.notify 'Running post setup for typescript'
+            -- vim.lsp.inlay_hint.enable(true)
           end,
         },
       },
