@@ -1,7 +1,8 @@
 # Load nvm
 export NVM_DIR="$HOME/.nvm"
-[ -s "`brew --prefix`/opt/nvm/nvm.sh" ] && \. "`brew --prefix`/opt/nvm/nvm.sh"  # This loads nvm
-[ -s "`brew --prefix`/opt/nvm/etc/bash_completion.d/nvm" ] && \. "`brew --prefix`/opt/nvm/etc/bash_completion.d/nvm"  # This loads nvm bash_completion
+BREW_PREFIX="$(brew --prefix)"
+[ -s "$BREW_PREFIX/opt/nvm/nvm.sh" ] && \. "$BREW_PREFIX/opt/nvm/nvm.sh"  # This loads nvm
+[ -s "$BREW_PREFIX/opt/nvm/etc/bash_completion.d/nvm" ] && \. "$BREW_PREFIX/opt/nvm/etc/bash_completion.d/nvm"  # This loads nvm bash_completion
 
 # Auto load nvmrc when entering a directory
 autoload -U add-zsh-hook

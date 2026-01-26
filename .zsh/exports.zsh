@@ -3,3 +3,4 @@
 # set neovim as default editor
 # used for things like: fc
 export EDITOR=nvim
+export RIPGREP_CONFIG_PATH=~/.ripgreprc

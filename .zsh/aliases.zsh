@@ -13,7 +13,7 @@ alias grep="grep --color='auto'"
 cdl() { cd "${@}" ; ls ;}
 
 alias nd="nvim -c 'DiffviewOpen' ."
-alias ndm="nvim -c 'DiffviewOpen origin/master' ."
+alias ndm="nvim -c 'DiffviewOpen origin/main... --imply-local' ."
 
 # edit project
 ep() {
