@@ -1,0 +1,6 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+
+  "model": "openrouter/mistralai/devstral-2512:free",
+  "small_model": "opencode/mistralai/devstral-2512:free",
+}

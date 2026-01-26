@@ -1,0 +1,40 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+
+  "model": "github-copilot-enterprise/claude-sonnet-4.5",
+  "small_model": "github-copilot-enterprise/gpt-5-mini",
+
+  "agent": {
+    "build": {
+      "mode": "primary",
+      "model": "github-copilot-enterprise/claude-sonnet-4.5",
+    },
+    "plan": {
+      "mode": "primary",
+      "extend": "plan",
+      "model": "github-copilot-enterprise/claude-sonnet-4.5",
+      "tools": {
+        "write": false,
+        "edit": false,
+        "bash": false
+      }
+    },
+    "plan-big": {
+      "mode": "primary",
+      "extend": "plan",
+      "model": "github-copilot-enterprise/claude-opus-4.5",
+      "tools": {
+        "write": false,
+        "edit": false,
+        "bash": false
+      }
+    },
+    "quick": {
+      "mode": "primary",
+      "model": "github-copilot-enterprise/gpt-5-mini",
+      "description": "Fast reasoning with limited iterations",
+      "prompt": "You are a quick thinker. Solve problems with minimal steps.",
+      "maxSteps": 5
+    },
+  }
+}
