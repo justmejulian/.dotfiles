@@ -12,6 +12,8 @@ alias gcf='git commit -v --fixup='
 
 alias gco='git checkout'
 
+alias gcp='git cherry-pick'
+
 alias gd='git diff'
 
 alias gp='git push'
@@ -31,7 +33,7 @@ alias gstc='git stash clear'
 alias gstl='git stash list'
 alias gstp='git stash pop'
 
-alias gr="git rebase -i --autosquash master"
+alias gr="git rebase -i --autosquash main"
 alias grc="git rebase --continue"
 
 # list zombie branches

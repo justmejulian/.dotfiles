@@ -1,5 +1,6 @@
 # Dotfiles
 
+
 my collection of dotfiles and scripts
 
 ## Set up
@@ -135,6 +136,20 @@ Or handle with [Raycast](https://www.albertosadde.com/blog/raycast/)
 ### Menu Bar
 
 Use [Ice](https://github.com/jordanbaird/Ice) to hide unwanted MenuBar Items.
+
+### System Cleanup
+
+Use [Mole](https://github.com/tw93/Mole) to deep clean and optimize your Mac.
+
+Useful commands:
+```
+mo                    # Interactive menu
+mo clean              # Deep cleanup
+mo uninstall          # Remove apps + leftovers
+mo optimize           # Refresh caches & services
+mo analyze            # Visual disk explorer
+mo status             # Live system health dashboard
+```
 
 ### Dev Env
 
