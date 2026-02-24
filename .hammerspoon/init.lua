@@ -183,6 +183,13 @@ local function moveWindowToLastSpace()
 	hs.spaces.gotoSpace(last_space_id)
 end
 
+hs.hotkey.bind(cmdalt, "return", function()
+	local win = hs.window.focusedWindow()
+	if win then
+		win:maximize()
+	end
+end)
+
 hs.hotkey.bind(cmdalt, "n", function()
 	moveWindowToNextSpace()
 end)
