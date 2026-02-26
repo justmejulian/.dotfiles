@@ -21,8 +21,8 @@ end
 
 -- Using https://hyperkey.app/
 local hyper = { "cmd", "alt", "ctrl" } -- Hyper key
-local cmdalt = { "cmd", "alt" } -- Hyper key
-local cmdaltshift = { "cmd", "alt", "shift" } -- Hyper key
+local cmdalt = { "cmd", "alt" }
+local cmdaltshift = { "cmd", "alt", "shift" }
 
 hs.hotkey.bind(hyper, "r", function()
 	hs.reload()
@@ -128,6 +128,63 @@ hs.hotkey.bind(cmdalt, "m", function()
 	app:maximize()
 end)
 
+hs.hotkey.bind(cmdalt, "return", function()
+	local win = hs.window.focusedWindow()
+	if win then
+		win:maximize()
+	end
+end)
+
+-- Window halves: left/right arrow
+hs.hotkey.bind(cmdalt, "left", function()
+	local win = hs.window.focusedWindow()
+	if win then
+		local f = win:screen():frame()
+		win:setFrame({ x = f.x, y = f.y, w = f.w / 2, h = f.h })
+	end
+end)
+
+hs.hotkey.bind(cmdalt, "right", function()
+	local win = hs.window.focusedWindow()
+	if win then
+		local f = win:screen():frame()
+		win:setFrame({ x = f.x + f.w / 2, y = f.y, w = f.w / 2, h = f.h })
+	end
+end)
+
+-- Window thirds: 1/2/3
+hs.hotkey.bind(cmdalt, "1", function()
+	local win = hs.window.focusedWindow()
+	if win then
+		local f = win:screen():frame()
+		win:setFrame({ x = f.x, y = f.y, w = f.w / 3, h = f.h })
+	end
+end)
+
+hs.hotkey.bind(cmdalt, "2", function()
+	local win = hs.window.focusedWindow()
+	if win then
+		local f = win:screen():frame()
+		win:setFrame({ x = f.x + f.w / 3, y = f.y, w = f.w / 3, h = f.h })
+	end
+end)
+
+hs.hotkey.bind(cmdalt, "3", function()
+	local win = hs.window.focusedWindow()
+	if win then
+		local f = win:screen():frame()
+		win:setFrame({ x = f.x + (f.w / 3) * 2, y = f.y, w = f.w / 3, h = f.h })
+	end
+end)
+
+hs.hotkey.bind(cmdalt, "n", function()
+	moveWindowToNextSpace()
+end)
+
+hs.hotkey.bind(cmdaltshift, "n", function()
+	moveWindowToLastSpace()
+end)
+
 local function getLastSpaceIndex(spaces, cur_space_id)
 	for index, space in pairs(spaces) do
 		if space == cur_space_id then
@@ -182,20 +239,6 @@ local function moveWindowToLastSpace()
 	hs.spaces.moveWindowToSpace(win:id(), last_space_id)
 	hs.spaces.gotoSpace(last_space_id)
 end
-
-hs.hotkey.bind(cmdalt, "return", function()
-	local win = hs.window.focusedWindow()
-	if win then
-		win:maximize()
-	end
-end)
-
-hs.hotkey.bind(cmdalt, "n", function()
-	moveWindowToNextSpace()
-end)
-hs.hotkey.bind(cmdaltshift, "n", function()
-	moveWindowToLastSpace()
-end)
 
 -- local function closeCurrentSpace()
 --   local cur_screen = hs.screen.mainScreen()
