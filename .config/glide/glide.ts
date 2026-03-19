@@ -135,6 +135,43 @@ glide.autocmds.create(
 
 glide.autocmds.create(
   "UrlEnter",
+  /https:\/\/dev\.azure\.com\/.*\/_build\/results.*/,
+  () => {
+    glide.buf.keymaps.set(
+      "normal",
+      "<leader>ct",
+      glide.content.fn(async () => {
+        const rows = document.querySelectorAll(
+          ".ms-List-cell .ms-DetailsRow .clickable-text",
+        );
+
+        const tests: string[] = [];
+
+        rows.forEach((el) => {
+          const name = el.textContent?.trim();
+          if (name && !/^Testem Tests/.test(name)) {
+            tests.push(name);
+          }
+        });
+
+        const unique = [...new Set(tests)];
+
+        if (unique.length === 0) {
+          console.warn("No failing tests found. Are results loaded?");
+          return;
+        }
+
+        const text = unique.map((t, i) => `${i + 1}. ${t}`).join("\n");
+        await navigator.clipboard.writeText(text);
+        console.log(`Copied ${unique.length} failing test(s) to clipboard:\n${text}`);
+      }),
+      { description: "copy failing test names to clipboard" },
+    );
+  },
+);
+
+glide.autocmds.create(
+  "UrlEnter",
   { hostname: "jira-husqvarna.riada.se" },
   () => {
     glide.buf.keymaps.set(
