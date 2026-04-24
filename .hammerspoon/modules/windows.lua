@@ -7,16 +7,16 @@ function M.maximize()
   end
 end
 
-function M.snapLeft()
-  local win = hs.window.focusedWindow()
+function M.snapLeft(win)
+  win = win or hs.window.focusedWindow()
   if win then
     local f = win:screen():frame()
     win:setFrame { x = f.x, y = f.y, w = f.w / 2, h = f.h }
   end
 end
 
-function M.snapRight()
-  local win = hs.window.focusedWindow()
+function M.snapRight(win)
+  win = win or hs.window.focusedWindow()
   if win then
     local f = win:screen():frame()
     win:setFrame { x = f.x + f.w / 2, y = f.y, w = f.w / 2, h = f.h }
