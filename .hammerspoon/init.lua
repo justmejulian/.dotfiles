@@ -22,7 +22,8 @@ end
 local summon = require 'modules.summon'
 local windows = require 'modules.windows'
 local spaces = require 'modules.spaces'
-local screenLayouts = require 'modules.screen_layouts'
+local screenWatcher = require 'modules.screen_watcher'
+local layouts = require 'modules.layouts'
 
 -- Using https://hyperkey.app/
 local hyper = { 'cmd', 'alt', 'ctrl' }
@@ -42,44 +43,55 @@ local apps = {
   j = 'Intellij IDEA',
 }
 
--- Screen layouts: auto-apply on monitor connect/disconnect
-screenLayouts.addLayout {
-  name = 'laptop_only',
-  match = function(screens) return #screens == 1 end,
-  apply = function(_screens)
-    for _, win in ipairs(hs.window.visibleWindows()) do
-      if win:isStandard() then
-        win:maximize()
+-- Layouts
+layouts.register('maximize_all', function(_screens)
+  for _, win in ipairs(hs.window.visibleWindows()) do
+    if win:isStandard() then
+      win:maximize()
+    end
+  end
+end)
+
+layouts.register('ghostty_right', function(_screens)
+  for _, win in ipairs(hs.window.visibleWindows()) do
+    if win:isStandard() and not win:isFullScreen() then
+      local app = win:application()
+      if app and app:name() == 'Ghostty' then
+        windows.snapRight(win)
       end
     end
-  end,
-}
+  end
+end)
 
-screenLayouts.addLayout {
-  name = 'lg_wqhd',
-  match = function(screens)
+layouts.register('move_ghostty_to_secondary', function(_screens)
+  local secondary = layouts.externalScreen()
+  if not secondary then return end
+  for _, win in ipairs(hs.window.visibleWindows()) do
+    if win:isStandard() and not win:isFullScreen() then
+      local app = win:application()
+      if app and app:name() == 'Ghostty' then
+        win:moveToScreen(secondary)
+      end
+    end
+  end
+end)
+
+-- Auto-apply layouts on screen change
+screenWatcher.onChange(function(screens)
+  if #screens == 1 then
+    layouts.apply('maximize_all')
+  else
     for _, s in ipairs(screens) do
-      if s:name() == 'LG HDR WQHD' then return true end
-    end
-    return false
-  end,
-  apply = function(_screens)
-    local lg = screenLayouts.screenByName('LG HDR WQHD')
-    for _, win in ipairs(hs.window.visibleWindows()) do
-      if win:isStandard() and not win:isFullScreen() then
-        local app = win:application()
-        win:moveToScreen(lg)
-        if app and app:name() == 'Ghostty' then
-          windows.snapRight(win)
-        else
-          windows.snapLeft(win)
-        end
+      if s:name() == 'LG HDR WQHD' then
+        layouts.apply('move_ghostty_to_secondary')
+        layouts.apply('ghostty_right')
+        return
       end
     end
-  end,
-}
+  end
+end)
 
-screenLayouts.start()
+screenWatcher.start()
 
 -- Reload config
 hs.hotkey.bind(hyper, 'r', hs.reload)
