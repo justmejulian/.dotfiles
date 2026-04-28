@@ -105,12 +105,17 @@ end)
 -- Auto-apply layouts on screen change
 screenWatcher.onChange(function(screens)
   if #screens == 1 then
-    layouts.apply('maximize_all')
+    layouts.apply 'maximize_all'
   else
     for _, s in ipairs(screens) do
       if s:name() == 'LG HDR WQHD' then
-        layouts.apply('move_ghostty_to_secondary')
-        layouts.apply('ghostty_right')
+        layouts.apply 'move_ghostty_to_secondary'
+        layouts.apply 'ghostty_right'
+        return
+      end
+      if s:name() == 'DELL P2421D' then
+        layouts.apply 'move_ghostty_to_secondary'
+        layouts.apply 'maximize_all'
         return
       end
     end
