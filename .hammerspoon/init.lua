@@ -65,12 +65,38 @@ end)
 
 layouts.register('move_ghostty_to_secondary', function(_screens)
   local secondary = layouts.externalScreen()
-  if not secondary then return end
+  if not secondary then
+    return
+  end
+
+  -- Find the space Ghostty lives on
+  local ghosttySpaceID = nil
+  for _, win in ipairs(hs.window.visibleWindows()) do
+    local app = win:application()
+    if app and app:name() == 'Ghostty' then
+      local winSpaces = hs.spaces.windowSpaces(win)
+      if winSpaces and #winSpaces > 0 then
+        ghosttySpaceID = winSpaces[1]
+        break
+      end
+    end
+  end
+
+  if not ghosttySpaceID then
+    return
+  end
+
+  -- Move all windows on that space to secondary screen
   for _, win in ipairs(hs.window.visibleWindows()) do
     if win:isStandard() and not win:isFullScreen() then
-      local app = win:application()
-      if app and app:name() == 'Ghostty' then
-        win:moveToScreen(secondary)
+      local winSpaces = hs.spaces.windowSpaces(win)
+      if winSpaces then
+        for _, spaceID in ipairs(winSpaces) do
+          if spaceID == ghosttySpaceID then
+            win:moveToScreen(secondary)
+            break
+          end
+        end
       end
     end
   end
