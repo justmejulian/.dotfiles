@@ -4,36 +4,62 @@ Modular window/space/app management. Uses [Hyperkey](https://hyperkey.app/) (`cm
 
 ## Modules
 
-### screen_layouts
-Watches for monitor connect/disconnect and applies matching window layout automatically.
-
-Define layouts in `init.lua` — each layout has a `match` function (receives all screens, returns bool) and an `apply` function:
+### layouts
+Named layout registry. Register layouts in `init.lua`, call them manually or from screen change callbacks.
 
 ```lua
-screenLayouts.addLayout {
-  name = 'my_layout',
-  match = function(screens) return #screens == 2 end,
-  apply = function(_screens)
-    local ext = screenLayouts.externalScreen()
-    -- position windows...
-  end,
-}
-
-screenLayouts.start()
+layouts.register('my_layout', function(_screens)
+  local ext = layouts.externalScreen()
+  -- position windows...
+end)
 ```
 
 **Helpers:**
-- `screenLayouts.externalScreen()` — first non-primary screen
-- `screenLayouts.screenByName(name)` — screen by exact name
+- `layouts.externalScreen()` — first non-primary screen
+- `layouts.screenByName(name)` — screen by exact name
 
 **Find screen names:**
 ```sh
 hs -c 'hs.inspect(hs.fnutils.map(hs.screen.allScreens(), function(s) return s:name() end))'
 ```
 
-**Manual trigger:**
+**Call a layout from CLI:**
 ```sh
-hs -c "require('modules.screen_layouts').apply()"
+hs -c "require('modules.layouts').apply('my_layout')"
+```
+
+**Call layouts with fzf:**
+```sh
+hs -c "hs.inspect(require('modules.layouts').list())" \
+  | tr -d '{"} ' | tr ',' '\n' \
+  | fzf --prompt='layout> ' \
+  | xargs -I{} hs -c "require('modules.layouts').apply('{}')"
+```
+
+Or as a shell function in your `.zshrc`:
+```sh
+hs-layout() {
+  hs -c "hs.inspect(require('modules.layouts').list())" \
+    | tr -d '{"} ' | tr ',' '\n' \
+    | fzf --prompt='layout> ' \
+    | xargs -I{} hs -c "require('modules.layouts').apply('{}')"
+}
+```
+
+---
+
+### screen_watcher
+Generic screen change observer. Fires registered callbacks on monitor connect/disconnect (1s debounce).
+
+```lua
+screenWatcher.onChange(function(screens)
+  -- screens = hs.screen.allScreens()
+  if #screens == 1 then
+    layouts.apply('maximize_all')
+  end
+end)
+
+screenWatcher.start()
 ```
 
 ---
