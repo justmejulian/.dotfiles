@@ -63,6 +63,17 @@ layouts.register('ghostty_right', function(_screens)
   end
 end)
 
+layouts.register('non_ghostty_left', function(_screens)
+  for _, win in ipairs(hs.window.visibleWindows()) do
+    if win:isStandard() and not win:isFullScreen() then
+      local app = win:application()
+      if app and app:name() ~= 'Ghostty' then
+        windows.snapLeft(win)
+      end
+    end
+  end
+end)
+
 layouts.register('move_ghostty_to_secondary', function(_screens)
   local secondary = layouts.externalScreen()
   if not secondary then
@@ -71,7 +82,7 @@ layouts.register('move_ghostty_to_secondary', function(_screens)
 
   -- Find the space Ghostty lives on
   local ghosttySpaceID = nil
-  for _, win in ipairs(hs.window.visibleWindows()) do
+  for _, win in ipairs(hs.window.allWindows()) do
     local app = win:application()
     if app and app:name() == 'Ghostty' then
       local winSpaces = hs.spaces.windowSpaces(win)
@@ -87,7 +98,7 @@ layouts.register('move_ghostty_to_secondary', function(_screens)
   end
 
   -- Move all windows on that space to secondary screen
-  for _, win in ipairs(hs.window.visibleWindows()) do
+  for _, win in ipairs(hs.window.allWindows()) do
     if win:isStandard() and not win:isFullScreen() then
       local winSpaces = hs.spaces.windowSpaces(win)
       if winSpaces then
@@ -111,6 +122,7 @@ screenWatcher.onChange(function(screens)
       if s:name() == 'LG HDR WQHD' then
         layouts.apply 'move_ghostty_to_secondary'
         layouts.apply 'ghostty_right'
+        layouts.apply 'non_ghostty_left'
         return
       end
       if s:name() == 'DELL P2421D' then
