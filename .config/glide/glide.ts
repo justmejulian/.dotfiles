@@ -172,6 +172,40 @@ glide.autocmds.create(
 
 glide.autocmds.create(
   "UrlEnter",
+  /https?:\/\/(bff-api-test\.sg\.dss\.husqvarnagroup\.net|bff-api-dev\.sg\.dss\.husqvarnagroup\.net|smart\.gardena\.com|localhost:4200)\//,
+  () => {
+    glide.buf.keymaps.set(
+      "normal",
+      "<leader>ca",
+      glide.content.fn(async () => {
+        const raw = localStorage.getItem("ember_simple_auth-session_si");
+
+        if (!raw) {
+          console.error("No ember_simple_auth-session_si in localStorage");
+          return;
+        }
+
+        try {
+          const token = JSON.parse(raw)?.authenticated?.access_token;
+
+          if (!token) {
+            console.error("No access_token in session");
+            return;
+          }
+
+          await navigator.clipboard.writeText(token);
+          console.log("Copied access_token to clipboard");
+        } catch (e) {
+          console.error("Failed to parse session:", e);
+        }
+      }),
+      { description: "copy access_token to clipboard" },
+    );
+  },
+);
+
+glide.autocmds.create(
+  "UrlEnter",
   { hostname: "jira-husqvarna.riada.se" },
   () => {
     glide.buf.keymaps.set(
