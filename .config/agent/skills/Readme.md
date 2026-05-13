@@ -12,6 +12,12 @@ Spec: [agentskills.io](https://agentskills.io/home) · Find more: [skills.sh](ht
 | `revu` | Azure DevOps PR review comments via `REVU` marker format (symlinked from scripts repo) |
 | `teach` | Language tutor — explain code with language-specific depth, suggest idiomatic improvements |
 
+### Sources
+
+- `skills/improve-codebase-architecture/`
+  Source: <https://raw.githubusercontent.com/mattpocock/skills/refs/heads/main/skills/engineering/improve-codebase-architecture/SKILL.md>
+
+
 ## Usage
 
 Tool-agnostic location but not all tools read it.
