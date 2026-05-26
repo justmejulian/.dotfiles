@@ -36,6 +36,7 @@ return {
         vim.lsp.config(name, {
           capabilities = capabilities,
           settings = server.settings or {},
+          filetypes = server.filetypes or {},
         })
         if server.post_setup ~= nil then
           server.post_setup()
