@@ -8,11 +8,15 @@ Spec: [agentskills.io](https://agentskills.io/home) · Find more: [skills.sh](ht
 
 | Skill | Description |
 |---|---|
+| `humanizer` | Remove signs of AI-generated writing (Wikipedia's "Signs of AI writing" patterns) |
 | `improve-codebase-architecture` | Surface architectural friction, propose deepening opportunities (testability, AI-navigability) |
 | `revu` | Azure DevOps PR review comments via `REVU` marker format (symlinked from scripts repo) |
 | `teach` | Language tutor — explain code with language-specific depth, suggest idiomatic improvements |
 
 ### Sources
+
+- `skills/humanizer/`
+  Source: <https://raw.githubusercontent.com/blader/humanizer/refs/heads/main/SKILL.md>
 
 - `skills/improve-codebase-architecture/`
   Source: <https://raw.githubusercontent.com/mattpocock/skills/refs/heads/main/skills/engineering/improve-codebase-architecture/SKILL.md>
