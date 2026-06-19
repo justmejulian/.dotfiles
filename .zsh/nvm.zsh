@@ -28,3 +28,7 @@ load-nvmrc() {
 
 add-zsh-hook chpwd load-nvmrc
 load-nvmrc
+
+nvm-init-lts() {
+  nvm install --lts && nvm use --lts && node -v > .nvmrc
+}
