@@ -1,7 +1,6 @@
 return {
   {
     'saghen/blink.cmp',
-    dependencies = 'rafamadriz/friendly-snippets',
     version = '0.*',
 
     --- todo
@@ -44,7 +43,6 @@ return {
         nerd_font_variant = 'mono',
       },
       sources = {
-        -- todo: add luasnip https://github.com/Saghen/blink.cmp/blob/main/README.md#luasnip
         default = { 'lazydev', 'lsp', 'path', 'snippets', 'buffer' },
         providers = {
           lazydev = {
@@ -52,6 +50,12 @@ return {
             module = 'lazydev.integrations.blink',
             -- make lazydev completions top priority (see `:h blink.cmp`)
             score_offset = 100,
+          },
+          snippets = {
+            opts = {
+              friendly_snippets = false,
+              search_paths = { vim.fn.stdpath('config') .. '/snippets' },
+            },
           },
         },
       },

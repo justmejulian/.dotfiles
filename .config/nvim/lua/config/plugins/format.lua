@@ -37,11 +37,10 @@ return {
           local formatters = getFormatterNames(list_formatters)
           if formatters ~= nil then
             fidget.notify('Formatting with ' .. formatters)
-            conform.format({ bufnr = args.buf }, function(err)
-              -- if err then
-              --   fidget.notify('Formatting failed: ' .. err, 'error')
-              -- end
-            end)
+            local ok, err = pcall(conform.format, { bufnr = args.buf, async = false, timeout_ms = 3000 })
+            if not ok then
+              fidget.notify('Formatting failed: ' .. tostring(err), vim.log.levels.ERROR)
+            end
           else
             fidget.notify('No formatters found for ' .. vim.bo[args.buf].filetype)
           end

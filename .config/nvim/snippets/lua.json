@@ -1,0 +1,43 @@
+{
+  "module skeleton": {
+    "prefix": "mod",
+    "body": [
+      "local M = {}",
+      "",
+      "function M.${1:fn}($2)",
+      "  $0",
+      "end",
+      "",
+      "return M"
+    ],
+    "description": "lua module skeleton"
+  },
+  "print": {
+    "prefix": "lpr",
+    "body": "print($1)",
+    "description": "lua print"
+  },
+  "require": {
+    "prefix": "req",
+    "body": "local ${1:mod} = require('$2')",
+    "description": "local require"
+  },
+  "if": {
+    "prefix": "if",
+    "body": ["if ${1:true} then", "\t$0", "end"]
+  },
+  "elseif": {
+    "prefix": "elseif",
+    "body": ["elseif ${1:true} then", "\t$0"]
+  },
+  "for": {
+    "prefix": "for",
+    "body": ["for $1 do", "\t$0", "end"],
+    "description": "for statement"
+  },
+  "named function": {
+    "prefix": "fn",
+    "body": ["function ${1:name}(${2:args})", "\t$0", "end"],
+    "description": "named function"
+  }
+}

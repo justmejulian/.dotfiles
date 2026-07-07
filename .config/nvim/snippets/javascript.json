@@ -1,0 +1,67 @@
+{
+  "named function": {
+    "prefix": "fn",
+    "body": "function ${1:name} (${2:arguments}) {\n\t${0}\n}"
+  },
+  "For Loop": {
+    "prefix": "for",
+    "body": [
+      "for (let ${1:index} = 0; ${1:index} < ${2:array}.length; ${1:index}++) {",
+      "\tconst ${3:element} = ${2:array}[${1:index}];",
+      "\t$0",
+      "}"
+    ],
+    "description": "For Loop"
+  },
+  "For-Each Loop": {
+    "prefix": "foreach",
+    "body": ["${1:array}.forEach(${2:element} => {", "\t$0", "});"],
+    "description": "For-Each Loop"
+  },
+  "For-In Loop": {
+    "prefix": "forin",
+    "body": [
+      "for (const ${1:key} in ${2:object}) {",
+      "\tif (${2:object}.hasOwnProperty(${1:key})) {",
+      "\t\tconst ${3:element} = ${2:object}[${1:key}];",
+      "\t\t$0",
+      "\t}",
+      "}"
+    ],
+    "description": "For-In Loop"
+  },
+  "For-Of Loop": {
+    "prefix": "forof",
+    "body": ["for (const ${1:iterator} of ${2:object}) {", "\t$0", "}"],
+    "description": "For-Of Loop"
+  },
+  "For-Await-Of Loop": {
+    "prefix": "forawaitof",
+    "body": [
+      "for await (const ${1:iterator} of ${2:object}) {",
+      "\t$0",
+      "}"
+    ],
+    "description": "For-Await-Of Loop"
+  },
+  "Try-Catch Statement": {
+    "prefix": "trycatch",
+    "body": ["try {", "\t$0", "} catch (${1:error}) {", "\t", "}"],
+    "description": "Try-Catch Statement"
+  },
+  "Set Timeout Function": {
+    "prefix": "settimeout",
+    "body": ["setTimeout(() => {", "\t$0", "}, ${1:timeout});"],
+    "description": "Set Timeout Function"
+  },
+  "Set Interval Function": {
+    "prefix": "setinterval",
+    "body": ["setInterval(() => {", "\t$0", "}, ${1:interval});"],
+    "description": "Set Interval Function"
+  },
+  "Import external module.": {
+    "prefix": "import",
+    "body": ["import { $0 } from \"${1:module}\";"],
+    "description": "Import external module."
+  }
+}
