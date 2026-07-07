@@ -50,7 +50,7 @@ function M.clean()
   end
 
   vim.notify('revu: removing injected comments…', vim.log.levels.INFO)
-  vim.fn.jobstart('revu sync --clean', {
+  vim.fn.jobstart('revu clean', {
     cwd = root,
     on_exit = function(_, code)
       vim.schedule(function()
