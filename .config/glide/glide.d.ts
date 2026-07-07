@@ -1,5 +1,5 @@
 /* ======================================================
-                Glide version: 0.1.60a
+                Glide version: 0.1.62a
    ====================================================== */
 // 
 
@@ -662,7 +662,7 @@ declare global {
 		 *
 		 * This has the exact same API as {@link glide.o}.
 		 */
-		bo: Partial<glide.Options>;
+		bo: Partial<Omit<glide.Options, "gemini_styles">>;
 		options: {
 			/**
 			 * Returns either a buffer-specific option, or the global version. In that order
@@ -699,6 +699,11 @@ declare global {
 			 * ```ts
 			 * const proc = await glide.process.spawn('kitty', ['nvim', 'glide.ts'], { cwd: '~/.dotfiles/glide' });
 			 * console.log('opened kitty with pid', proc.pid);
+			 *
+			 * // iterate through each output line as they come in
+			 * for await (const line of proc.stdout.lines()) {
+			 *   // ...
+			 * }
 			 * ```
 			 *
 			 * **note**: on macOS, the `PATH` environment variable is likely not set to what you'd expect, as applications do not inherit your shell environment.
@@ -1758,8 +1763,6 @@ declare global {
 		 *
 		 * See [firefox-csshacks](https://mrotherguy.github.io/firefox-csshacks/?file=autohide_tabstoolbar_v2.css) for more information.
 		 *
-		 * **warning**: `autohide` does not work on MacOS at the moment.
-		 *
 		 * @default "show"
 		 */
 		native_tabs: "show" | "hide" | "autohide";
@@ -1841,6 +1844,32 @@ declare global {
 		 *       and `GlideKeyboardLayouts` in https://github.com/glide-browser/glide/blob/main/src/glide/browser/base/content/glide.d.ts
 		 */
 		keyboard_layouts: GlideKeyboardLayouts;
+		/**
+		 * Override the CSS used for gemini pages.
+		 *
+		 * ```typescript
+		 * glide.o.gemini_styles = css`
+		 *   background {
+		 *     color: grey;
+		 *   }
+		 * `;
+		 * ```
+		 *
+		 * Or to extend the default styles instead of overriding:
+		 *
+		 * ```typescript
+		 * glide.o.gemini_styles = glide.o.gemini_styles + css`
+		 *   p {
+		 *     color: red;
+		 *   }
+		 * `;
+		 * ```
+		 *
+		 * **note**: Requires reloading the page to take effect.
+		 *
+		 * **note**: Buffer specific overrides via `glide.bo` are not supported yet.
+		 */
+		gemini_styles: string;
 	}
 	/**
 	 * Builtin keyboard layouts.
