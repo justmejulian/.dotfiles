@@ -4,6 +4,27 @@ return {
   opts = {
     image = {
       -- requires brew install imagemagick
+      formats = {
+        'png',
+        'PNG',
+        'jpg',
+        'JPG',
+        'jpeg',
+        'gif',
+        'bmp',
+        'webp',
+        'tiff',
+        'heic',
+        'HEIC',
+        'avif',
+        'mp4',
+        'mov',
+        'avi',
+        'mkv',
+        'webm',
+        'pdf',
+      },
+      force = true,
     },
     scope = {},
     picker = {
@@ -79,7 +100,7 @@ return {
       desc = 'Commands',
     },
     {
-      ';d',
+      '<leader>dd',
       function()
         Snacks.picker.diagnostics()
       end,
@@ -149,6 +170,15 @@ return {
       end,
       desc = '[E]xplore NVIM local',
     },
+    {
+      ';nf',
+      function()
+        Snacks.picker.files { cwd = vim.fn.stdpath('config') .. '/snippets' }
+      end,
+      desc = '[E]xplore [S]nippets',
+    },
+
+    -- Diagnostics
     {
       '<leader>td',
       function()
