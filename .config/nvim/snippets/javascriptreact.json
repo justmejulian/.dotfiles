@@ -1,0 +1,44 @@
+{
+  "reactFunctionalComponent": {
+    "prefix": "rfc",
+    "body": [
+      "export default function ${TM_FILENAME_BASE}({}) {",
+      "  return (",
+      "    <div>${0}</div>",
+      "  )",
+      "}"
+    ],
+    "description": "React Functional Component"
+  },
+  "useEffect": {
+    "prefix": "useEffectSnippet",
+    "body": [
+      "useEffect(() => {",
+      "  ${1:setup}",
+      "",
+      "  return () => {",
+      "    ${2:return}",
+      "  }",
+      "}, [${3:dependencies?}])",
+      ""
+    ]
+  },
+  "useMemo": {
+    "prefix": "useMemoSnippet",
+    "body": ["useMemo(() => ${1:first}, [${2:second}])"]
+  },
+  "useReducer": {
+    "prefix": "useReducerSnippet",
+    "body": [
+      "const [state, dispatch] = useReducer(${1:first}, ${2:second}, ${3:third})"
+    ]
+  },
+  "useRef": {
+    "prefix": "useRefSnippet",
+    "body": ["const ${1:first} = useRef(${2:second})"]
+  },
+  "useState": {
+    "prefix": "useStateSnippet",
+    "body": ["const [${1:state}, set${2:State}] = useState(${3:initValue})"]
+  }
+}

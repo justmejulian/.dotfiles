@@ -12,6 +12,7 @@ return {
               'javascript.glimmer',
               'json',
               'markdown',
+              'vue',
             },
           },
         },

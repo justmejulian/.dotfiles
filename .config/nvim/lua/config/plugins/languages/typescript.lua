@@ -23,7 +23,7 @@ return {
   },
   {
     'nvim-treesitter/nvim-treesitter',
-    opts = { languages = { 'javascript', 'typescript' } },
+    opts = { languages = { 'javascript', 'typescript', 'tsx' } },
   },
   {
     'Sebastian-Nielsen/better-type-hover',
@@ -33,10 +33,29 @@ return {
     },
   },
   {
+    'nemanjamalesija/ts-expand-hover.nvim',
+    ft = { 'typescript', 'typescriptreact', 'javascript', 'javascriptreact' },
+    main = 'ts_expand_hover',
+    opts = {
+      keymaps = {
+        hover = 'K',
+        expand = '+',
+        collapse = '-',
+        close = { 'q', '<Esc>' },
+      },
+      float = {
+        border = 'rounded',
+        max_width = 80,
+        max_height = 30,
+      },
+    },
+  },
+  {
     'neovim/nvim-lspconfig',
     opts = {
       servers = {
         vtsls = {
+          filetypes = { 'javascript', 'javascriptreact', 'typescript', 'typescriptreact', 'vue' },
           -- https://github.com/yioneko/vtsls/blob/main/packages/service/configuration.schema.json
           settings = {
             vtsls = {
@@ -48,16 +67,23 @@ return {
                   enableServerSideFuzzyMatch = true,
                 },
               },
+              tsserver = {
+                globalPlugins = {
+                  {
+                    name = '@vue/typescript-plugin',
+                    location = vim.fn.expand '~/.local/share/nvim/mason/packages/vue-language-server/node_modules/@vue/typescript-plugin',
+                    languages = { 'vue' },
+                    configNamespace = 'typescript',
+                    enableForWorkspaceTypeScriptVersions = true,
+                  },
+                },
+              },
             },
             typescript = js_ts_settings,
             javascript = js_ts_settings,
           },
 
-          post_setup = function()
-            local fidget = require 'fidget'
-            fidget.notify 'Running post setup for typescript'
-            -- vim.lsp.inlay_hint.enable(true)
-          end,
+          post_setup = function() end,
         },
       },
     },

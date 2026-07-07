@@ -31,17 +31,43 @@ return {
       local capabilities = require('blink.cmp').get_lsp_capabilities()
       local lspconfig = require 'lspconfig'
       for name, server in pairs(opts.servers) do
-        fidget.notify('Setting up LSP ' .. name)
+        -- fidget.notify('Setting up LSP ' .. name)
         vim.lsp.enable(name)
-        vim.lsp.config(name, {
-          capabilities = capabilities,
-          settings = server.settings or {},
-          filetypes = server.filetypes or {},
-        })
+        local config = { capabilities = capabilities }
+        if server.settings then
+          config.settings = server.settings
+        end
+        if server.filetypes then
+          config.filetypes = server.filetypes
+        end
+        vim.lsp.config(name, config)
         if server.post_setup ~= nil then
           server.post_setup()
         end
       end
+
+      -- Show LSP progress in Ghostty terminal progress bar (OSC 9;4)
+      local active_tokens = {}
+      vim.api.nvim_create_autocmd('LspProgress', {
+        callback = function(ev)
+          local value = ev.data and ev.data.params and ev.data.params.value
+          if not value then
+            return
+          end
+          local token = tostring(ev.data.params.token)
+          if value.kind == 'begin' then
+            active_tokens[token] = true
+            io.write '\027]9;4;3;0\027\\'
+            io.flush()
+          elseif value.kind == 'end' then
+            active_tokens[token] = nil
+            if not next(active_tokens) then
+              io.write '\027]9;4;0;0\027\\'
+              io.flush()
+            end
+          end
+        end,
+      })
     end,
     keys = {
       {

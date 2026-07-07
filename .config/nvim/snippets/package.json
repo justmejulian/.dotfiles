@@ -1,0 +1,25 @@
+{
+  "name": "user-snippets",
+  "contributes": {
+    "snippets": [
+      { "path": "./global.json" },
+      { "language": ["lua"], "path": "./lua.json" },
+      {
+        "language": ["javascript", "javascriptreact"],
+        "path": "./javascript.json"
+      },
+      {
+        "language": ["typescript", "typescriptreact"],
+        "path": "./typescript.json"
+      },
+      {
+        "language": ["javascriptreact"],
+        "path": "./javascriptreact.json"
+      },
+      {
+        "language": ["typescriptreact"],
+        "path": "./typescriptreact.json"
+      }
+    ]
+  }
+}

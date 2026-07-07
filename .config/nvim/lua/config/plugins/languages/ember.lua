@@ -49,7 +49,9 @@ return {
     opts = {
       servers = {
         ember = {
-          post_setup = function() end,
+          post_setup = function()
+            vim.lsp.config('ember', { root_markers = { 'ember-cli-build.js' } })
+          end,
         },
         -- glint = {
         --   disable_auto_install = true,
