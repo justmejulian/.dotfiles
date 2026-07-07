@@ -1,5 +1,8 @@
 vim.g.mapleader = ' '
 
+-- Conjure: disable auto-REPL on clojure file open
+vim.g['conjure#client#clojure#nrepl#connection#auto_repl#enabled'] = 0
+
 -- Set node version to use for LSP
 -- test using :!node -v
 local home_dir = '/Users/julian.visser'
