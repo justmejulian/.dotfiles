@@ -31,6 +31,8 @@ When given text to humanize:
 2. **Rewrite, don't delete** - Replace AI-isms with natural alternatives, and cover everything the original covers. If the original has five paragraphs, the rewrite has five paragraphs.
 3. **Preserve meaning** - Keep the core message intact.
 4. **Match the voice** - Fit the intended tone (formal, casual, technical). Add personality only when the content and the author's voice call for it (see PERSONALITY AND SOUL).
+5. **Keep sentences short** - Prefer short, direct sentences. Break long sentences into multiple shorter ones. Default to short; vary length for rhythm (see PERSONALITY AND SOUL), but never let a sentence sprawl when two would read clearer.
+6. **No em dashes or en dashes** - Hard constraint. The final rewrite must contain zero `—` and zero `–`. Also catch spaced em dashes (` — `) and double hyphens (` -- `) used the same way. Replace with periods, commas, colons, parentheses, or restructure (see §14).
 
 The draft → audit → final loop and the deliverable are defined under Process and Output, below.
 
