@@ -1,40 +1,38 @@
 {
   "$schema": "https://opencode.ai/config.json",
 
-  "model": "github-copilot-enterprise/claude-sonnet-4.5",
+  "model": "github-copilot-enterprise/GPT-5.3-Codex",
   "small_model": "github-copilot-enterprise/gpt-5-mini",
 
   "agent": {
     "build": {
       "mode": "primary",
-      "model": "github-copilot-enterprise/claude-sonnet-4.5",
+      "model": "github-copilot-enterprise/gpt-5.4",
     },
     "plan": {
       "mode": "primary",
       "extend": "plan",
-      "model": "github-copilot-enterprise/claude-sonnet-4.5",
-      "tools": {
-        "write": false,
-        "edit": false,
-        "bash": false
+      "model": "github-copilot-enterprise/gpt-5.4",
+      "permission": {
+        "edit": "deny",
+        "bash": "deny"
       }
     },
     "plan-big": {
       "mode": "primary",
       "extend": "plan",
-      "model": "github-copilot-enterprise/claude-opus-4.5",
-      "tools": {
-        "write": false,
-        "edit": false,
-        "bash": false
+      "model": "github-copilot-enterprise/claude-opus-4.6",
+      "permission": {
+        "edit": "deny",
+        "bash": "deny"
       }
     },
     "quick": {
       "mode": "primary",
-      "model": "github-copilot-enterprise/gpt-5-mini",
+      "model": "github-copilot-enterprise/grok-code-fast-1",
       "description": "Fast reasoning with limited iterations",
       "prompt": "You are a quick thinker. Solve problems with minimal steps.",
-      "maxSteps": 5
+      "steps": 5
     },
   }
 }
