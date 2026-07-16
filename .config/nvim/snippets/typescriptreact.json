@@ -1,4 +1,9 @@
 {
+  "divWithCssModuleClass": {
+    "prefix": "dc",
+    "body": ["<div className={styles.${1:className}}>${0}</div>"],
+    "description": "div with CSS module className"
+  },
   "typescriptReactFunctionalComponent": {
     "prefix": "tsrfc",
     "body": [
