@@ -34,13 +34,12 @@ local cmdaltshift = { 'cmd', 'alt', 'shift' }
 local apps = {
   m = 'Slack', -- messages
   o = 'Obsidian',
+  -- i = 'Google Chrome', -- internet
   i = 'Glide', -- internet
   k = 'Ghostty',
-  x = 'xCode',
   f = 'Finder',
   c = 'Claude',
   b = 'Bitwarden',
-  j = 'Intellij IDEA',
 }
 
 -- Layouts
