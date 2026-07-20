@@ -1,17 +1,42 @@
 function brew() {
-  local dump_commands=('install' 'uninstall') # Include all commands that should do a brew dump
   local main_command="${1}"
 
   /opt/homebrew/bin/brew ${@}
+  local exit_status=$?
 
-  for command in "${dump_commands[@]}"; do
-    if [[ "${command}" == "${main_command}" ]]
-    then
-      echo ' '
-      echo 'Updating .Brewfile'
-      /opt/homebrew/bin/brew bundle dump --file="${HOME}/.Brewfile" --force
-    fi
-  done
+  if [[ $exit_status -eq 0 ]] && [[ "${main_command}" == "install" || "${main_command}" == "uninstall" ]]; then
+    local brewfile="${HOME}/.Brewfile"
+    local is_cask=false
+    local arg line
+
+    shift
+
+    for arg in "${@}"; do
+      [[ "${arg}" == "--cask" ]] && is_cask=true
+    done
+
+    for arg in "${@}"; do
+      [[ "${arg}" == -* ]] && continue
+
+      if [[ "${is_cask}" == true ]]; then
+        line="cask \"${arg}\""
+      else
+        line="brew \"${arg}\""
+      fi
+
+      if [[ "${main_command}" == "install" ]]; then
+        if [[ ! -f "${brewfile}" ]] || ! grep -qxF "${line}" "${brewfile}"; then
+          echo "${line}" >> "${brewfile}"
+          echo "Added ${line} to .Brewfile"
+        fi
+      else
+        if [[ -f "${brewfile}" ]] && grep -qxF "${line}" "${brewfile}"; then
+          grep -vxF "${line}" "${brewfile}" > "${brewfile}.tmp" && mv "${brewfile}.tmp" "${brewfile}"
+          echo "Removed ${line} from .Brewfile"
+        fi
+      fi
+    done
+  fi
 }
 
 alias bu='homebrew_update_all'
