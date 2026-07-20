@@ -153,35 +153,25 @@ mo status             # Live system health dashboard
 
 ### Dev Env
 
-#### Node
+#### mise
 
-Make sure `nvm` is installed.
+Node and Python are managed by [mise](https://mise.jdx.dev) (replaces `nvm` and `pyenv`).
 
-```
-nvm -v
-```
-
-Install the latest node version.
+Install and activate mise:
 
 ```
-nvm install node
+brew install mise
+echo 'eval "$(mise activate zsh)"' >> ~/.zshrc
 ```
 
-#### python
+Activation lives in `~/.zsh/mise.zsh`, sourced from `.zshrc`. See the [activate docs](https://mise.jdx.dev/cli/activate.html#mise-activate).
 
-- [ ] Replace with [uv](https://docs.astral.sh/uv/getting-started/)
-
-```
-pyenv install 3.13.1
-pyenv global 3.13.1
-```
-
-#### Java
-
-add version to JAVA_HOME
+Install a runtime globally:
 
 ```
-export JAVA_HOME=`/usr/libexec/java_home -v 12.0.1`
+mise use -g node@lts
+mise use -g python@latest
+mise use -g java@latest
 ```
 
 #### Neovim
