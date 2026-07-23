@@ -120,18 +120,22 @@ Using built-in:
 System Settings > Keyboard > Shortcuts > App Shortcuts > Click the "+" button > Set Application to "All Applications"
 ```
 
+### Keyboard
 
-Add the following:
-(Yes just Left/Right, like the exact menu command name)
+Install [Mac US keyboard layout with German Umlauts](https://github.com/patrick-zippenfenig/us-with-german-umlauts)
+and make it the only enabled layout.
 
 ```
-Left  -> Hyper + Left Arrow
-Right -> Hyper + Right Arrow
+bash ~/.scripts/set_keyboard.sh
 ```
 
-Maybe look at [AeroSpace](https://github.com/nikitabobko/AeroSpace)
+Log out / restart afterwards for the input source to take effect.
 
-Or handle with [Raycast](https://www.albertosadde.com/blog/raycast/)
+To check the result:
+
+```
+open ~/Library/Preferences/com.apple.HIToolbox.plist
+```
 
 ### Menu Bar
 
