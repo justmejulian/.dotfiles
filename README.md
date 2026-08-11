@@ -123,6 +123,21 @@ mise use -g python@latest
 mise use -g java@latest
 ```
 
+### Ollama
+
+Install and start the [Ollama](https://ollama.com) server as a background service (this also registers it to launch at login):
+
+```
+brew install ollama
+brew services start ollama
+```
+
+Pull the models used by the `scripts` repo's `ollama` provider:
+
+```
+ollama pull gemma4:e2b-mlx
+```
+
 ### Neovim
 
 Make sure all it setup.
@@ -139,6 +154,26 @@ Clone and install scripts:
 git@github.com:justmejulian/scripts.git
 go install ./...
 ```
+
+### Defaults
+
+macOS settings are captured in `~/.scripts/defaults/set_defaults.sh`:
+
+```
+bash ~/.scripts/defaults/set_defaults.sh
+```
+
+New settings are captured incrementally with `defsync` (part of the `scripts` repo) instead of
+hand-writing `defaults write` commands. See
+[`~/.scripts/defaults/Readme.md`](.scripts/defaults/Readme.md) for the full workflow.
+
+#### Full Disk Access
+
+```
+open "x-apple.systempreferences:com.apple.preference.security?Privacy_AllFiles"
+```
+
+Add Ghostty in the list that opens, restart it, then retry.
 
 ### Keyboard
 
