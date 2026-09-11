@@ -19,3 +19,13 @@ brew "obsidian"
 brew "caffeine"
 brew "ollama"
 brew "rg"
+brew "codex"
+brew "mcap"
+brew "chatgpt"
+cask "mattrobenolt/stuff/appify"
+brew "mas"
+brew "fzf"
+
+# Home only
+#mas "Photomator", id: 1444636541
+#mas "Pixelmator Pro", id: 1289583905
