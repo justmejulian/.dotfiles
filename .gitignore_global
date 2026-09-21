@@ -2,3 +2,5 @@
 .DS_Store
 
 .null-ls-root
+
+.claude/
