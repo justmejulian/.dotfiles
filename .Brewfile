@@ -29,3 +29,5 @@ brew "fzf"
 # Home only
 #mas "Photomator", id: 1444636541
 #mas "Pixelmator Pro", id: 1289583905
+brew "gh"
+cask "font-fira-code-nerd-font"
