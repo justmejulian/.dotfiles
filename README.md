@@ -106,29 +106,20 @@ brew bundle install --file ~/.Brewfile
 
 Node and Python are managed by [mise](https://mise.jdx.dev) (replaces `nvm` and `pyenv`).
 
-Install and activate mise:
-
-```
-brew install mise
-echo 'eval "$(mise activate zsh)"' >> ~/.zshrc
-```
-
-Activation lives in `~/.zsh/mise.zsh`, sourced from `.zshrc`. See the [activate docs](https://mise.jdx.dev/cli/activate.html#mise-activate).
-
 Install a runtime globally:
 
 ```
 mise use -g node@lts
 mise use -g python@latest
+mise use -g go@latest
 mise use -g java@latest
 ```
 
 ### Ollama
 
-Install and start the [Ollama](https://ollama.com) server as a background service (this also registers it to launch at login):
+Start the [Ollama](https://ollama.com) server as a background service (this also registers it to launch at login):
 
 ```
-brew install ollama
 brew services start ollama
 ```
 
