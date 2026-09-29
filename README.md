@@ -128,9 +128,13 @@ Use [appify](https://github.com/mattrobenolt/appify) to create standalone TUI ap
 
 #### GitHub Dashboard app
 
-[`gh-dash`](https://github.com/dlvhdr/gh-dash) is packaged as a standalone
-fullscreen macOS app with Appify. Rebuild and install it after setting up the
-dotfiles:
+```sh
+gh auth login
+```
+
+Package [`gh-dash`](https://github.com/dlvhdr/gh-dash) as a standalone
+fullscreen macOS app with Appify.
+
 
 ```sh
 ~/.scripts/install-gh-dash-app.sh
@@ -139,6 +143,20 @@ dotfiles:
 The generated app is installed at `~/Applications/GitHub Dashboard.app`. Its
 icon and Ghostty configuration live in `~/.assets/gh-dash/` and
 `~/.config/appify/`.
+
+#### abtop app
+
+Package [`abtop`](https://github.com/graykode/abtop) (an AI agent monitor,
+like `btop` for Claude Code/Codex/OpenCode sessions) as a standalone
+fullscreen macOS app with Appify.
+
+```sh
+~/.scripts/install-abtop-app.sh
+```
+
+The generated app is installed at `~/Applications/abtop.app`. Its Ghostty
+configuration lives in `~/.config/appify/`; drop an `AppIcon.icns` at
+`~/.assets/abtop/AppIcon.icns` to give it a custom icon.
 
 ### Tailscale
 
