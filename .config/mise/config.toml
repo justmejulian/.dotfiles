@@ -4,7 +4,8 @@ python.uv_venv_auto = "source"
 
 [tools]
 go = "latest"
-node = 'latest'
-python = 'latest'
+java = "latest"
+node = "lts"
+python = "latest"
 ruby = 'latest'
 uv = "latest"
