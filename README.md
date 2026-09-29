@@ -102,6 +102,63 @@ Install packages
 brew bundle install --file ~/.Brewfile
 ```
 
+#### mas (Mac App Store)
+
+Find an app's ID:
+
+```
+mas search "Pixelmator Pro"
+```
+
+Add it to `~/.Brewfile` so it installs via `brew bundle`:
+
+```
+mas "Pixelmator Pro", id: 1289583905
+```
+
+Or install directly:
+
+```
+mas install 1289583905
+```
+
+### Standalone TUI
+
+Use [appify](https://github.com/mattrobenolt/appify) to create standalone TUI apps.
+
+#### GitHub Dashboard app
+
+[`gh-dash`](https://github.com/dlvhdr/gh-dash) is packaged as a standalone
+fullscreen macOS app with Appify. Rebuild and install it after setting up the
+dotfiles:
+
+```sh
+~/.scripts/install-gh-dash-app.sh
+```
+
+The generated app is installed at `~/Applications/GitHub Dashboard.app`. Its
+icon and Ghostty configuration live in `~/.assets/gh-dash/` and
+`~/.config/appify/`.
+
+### Tailscale
+
+Start the Homebrew Tailscale service and connect:
+
+```sh
+sudo brew services start tailscale
+tailscale up
+```
+
+Follow the login link, then verify the connection:
+
+```sh
+tailscale status
+```
+
+Starting the service enables it at boot and fixes errors such as `failed to connect to local Tailscale service` or a missing `/var/run/tailscaled.socket`.
+
+See [Tailscale’s macOS instructions](https://github.com/tailscale/tailscale/wiki/Tailscaled-on-macOS).
+
 ### mise
 
 Node and Python are managed by [mise](https://mise.jdx.dev) (replaces `nvm` and `pyenv`).
@@ -126,7 +183,11 @@ brew services start ollama
 Pull the models used by the `scripts` repo's `ollama` provider:
 
 ```
+ollama pull qwen3.5:2b-mlx
+ollama pull qwen3.5:4b-mlx
+ollama pull qwen3.5:27b-mlx
 ollama pull gemma4:e2b-mlx
+ollama pull gemma4:12b-mlx
 ```
 
 ### Neovim
