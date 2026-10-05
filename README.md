@@ -208,6 +208,41 @@ ollama pull gemma4:e2b-mlx
 ollama pull gemma4:12b-mlx
 ```
 
+### Docker
+
+Use [Colima](https://github.com/abiosoft/colima) instead of Docker Desktop.
+
+#### Start the daemon (Colima)
+
+```
+colima start
+```
+
+Check that it worked:
+
+```
+docker context ls   # should show "colima *"
+docker info         # should print server info
+```
+
+Colima doesn't start after a reboot by default. Either run `colima start` again, or have it start at login:
+
+```
+brew services start colima
+```
+
+#### Make `docker compose` and `docker buildx` work
+
+Homebrew installs Compose and Buildx as standalone binaries, so `docker compose` reports "unknown command"
+until the Docker CLI knows where its plugins are. Point it at the Homebrew plugin dir in
+`~/.docker/config.json`:
+
+```json
+{
+  "cliPluginsExtraDirs": ["/opt/homebrew/lib/docker/cli-plugins"]
+}
+```
+
 ### Neovim
 
 Make sure all it setup.
