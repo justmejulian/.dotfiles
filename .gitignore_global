@@ -4,3 +4,5 @@
 .null-ls-root
 
 .claude/
+
+*.log
