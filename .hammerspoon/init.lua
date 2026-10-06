@@ -38,7 +38,6 @@ local apps = {
   i = 'Glide', -- internet
   k = 'Ghostty',
   f = 'Finder',
-  c = 'Claude',
   b = 'Bitwarden',
 }
 
@@ -144,6 +143,11 @@ for key, name in pairs(apps) do
     summon.launchOrFocusOrRotate(name)
   end)
 end
+
+-- Cycle between Claude and ChatGPT
+hs.hotkey.bind(hyper, 'c', function()
+  summon.cycleApps { 'Claude', 'ChatGPT' }
+end)
 
 -- Move focus between windows
 hs.hotkey.bind(hyper, 'h', function()
