@@ -121,4 +121,7 @@ function homebrew_update_all() {
   echo ' '
   echo 'Cleaning up Homebrew...'
   /opt/homebrew/bin/brew cleanup
+  echo ' '
+  echo 'Rebuilding Appify TUI apps...'
+  ~/.scripts/appify-tui.sh --all
 }

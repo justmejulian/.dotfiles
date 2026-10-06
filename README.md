@@ -124,39 +124,33 @@ mas install 1289583905
 
 ### Standalone TUI
 
-Use [appify](https://github.com/mattrobenolt/appify) to create standalone TUI apps.
+Use [appify](https://github.com/mattrobenolt/appify) to package TUIs as
+standalone fullscreen macOS apps. Each app is described by a small manifest in
+`~/.config/appify/<slug>.conf` and installed into `~/Applications`. See
+[`~/.config/appify/README.md`](.config/appify/README.md) for the manifest
+format and how a build works.
 
-#### GitHub Dashboard app
+| Slug | App | Notes |
+| --- | --- | --- |
+| `gh-dash` | [gh-dash](https://github.com/dlvhdr/gh-dash) as `GitHub Dashboard.app` | Run `gh auth login` first |
+| `abtop` | [abtop](https://github.com/graykode/abtop), an AI agent monitor like `btop` for Claude Code/Codex/OpenCode sessions | |
 
-```sh
-gh auth login
-```
-
-Package [`gh-dash`](https://github.com/dlvhdr/gh-dash) as a standalone
-fullscreen macOS app with Appify.
-
-
-```sh
-~/.scripts/install-gh-dash-app.sh
-```
-
-The generated app is installed at `~/Applications/GitHub Dashboard.app`. Its
-icon and Ghostty configuration live in `~/.assets/gh-dash/` and
-`~/.config/appify/`.
-
-#### abtop app
-
-Package [`abtop`](https://github.com/graykode/abtop) (an AI agent monitor,
-like `btop` for Claude Code/Codex/OpenCode sessions) as a standalone
-fullscreen macOS app with Appify.
+Build one app, or rebuild all of them:
 
 ```sh
-~/.scripts/install-abtop-app.sh
+~/.scripts/appify-tui.sh gh-dash
+~/.scripts/appify-tui.sh --all
 ```
 
-The generated app is installed at `~/Applications/abtop.app`. Its Ghostty
-configuration lives in `~/.config/appify/`; drop an `AppIcon.icns` at
-`~/.assets/abtop/AppIcon.icns` to give it a custom icon.
+`bu` (`homebrew_update_all`) rebuilds all apps after upgrading, since each app
+points at its binary's versioned Homebrew path.
+
+#### Add a new TUI app
+
+1. Create `~/.config/appify/<slug>.conf` with at least `name` and `binary`.
+2. Optionally add an icon at `~/.assets/<slug>/AppIcon.icns` and a Ghostty
+   config at `~/.config/appify/<slug>.ghostty` (`default.ghostty` is used otherwise).
+3. Run `~/.scripts/appify-tui.sh <slug>`.
 
 ### Tailscale
 
