@@ -17,5 +17,5 @@
 [rerere]
     enabled = true
 
-[includeIf "gitdir:~/git/private/**"]
-    path = ~/git/private/.gitconfig
+[includeIf "gitdir:~/Documents/git/private/"]
+    path = ~/Documents/git/private/.gitconfig
