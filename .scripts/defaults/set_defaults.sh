@@ -61,6 +61,18 @@ defaults -currentHost write com.apple.controlcenter Sound -int 18
 # Battery - show percentage
 defaults -currentHost write com.apple.controlcenter BatteryShowPercentage -bool true
 
+# Screenshots: save to ~/Desktop/screenshots
+mkdir -p "${HOME}/Desktop/screenshots"
+defaults write com.apple.screencapture location -string "${HOME}/Desktop/screenshots"
+
+# Dock: add screenshots folder next to Downloads (skip if already there)
+if ! defaults read com.apple.dock persistent-others | grep -q "file://${HOME}/Desktop/screenshots/"; then
+	defaults write com.apple.dock persistent-others -array-add "<dict><key>tile-data</key><dict><key>file-data</key><dict><key>_CFURLString</key><string>file://${HOME}/Desktop/screenshots/</string><key>_CFURLStringType</key><integer>15</integer></dict><key>file-label</key><string>screenshots</string><key>file-type</key><integer>2</integer><key>showas</key><integer>0</integer><key>arrangement</key><integer>2</integer><key>displayas</key><integer>0</integer></dict><key>tile-type</key><string>directory-tile</string></dict>"
+fi
+
+# Git: create ~/Documents/git for repositories
+mkdir -p "${HOME}/Documents/git"
+
 ###############################################################################
 # Kill affected applications                                                  #
 ###############################################################################
@@ -68,7 +80,7 @@ defaults -currentHost write com.apple.controlcenter BatteryShowPercentage -bool 
 for app in "Activity Monitor" \
 	"cfprefsd" \
 	"Dock" \
-	"Finder" \å
+	"Finder" \
 	"SystemUIServer"; do
 	killall "${app}" &> /dev/null
 done
