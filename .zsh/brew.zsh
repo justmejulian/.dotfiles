@@ -6,34 +6,44 @@ function brew() {
 
   if [[ $exit_status -eq 0 ]] && [[ "${main_command}" == "install" || "${main_command}" == "uninstall" ]]; then
     local brewfile="${HOME}/.Brewfile"
-    local is_cask=false
+    local kind=""
     local arg line
 
     shift
 
     for arg in "${@}"; do
-      [[ "${arg}" == "--cask" ]] && is_cask=true
+      [[ "${arg}" == "--cask" ]] && kind="cask"
+      [[ "${arg}" == "--formula" ]] && kind="brew"
     done
 
     for arg in "${@}"; do
       [[ "${arg}" == -* ]] && continue
 
-      if [[ "${is_cask}" == true ]]; then
-        line="cask \"${arg}\""
-      else
-        line="brew \"${arg}\""
-      fi
-
       if [[ "${main_command}" == "install" ]]; then
+        # `brew install <name>` silently falls back to a cask when no formula
+        # exists, so ask Homebrew what actually got installed.
+        local entry_kind="${kind}"
+        if [[ -z "${entry_kind}" ]]; then
+          if /opt/homebrew/bin/brew list --cask "${arg}" &>/dev/null; then
+            entry_kind="cask"
+          else
+            entry_kind="brew"
+          fi
+        fi
+        line="${entry_kind} \"${arg}\""
+
         if [[ ! -f "${brewfile}" ]] || ! grep -qxF "${line}" "${brewfile}"; then
           echo "${line}" >> "${brewfile}"
           echo "Added ${line} to .Brewfile"
         fi
       else
-        if [[ -f "${brewfile}" ]] && grep -qxF "${line}" "${brewfile}"; then
-          grep -vxF "${line}" "${brewfile}" > "${brewfile}.tmp" && mv "${brewfile}.tmp" "${brewfile}"
-          echo "Removed ${line} from .Brewfile"
-        fi
+        # The package is gone, so remove whichever entry type exists.
+        for line in "brew \"${arg}\"" "cask \"${arg}\""; do
+          if [[ -f "${brewfile}" ]] && grep -qxF "${line}" "${brewfile}"; then
+            grep -vxF "${line}" "${brewfile}" > "${brewfile}.tmp" && mv "${brewfile}.tmp" "${brewfile}"
+            echo "Removed ${line} from .Brewfile"
+          fi
+        done
       fi
     done
   fi

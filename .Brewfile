@@ -1,4 +1,4 @@
-brew "ghostty@tip"
+cask "ghostty@tip"
 brew "mise"
 cask "bitwarden"
 cask "hammerspoon"
