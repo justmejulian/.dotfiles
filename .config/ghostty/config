@@ -17,4 +17,4 @@ window-padding-y = 8
 keybind = cmd+opt+h=goto_split:left
 keybind = cmd+opt+l=goto_split:right
 
-keybind = global:cmd+grave_accent=toggle_quick_terminal
+keybind = global:cmd+ctrl+alt+q=toggle_quick_terminal
