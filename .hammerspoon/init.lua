@@ -34,11 +34,15 @@ local cmdaltshift = { 'cmd', 'alt', 'shift' }
 local apps = {
   m = 'Slack', -- messages
   o = 'Obsidian',
-  -- i = 'Google Chrome', -- internet
-  i = 'Glide', -- internet
+  i = 'Google Chrome', -- internet
+  -- i = 'Glide', -- internet
   k = 'Ghostty',
   f = 'Finder',
   b = 'Bitwarden',
+  g = 'GitHub Dashboard',
+  a = 'abtop',
+  l = 'Linear',
+  v = 'Foxglove', -- visualization
 }
 
 -- Layouts
@@ -149,17 +153,12 @@ hs.hotkey.bind(hyper, 'c', function()
   summon.cycleApps { 'Claude', 'ChatGPT' }
 end)
 
--- Move focus between windows
+-- Toggle Notification Center (widgets) by sending Globe+N
 hs.hotkey.bind(hyper, 'h', function()
-  local w = hs.window.focusedWindow()
-  if w then
-    w:focusWindowWest()
-  end
-end)
-hs.hotkey.bind(hyper, 'l', function()
-  local w = hs.window.focusedWindow()
-  if w then
-    w:focusWindowEast()
+  for _, isDown in ipairs { true, false } do
+    local e = hs.eventtap.event.newKeyEvent('n', isDown)
+    e:setFlags { fn = true }
+    e:post()
   end
 end)
 
