@@ -3,6 +3,7 @@ idiomatic_version_file_enable_tools = ["node", "python"]
 python.uv_venv_auto = "source"
 
 [tools]
+"github:foxglove/foxglove-cli" = "latest"
 go = "latest"
 java = "latest"
 node = "lts"
