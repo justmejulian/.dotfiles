@@ -73,6 +73,12 @@ fi
 # Git: create ~/Documents/git for repositories
 mkdir -p "${HOME}/Documents/git"
 
+# IINA: default video and audio player
+for ext in mp4 m4v mov mkv avi webm flv wmv mpg mpeg ts m2ts 3gp ogv \
+	mp3 m4a aac flac wav aiff aif ogg oga opus wma; do
+	duti -s com.colliderli.iina "${ext}" all
+done
+
 ###############################################################################
 # Kill affected applications                                                  #
 ###############################################################################
