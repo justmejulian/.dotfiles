@@ -24,6 +24,7 @@ local windows = require 'modules.windows'
 local spaces = require 'modules.spaces'
 local screenWatcher = require 'modules.screen_watcher'
 local layouts = require 'modules.layouts'
+local awAway = require 'modules.aw_away'
 
 -- Using https://hyperkey.app/
 local hyper = { 'cmd', 'alt', 'ctrl' }
@@ -186,3 +187,6 @@ end)
 hs.hotkey.bind(cmdaltshift, 'n', function()
   spaces.moveWindowToSpace 'prev'
 end)
+
+-- ActivityWatch: ask what I was doing after AFK periods
+awAway.start()
