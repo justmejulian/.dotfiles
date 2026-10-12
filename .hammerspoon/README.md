@@ -109,8 +109,8 @@ Asks what you were doing after an [ActivityWatch](https://activitywatch.net/) AF
 
 | Answer | Effect |
 |---|---|
-| **I was here** | AFK event is rewritten as `not-afk`, so the focused app counts again |
-| **Save** + text | Stays AFK, text is logged to the `aw-watcher-away-notes_<host>` bucket (visible in Timeline) |
+| **I was here** | AFK event is changed to `not-afk` in place, so the focused app counts again |
+| **Save** + text | Stays AFK, text is added as `reason` to the AFK event (visible in Timeline) |
 | **Save** empty | Stays AFK |
 
 Sleep (lid closed) is a gap in AW, not AFK, so it never prompts. The dialog is modal and blocks Hammerspoon until answered. Tune `minAway` / `maxAge` at the top of the module.

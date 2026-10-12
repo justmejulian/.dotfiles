@@ -1,6 +1,6 @@
 -- Ask what I was doing after ActivityWatch detects an AFK period.
 --   "I was here"  → rewrite the AFK event as not-afk, so the focused app counts
---   "Save" + text → keep it as AFK and log the text to an away-notes bucket
+--   "Save" + text → keep it as AFK and add the text as the reason on the AFK event
 --   "Save" empty  → keep it as AFK
 local M = {}
 
@@ -20,10 +20,6 @@ local function afkBucket()
   return 'aw-watcher-afk_' .. M._host
 end
 
-local function notesBucket()
-  return 'aw-watcher-away-notes_' .. M._host
-end
-
 -- AW timestamps look like 2026-10-12T11:28:46.189000+00:00 (always UTC)
 local function parseUtc(ts)
   local y, mo, d, h, mi, s = ts:match '(%d+)-(%d+)-(%d+)T(%d+):(%d+):(%d+)'
@@ -37,35 +33,18 @@ local function logError(what, status, body)
   print(string.format('aw_away: %s failed (%s): %s', what, tostring(status), tostring(body)))
 end
 
-local function markHere(bucket, event)
-  local url = string.format('%s/buckets/%s/events/%d', M.api, bucket, event.id)
-  hs.http.doAsyncRequest(url, 'DELETE', nil, json, function(status, body)
-    if status ~= 200 then
-      return logError('delete afk event', status, body)
-    end
-    local replacement = hs.json.encode {
-      { timestamp = event.timestamp, duration = event.duration, data = { status = 'not-afk' } },
-    }
-    hs.http.asyncPost(M.api .. '/buckets/' .. bucket .. '/events', replacement, json, function(st, b)
-      if st ~= 200 then logError('insert not-afk event', st, b) end
-    end)
-  end)
-end
-
-local function saveNote(event, text)
-  local bucket = notesBucket()
-  local meta = hs.json.encode { client = 'hammerspoon-aw-away', type = 'away-note', hostname = M._host }
-  hs.http.asyncPost(M.api .. '/buckets/' .. bucket, meta, json, function()
-    local note = hs.json.encode {
-      { timestamp = event.timestamp, duration = event.duration, data = { label = text } },
-    }
-    hs.http.asyncPost(M.api .. '/buckets/' .. bucket .. '/events', note, json, function(st, b)
-      if st ~= 200 then logError('insert away note', st, b) end
-    end)
+-- Replace the AFK event in place (same id) with new data
+local function rewrite(bucket, event, data)
+  local replacement = hs.json.encode {
+    { id = event.id, timestamp = event.timestamp, duration = event.duration, data = data },
+  }
+  hs.http.asyncPost(M.api .. '/buckets/' .. bucket .. '/events', replacement, json, function(status, body)
+    if status ~= 200 then logError('rewrite afk event ' .. event.id, status, body) end
   end)
 end
 
 local function ask(bucket, event)
+  print(string.format('aw_away: asking about afk event %d (%ds)', event.id, math.floor(event.duration)))
   M._prompting = true
   hs.settings.set(settingsKey, event.id)
   local start = parseUtc(event.timestamp)
@@ -85,9 +64,9 @@ local function ask(bucket, event)
   )
   M._prompting = false
   if button == 'I was here' then
-    markHere(bucket, event)
+    rewrite(bucket, event, { status = 'not-afk' })
   elseif text and text:match '%S' then
-    saveNote(event, text)
+    rewrite(bucket, event, { status = 'afk', reason = text })
   end
 end
 
@@ -95,7 +74,7 @@ local function poll()
   if M._prompting or not M._host then return end
   local bucket = afkBucket()
   hs.http.asyncGet(M.api .. '/buckets/' .. bucket .. '/events?limit=5', nil, function(status, body)
-    if status ~= 200 then return end
+    if status ~= 200 then return logError('fetch afk events', status, body) end
     local events = hs.json.decode(body) or {}
     local lastAsked = hs.settings.get(settingsKey) or 0
     -- events are newest first; skip index 1 so the watcher is done extending it
