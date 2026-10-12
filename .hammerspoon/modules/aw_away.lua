@@ -12,6 +12,7 @@ M.pollInterval = 10
 M._timer = nil
 M._host = nil
 M._prompting = false
+M._askTimer = nil
 
 local json = { ['Content-Type'] = 'application/json' }
 local settingsKey = 'aw_away.lastAskedId'
@@ -70,8 +71,20 @@ local function ask(bucket, event)
   end
 end
 
+-- retried from poll, so a server that is down at startup is picked up later
+local function fetchHost()
+  hs.http.asyncGet(M.api .. '/info', nil, function(status, body)
+    if status == 200 then
+      M._host = hs.json.decode(body).hostname
+    else
+      logError('fetch info', status, body)
+    end
+  end)
+end
+
 local function poll()
-  if M._prompting or not M._host then return end
+  if M._prompting then return end
+  if not M._host then return fetchHost() end
   local bucket = afkBucket()
   hs.http.asyncGet(M.api .. '/buckets/' .. bucket .. '/events?limit=5', nil, function(status, body)
     if status ~= 200 then return logError('fetch afk events', status, body) end
@@ -83,8 +96,9 @@ local function poll()
       if e.data.status == 'afk' then
         local ended = parseUtc(e.timestamp) + e.duration
         if e.id > lastAsked and e.duration >= M.minAway and os.time() - ended <= M.maxAge then
-          -- leave the HTTP callback before showing the blocking dialog
-          hs.timer.doAfter(0, function() ask(bucket, e) end)
+          -- leave the HTTP callback before showing the blocking dialog; keep a
+          -- reference so the timer is not garbage collected before it fires
+          M._askTimer = hs.timer.doAfter(0, function() ask(bucket, e) end)
         end
         return
       end
@@ -93,13 +107,7 @@ local function poll()
 end
 
 function M.start()
-  hs.http.asyncGet(M.api .. '/info', nil, function(status, body)
-    if status == 200 then
-      M._host = hs.json.decode(body).hostname
-    else
-      logError('fetch info', status, body)
-    end
-  end)
+  fetchHost()
   M._timer = hs.timer.doEvery(M.pollInterval, poll)
 end
 
