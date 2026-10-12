@@ -16,6 +16,7 @@ source $HOME/.zsh/mise.zsh
 source $HOME/.zsh/historysearch.zsh
 source $HOME/.zsh/autoExpandAlias.zsh
 source $HOME/.zsh/exports.zsh
+source $HOME/.zsh/activitywatch.zsh
 source $HOME/.zsh/catppuccin-zsh-syntax-highlighting/themes/catppuccin_mocha-zsh-syntax-highlighting.zsh
 source $HOME/.zsh/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 source $HOME/.zsh/zsh-vi-mode/zsh-vi-mode.plugin.zsh

@@ -202,6 +202,36 @@ ollama pull gemma4:e2b-mlx
 ollama pull gemma4:12b-mlx
 ```
 
+### ActivityWatch
+
+[ActivityWatch](https://activitywatch.net) tracks app, browser, shell and coding-agent activity locally.
+`brew bundle` installs it, then open `ActivityWatch.app` (it runs the server and watchers, dashboard at
+http://localhost:5600) and:
+
+- Add it to System Settings → General → Login Items so it starts at login
+- Grant Accessibility when asked (needed for window titles)
+- Install the [browser extension](https://chromewebstore.google.com/detail/activitywatch-web-watcher/nglaklhklhcoonedhgnpgddginnjdadi) in every Chrome profile
+
+Custom watchers live in the [aw-watchers](https://github.com/justmejulian/aw-watchers) repo, see its README:
+
+```
+mise run install   # installs to ~/.local/bin, where aw-qt finds watchers
+```
+
+Enable autostart in `~/Library/Application Support/activitywatch/aw-qt/aw-qt.toml` and restart ActivityWatch:
+
+```toml
+[aw-qt]
+autostart_modules = ["aw-server", "aw-watcher-afk", "aw-watcher-window", "aw-watcher-agents"]
+```
+
+Also part of these dotfiles:
+
+- `~/.zsh/activitywatch.zsh` logs every shell command (cwd, repo, branch, exit code) to `aw-watcher-shell_<host>`
+- Hammerspoon's `aw_away` module asks what you were doing after AFK periods, see [`~/.hammerspoon/README.md`](.hammerspoon/README.md)
+
+Custom buckets show up in the web UI under **Timeline**.
+
 ### Docker
 
 Use [Colima](https://github.com/abiosoft/colima) instead of Docker Desktop.
