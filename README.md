@@ -212,18 +212,14 @@ http://localhost:5600) and:
 - Grant Accessibility when asked (needed for window titles)
 - Install the [browser extension](https://chromewebstore.google.com/detail/activitywatch-web-watcher/nglaklhklhcoonedhgnpgddginnjdadi) in every Chrome profile
 
-Custom watchers live in the [aw-watchers](https://github.com/justmejulian/aw-watchers) repo, see its README:
+Claude Code and Codex sessions are logged by `aw-hook` from the [aw-watchers](https://github.com/justmejulian/aw-watchers) repo, see its README:
 
 ```
-mise run install   # installs to ~/.local/bin, where aw-qt finds watchers
+mise run install   # installs aw-hook to ~/.local/bin
 ```
 
-Enable autostart in `~/Library/Application Support/activitywatch/aw-qt/aw-qt.toml` and restart ActivityWatch:
-
-```toml
-[aw-qt]
-autostart_modules = ["aw-server", "aw-watcher-afk", "aw-watcher-window", "aw-watcher-agents"]
-```
+Then register it as a hook in `~/.claude/settings.json` and `~/.codex/config.toml` (snippets in the aw-watchers README).
+In Codex, run `/hooks` once to review and trust them.
 
 Also part of these dotfiles:
 
