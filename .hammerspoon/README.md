@@ -115,6 +115,8 @@ It asks in a small dialog window (a webview), so Hammerspoon keeps working while
 | **Save** / Enter + text | Stays AFK, text is added as `reason` to the AFK event (visible in Timeline) |
 | **Save** empty, **Cancel** / Escape, closing the window | Stays AFK |
 
+Reasons from the last 60 days are listed below the input, fuzzy filtered as you type: ↑/↓ + Enter or click to pick one, Tab to copy it into the input.
+
 Already answered events (with a `reason`) are not asked again. Sleep needs no separate prompt: the screen locks on sleep, so the AFK event spans the sleep and is asked about after waking.
 
 Tune `minAway` / `maxAge` at the top of the module.

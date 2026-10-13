@@ -1,7 +1,8 @@
 -- Ask what I was doing after ActivityWatch detects an AFK period, in a small
 -- webview dialog (hs.dialog blocks Hammerspoon and binds Escape to its second button):
 --   "I was here"           → rewrite the AFK event as not-afk, so the focused app counts
---   "Save" (Enter) + text  → keep it as AFK and add the text as the reason on the AFK event
+--   "Save" (Enter) + text  → keep it as AFK and add the text as the reason on the AFK event;
+--                            past reasons are suggested below the input, fuzzy filtered as you type
 --   "Save" empty           → keep it as AFK
 --   "Cancel" (Escape)      → keep it as AFK
 -- Sleep needs no separate prompt: the screen locks on sleep, so the AFK watcher
@@ -12,6 +13,7 @@ M.api = 'http://127.0.0.1:5600/api/0'
 M.minAway = 3 * 60 -- only ask about AFK periods at least this long (seconds); matches aw-watcher-afk's timeout
 M.maxAge = 15 * 60 -- ignore AFK periods that ended longer ago than this
 M.pollInterval = 10
+M.reasonDays = 60 -- suggest reasons given in this many past days
 
 M._timer = nil
 M._host = nil
@@ -58,33 +60,120 @@ local dialogHtml = [[
   h1 { font-size: 14px; font-weight: 600; margin: 0 0 12px; }
   input { width: 100%; box-sizing: border-box; font: inherit; padding: 6px 8px; border-radius: 6px;
           border: 1px solid #8888; background: Field; color: FieldText; }
+  ul { list-style: none; margin: 4px 0 0; padding: 4px; border: 1px solid #8888; border-radius: 6px; }
+  ul:empty { display: none; }
+  li { padding: 4px 8px; border-radius: 4px; cursor: default; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  li b { font-weight: 600; }
+  li.active { background: AccentColor; color: AccentColorText; }
   .buttons { display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px; }
   button { font: inherit; padding: 4px 14px; border-radius: 6px; border: 1px solid #8888; background: ButtonFace; color: ButtonText; }
   button.primary { background: AccentColor; color: AccentColorText; border-color: transparent; }
 </style>
 <h1>{{title}}</h1>
 <input id="reason" placeholder="What were you doing? Leave empty to keep it as away" autofocus>
+<ul id="list"></ul>
 <div class="buttons">
   <button id="cancel">Cancel</button>
   <button id="here">I was here</button>
   <button id="save" class="primary">Save</button>
 </div>
 <script>
+  const pastReasons = {{reasons}}; // most recent first
+  const maxShown = 6;
   const reason = document.getElementById('reason');
-  const send = action => webkit.messageHandlers.awAway.postMessage({ action, text: reason.value });
+  const list = document.getElementById('list');
+  const post = msg => webkit.messageHandlers.awAway.postMessage(msg);
+  const send = (action, text = reason.value) => post({ action, text });
+  let matches = [];
+  let active = -1; // highlighted row, -1 = none so Enter saves the typed text
+  let lastHeight; // content height last asked of Hammerspoon
+
+  // Subsequence match; rewards consecutive characters and word starts.
+  // Returns null when not every query character is found in order.
+  function fuzzy(query, text) {
+    const q = query.toLowerCase(), t = text.toLowerCase();
+    let score = 0, ti = 0, prev = -2;
+    const hits = [];
+    for (const c of q) {
+      if (c === ' ') continue;
+      ti = t.indexOf(c, ti);
+      if (ti < 0) return null;
+      score += 1;
+      if (ti === prev + 1) score += 3;
+      if (ti === 0 || /[\s\-_/.]/.test(t[ti - 1])) score += 2;
+      hits.push(ti);
+      prev = ti++;
+    }
+    return { score: score - t.length / 100, hits };
+  }
+
+  function escapeHtml(s) {
+    return s.replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+  }
+
+  function highlight(text, hits) {
+    const set = new Set(hits);
+    return [...text].map((c, i) => (set.has(i) ? '<b>' + escapeHtml(c) + '</b>' : escapeHtml(c))).join('');
+  }
+
+  function render() {
+    const query = reason.value.trim();
+    matches = query
+      ? pastReasons
+          .map(text => ({ text, m: fuzzy(query, text) }))
+          .filter(r => r.m && r.text.toLowerCase() !== query.toLowerCase())
+          .sort((a, b) => b.m.score - a.m.score) // stable, so ties keep recency order
+          .map(r => ({ text: r.text, hits: r.m.hits }))
+      : pastReasons.map(text => ({ text, hits: [] }));
+    matches = matches.slice(0, maxShown);
+    active = Math.min(active, matches.length - 1);
+    list.innerHTML = matches
+      .map((r, i) => `<li data-i="${i}" class="${i === active ? 'active' : ''}">${highlight(r.text, r.hits)}</li>`)
+      .join('');
+    // body margins are not in scrollHeight; compare with the last requested
+    // height, as the window may not have resized yet
+    const height = document.body.scrollHeight + 32;
+    if (height !== lastHeight) post({ action: 'resize', delta: height - lastHeight });
+    lastHeight = height;
+  }
+
+  list.onmousedown = e => {
+    const li = e.target.closest('li');
+    if (li) { e.preventDefault(); send('save', matches[+li.dataset.i].text); }
+  };
+  reason.oninput = () => { active = -1; render(); };
   for (const id of ['cancel', 'here', 'save']) document.getElementById(id).onclick = () => send(id);
   document.addEventListener('keydown', e => {
+    const n = matches.length;
+    if (e.target === reason && n && (e.key === 'ArrowDown' || e.key === 'ArrowUp')) {
+      e.preventDefault();
+      active = e.key === 'ArrowDown' ? (active + 1) % n : (active <= 0 ? n - 1 : active - 1);
+      return render();
+    }
+    // Tab fills in the highlighted (or top) suggestion to edit it
+    if (e.key === 'Tab' && e.target === reason && n) {
+      e.preventDefault();
+      reason.value = matches[Math.max(active, 0)].text;
+      active = -1;
+      return render();
+    }
     // Enter on a focused button presses that button instead
-    if (e.key === 'Enter' && e.target.tagName !== 'BUTTON') send('save');
-    if (e.key === 'Escape') send('cancel');
+    if (e.key === 'Enter' && e.target.tagName !== 'BUTTON') {
+      send('save', active >= 0 ? matches[active].text : reason.value);
+    }
+    if (e.key === 'Escape') {
+      if (active >= 0) { active = -1; return render(); }
+      send('cancel');
+    }
   });
-  window.onload = () => reason.focus();
+  window.onload = () => { lastHeight = window.innerHeight; reason.focus(); render(); };
 </script>
 ]]
 
 -- Shows the dialog and calls onAnswer(action, text) once, with action 'save',
--- 'here' or 'cancel' (also when the window is closed).
-local function dialog(title, onAnswer)
+-- 'here' or 'cancel' (also when the window is closed). reasons are offered as
+-- suggestions, most recent first.
+local function dialog(title, reasons, onAnswer)
   local answered = false
   local function finish(action, text)
     if answered then return end
@@ -97,14 +186,29 @@ local function dialog(title, onAnswer)
     onAnswer(action, text)
   end
 
-  local content = hs.webview.usercontent.new 'awAway'
-  content:setCallback(function(message) finish(message.body.action, message.body.text) end)
-
   local screen = hs.screen.mainScreen():frame()
   local w, h = 440, 128
-  local frame = { x = screen.x + (screen.w - w) / 2, y = screen.y + screen.h / 3 - h / 2, w = w, h = h }
+
+  local content = hs.webview.usercontent.new 'awAway'
+  content:setCallback(function(message)
+    local body = message.body
+    if body.action == 'resize' then
+      -- grow downwards as the suggestion list changes, keeping the input in place
+      if M._dialog then
+        local f = M._dialog:frame()
+        f.h = f.h + body.delta
+        M._dialog:frame(f)
+      end
+    else
+      finish(body.action, body.text)
+    end
+  end)
+
+  -- </ would end the script tag early
+  local reasonsJson = hs.json.encode(reasons):gsub('</', '<\\/')
+  local html = dialogHtml:gsub('{{(%w+)}}', { title = title, reasons = reasonsJson })
   M._dialog = hs.webview
-    .new(frame, {}, content)
+    .new({ x = screen.x + (screen.w - w) / 2, y = screen.y + screen.h / 3 - h / 2, w = w, h = h }, {}, content)
     :windowTitle('ActivityWatch')
     :windowStyle { 'titled', 'closable' }
     :level(hs.drawing.windowLevels.modalPanel)
@@ -113,10 +217,32 @@ local function dialog(title, onAnswer)
     :windowCallback(function(action)
       if action == 'closing' then finish('cancel', '') end
     end)
-    :html((dialogHtml:gsub('{{title}}', title)))
+    :html(html)
     :show()
   hs.focus()
   M._dialog:hswindow():focus()
+end
+
+-- Calls onReasons with the distinct reasons given in the last reasonDays days,
+-- most recent first (empty when the request fails).
+local function fetchReasons(bucket, onReasons)
+  local since = os.date('!%Y-%m-%dT%H:%M:%SZ', os.time() - M.reasonDays * 24 * 3600)
+  hs.http.asyncGet(M.api .. '/buckets/' .. bucket .. '/events?limit=-1&start=' .. since, nil, function(status, body)
+    local reasons, seen = {}, {}
+    if status == 200 then
+      -- events are newest first
+      for _, e in ipairs(hs.json.decode(body) or {}) do
+        local r = e.data.reason
+        if r and not seen[r:lower()] then
+          seen[r:lower()] = true
+          table.insert(reasons, r)
+        end
+      end
+    else
+      logError('fetch past reasons', status, body)
+    end
+    onReasons(reasons)
+  end)
 end
 
 local function ask(bucket, event)
@@ -129,13 +255,18 @@ local function ask(bucket, event)
     os.date('%H:%M', start),
     os.date('%H:%M', start + math.floor(event.duration))
   )
-  dialog(title, function(action, text)
-    M._prompting = false
-    if action == 'here' then
-      rewrite(bucket, event, { status = 'not-afk' })
-    elseif action == 'save' and text and text:match '%S' then
-      rewrite(bucket, event, { status = 'afk', reason = text:match '^%s*(.-)%s*$' })
-    end
+  fetchReasons(bucket, function(reasons)
+    -- leave the HTTP callback before showing the dialog
+    M._askTimer = hs.timer.doAfter(0, function()
+      dialog(title, reasons, function(action, text)
+        M._prompting = false
+        if action == 'here' then
+          rewrite(bucket, event, { status = 'not-afk' })
+        elseif action == 'save' and text and text:match '%S' then
+          rewrite(bucket, event, { status = 'afk', reason = text:match '^%s*(.-)%s*$' })
+        end
+      end)
+    end)
   end)
 end
 M._ask = ask -- exposed for manual testing
