@@ -109,11 +109,13 @@ Asks what you were doing after an [ActivityWatch](https://activitywatch.net/) AF
 
 | Answer | Effect |
 |---|---|
-| **I was here** | AFK event is changed to `not-afk` in place, so the focused app counts again |
+| **Save** + `here` | AFK event is changed to `not-afk` in place, so the focused app counts again |
 | **Save** + text | Stays AFK, text is added as `reason` to the AFK event (visible in Timeline) |
-| **Save** empty | Stays AFK |
+| **Save** empty, **Cancel** / Escape | Stays AFK |
 
-Sleep (lid closed) is a gap in AW, not AFK, so it never prompts. The dialog is modal and blocks Hammerspoon until answered. Tune `minAway` / `maxAge` at the top of the module.
+Already answered events (with a `reason`) are not asked again. Sleep needs no separate prompt: the screen locks on sleep, so the AFK event spans the sleep and is asked about after waking.
+
+The dialog is modal and blocks Hammerspoon until answered. Tune `minAway` / `maxAge` at the top of the module.
 
 ---
 

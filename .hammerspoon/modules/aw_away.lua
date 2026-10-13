@@ -1,7 +1,10 @@
 -- Ask what I was doing after ActivityWatch detects an AFK period.
---   "I was here"  → rewrite the AFK event as not-afk, so the focused app counts
---   "Save" + text → keep it as AFK and add the text as the reason on the AFK event
---   "Save" empty  → keep it as AFK
+--   "Save" + "here" → rewrite the AFK event as not-afk, so the focused app counts
+--   "Save" + text   → keep it as AFK and add the text as the reason on the AFK event
+--   "Save" empty    → keep it as AFK
+--   "Cancel"/Escape → keep it as AFK
+-- Sleep needs no separate prompt: the screen locks on sleep, so the AFK watcher
+-- is already AFK and its event spans the sleep.
 local M = {}
 
 M.api = 'http://127.0.0.1:5600/api/0'
@@ -58,13 +61,14 @@ local function ask(bucket, event)
   hs.focus()
   local button, text = hs.dialog.textPrompt(
     message,
-    'What were you doing? Leave empty to keep it as away.',
+    'What were you doing? Leave empty to keep it as away, or type "here" if you were working.',
     '',
     'Save',
-    'I was here'
+    'Cancel' -- NSAlert binds Escape to a button titled Cancel
   )
   M._prompting = false
-  if button == 'I was here' then
+  if button ~= 'Save' then return end
+  if text and text:match '^%s*here%s*$' then
     rewrite(bucket, event, { status = 'not-afk' })
   elseif text and text:match '%S' then
     rewrite(bucket, event, { status = 'afk', reason = text })
@@ -94,6 +98,7 @@ local function poll()
     for i = 2, #events do
       local e = events[i]
       if e.data.status == 'afk' then
+        if e.data.reason then return end -- already answered
         local ended = parseUtc(e.timestamp) + e.duration
         if e.id > lastAsked and e.duration >= M.minAway and os.time() - ended <= M.maxAge then
           -- leave the HTTP callback before showing the blocking dialog; keep a
