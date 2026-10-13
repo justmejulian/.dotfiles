@@ -154,13 +154,19 @@ hs.hotkey.bind(hyper, 'c', function()
   summon.cycleApps { 'Claude', 'ChatGPT' }
 end)
 
--- Toggle Notification Center (widgets) by sending Globe+N
+-- Toggle Notification Center (widgets) by sending Globe+N. Wait until the
+-- hyper modifiers are released, otherwise macOS sees cmd+alt+ctrl+fn+N.
 hs.hotkey.bind(hyper, 'h', function()
-  for _, isDown in ipairs { true, false } do
-    local e = hs.eventtap.event.newKeyEvent('n', isDown)
-    e:setFlags { fn = true }
-    e:post()
-  end
+  hs.timer.waitUntil(function()
+    local mods = hs.eventtap.checkKeyboardModifiers()
+    return not (mods.cmd or mods.alt or mods.ctrl or mods.shift)
+  end, function()
+    for _, isDown in ipairs { true, false } do
+      local e = hs.eventtap.event.newKeyEvent('n', isDown)
+      e:setFlags { fn = true }
+      e:post()
+    end
+  end, 0.02)
 end)
 
 -- Window sizing
