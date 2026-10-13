@@ -82,6 +82,9 @@ defaults:
                 hidden: true
     refetchIntervalMinutes: 30
 keybindings:
+    universal:
+        - key: ctrl+c
+          builtin: quit
     prs:
         - key: t
           name: Review in tuicr
