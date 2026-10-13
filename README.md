@@ -231,6 +231,14 @@ Also part of these dotfiles:
 
 Custom buckets show up in the web UI under **Timeline**.
 
+Reports (work time, meetings from Apple Calendar, breaks, projects) come from `aw-report` in the
+[aw-analysis](https://github.com/justmejulian/aw-analysis) repo, see its README:
+
+```
+mise run install   # installs aw-report to ~/.local/bin (on PATH via ~/.zsh/exports.zsh)
+aw-report --week --detailed
+```
+
 ### Docker
 
 Use [Colima](https://github.com/abiosoft/colima) instead of Docker Desktop.
