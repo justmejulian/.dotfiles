@@ -19,3 +19,9 @@
 
 [includeIf "gitdir:~/Documents/git/private/"]
    path = ~/Documents/git/private/.gitconfig
+
+[filter "lfs"]
+	required = true
+	clean = git-lfs clean -- %f
+	smudge = git-lfs smudge -- %f
+	process = git-lfs filter-process
