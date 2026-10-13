@@ -211,13 +211,9 @@ http://localhost:5600) and:
 - Add it to System Settings → General → Login Items so it starts at login
 - Grant Accessibility when asked (needed for window titles)
 - Install the [browser extension](https://chromewebstore.google.com/detail/activitywatch-web-watcher/nglaklhklhcoonedhgnpgddginnjdadi) in every Chrome profile
-- Set the AFK timeout to 5 minutes (matches the `aw_away` prompt threshold) in
-  `~/Library/Application Support/activitywatch/aw-watcher-afk/aw-watcher-afk.toml`:
-
-  ```toml
-  [aw-watcher-afk]
-  timeout = 300
-  ```
+- Keep the default AFK timeout of 3 minutes (`timeout = 180` in
+  `~/Library/Application Support/activitywatch/aw-watcher-afk/aw-watcher-afk.toml`);
+  it matches the `aw_away` prompt threshold
 
 Claude Code and Codex sessions are logged by `aw-hook` from the [aw-watchers](https://github.com/justmejulian/aw-watchers) repo, see its README:
 

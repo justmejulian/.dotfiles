@@ -5,7 +5,7 @@
 local M = {}
 
 M.api = 'http://127.0.0.1:5600/api/0'
-M.minAway = 5 * 60 -- only ask about AFK periods at least this long (seconds)
+M.minAway = 3 * 60 -- only ask about AFK periods at least this long (seconds); matches aw-watcher-afk's timeout
 M.maxAge = 15 * 60 -- ignore AFK periods that ended longer ago than this
 M.pollInterval = 10
 

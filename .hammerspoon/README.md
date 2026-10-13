@@ -105,7 +105,7 @@ local apps = {
 ---
 
 ### aw_away
-Asks what you were doing after an [ActivityWatch](https://activitywatch.net/) AFK period (≥ 5 min, ended < 15 min ago). Polls the local AW API every 10s.
+Asks what you were doing after an [ActivityWatch](https://activitywatch.net/) AFK period (≥ 3 min, ended < 15 min ago). Polls the local AW API every 10s.
 
 | Answer | Effect |
 |---|---|
