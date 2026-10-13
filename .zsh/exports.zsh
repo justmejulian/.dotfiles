@@ -4,3 +4,6 @@
 # used for things like: fc
 export EDITOR=nvim
 export RIPGREP_CONFIG_PATH=~/.ripgreprc
+
+# go install target (mise.toml GOBIN in aw-watchers / aw-analysis)
+export PATH="$HOME/.local/bin:$PATH"
