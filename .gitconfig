@@ -1,21 +1,21 @@
 [user]
-    name = Julian Visser
-    email = 12615757+justmejulian@users.noreply.github.com
+	name = Julian
+	email = julian@foxglove.dev
 [diff]
-    external = difft
+  external = difft
 [init]
-    defaultBranch = main
+  defaultBranch = main
 [core]
-    editor = nvim
+   editor = nvim
 	excludesfile = ~/.gitignore_global
 [commit]
-    verbose = true
+   verbose = true
 [push]
-    autoSetupRemote = true
+   autoSetupRemote = true
 [alias]
-    stash = stash --all
+   stash = stash --all
 [rerere]
-    enabled = true
+   enabled = true
 
 [includeIf "gitdir:~/Documents/git/private/"]
-    path = ~/Documents/git/private/.gitconfig
+   path = ~/Documents/git/private/.gitconfig
