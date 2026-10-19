@@ -1,0 +1,53 @@
+font-size = 12
+maximize = true
+
+# Herdr.app: release these cmd chords so they reach herdr, which binds them in
+# ~/.config/herdr/config.toml.
+keybind = cmd+t=unbind
+keybind = cmd+n=unbind
+keybind = cmd+w=unbind
+keybind = cmd+shift+w=unbind
+keybind = cmd+r=unbind
+keybind = cmd+shift+r=unbind
+keybind = cmd+k=unbind
+keybind = cmd+d=unbind
+keybind = cmd+shift+d=unbind
+keybind = cmd+shift+enter=unbind
+keybind = cmd+[=unbind
+keybind = cmd+]=unbind
+keybind = cmd+shift+[=unbind
+keybind = cmd+shift+]=unbind
+keybind = cmd+bracket_left=unbind
+keybind = cmd+bracket_right=unbind
+keybind = cmd+shift+bracket_left=unbind
+keybind = cmd+shift+bracket_right=unbind
+keybind = cmd+alt+left=unbind
+keybind = cmd+alt+right=unbind
+keybind = cmd+alt+up=unbind
+keybind = cmd+alt+down=unbind
+keybind = cmd+alt+h=unbind
+keybind = cmd+alt+j=unbind
+keybind = cmd+alt+k=unbind
+keybind = cmd+alt+l=unbind
+keybind = cmd+1=unbind
+keybind = cmd+2=unbind
+keybind = cmd+3=unbind
+keybind = cmd+4=unbind
+keybind = cmd+5=unbind
+keybind = cmd+6=unbind
+keybind = cmd+7=unbind
+keybind = cmd+8=unbind
+keybind = cmd+9=unbind
+keybind = cmd+digit_1=unbind
+keybind = cmd+digit_2=unbind
+keybind = cmd+digit_3=unbind
+keybind = cmd+digit_4=unbind
+keybind = cmd+digit_5=unbind
+keybind = cmd+digit_6=unbind
+keybind = cmd+digit_7=unbind
+keybind = cmd+digit_8=unbind
+keybind = cmd+digit_9=unbind
+
+# Ghostty sends ctrl+tab chords as plain tab, so encode them explicitly (CSI-u).
+keybind = ctrl+tab=text:\x1b[9;5u
+keybind = ctrl+shift+tab=text:\x1b[9;6u

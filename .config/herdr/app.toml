@@ -1,0 +1,33 @@
+onboarding = false
+
+[ui.toast]
+delivery = "terminal"
+
+# Keybindings for Herdr.app only: its client runs with HERDR_CONFIG_PATH pointing
+# here (~/.config/appify/herdr.conf), and herdr.ghostty unbinds these cmd chords
+# in Ghostty so they reach herdr directly. Keybindings are client-side, so other
+# terminals keep the defaults from config.toml.
+[keys]
+goto = "cmd+k"
+new_workspace = "cmd+n"
+rename_workspace = "cmd+shift+r"
+next_workspace = "ctrl+tab"
+previous_workspace = "ctrl+shift+tab"
+
+new_tab = "cmd+t"
+rename_tab = "cmd+r"
+close_tab = "cmd+shift+w"
+next_tab = "cmd+shift+]"
+previous_tab = "cmd+shift+["
+switch_tab = "cmd+1..9"
+
+split_vertical = "cmd+d"
+split_horizontal = "cmd+shift+d"
+close_pane = "cmd+w"
+zoom = "cmd+shift+enter"
+focus_pane_left = "cmd+alt+h"
+focus_pane_down = "cmd+alt+j"
+focus_pane_up = "cmd+alt+k"
+focus_pane_right = "cmd+alt+l"
+cycle_pane_previous = "cmd+["
+cycle_pane_next = "cmd+]"
