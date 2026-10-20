@@ -102,3 +102,60 @@ pr_open() {
 oneline() {
   tr '\n\r\t' '   ' | sed -E 's/  +/ /g; s/<!--[^>]*-->//g' | cut -c1-"${1:-200}"
 }
+
+# --- Feedback items, in the shape address-feedback reads --------------------
+
+comment_query='query($owner:String!,$repo:String!,$pr:Int!){repository(owner:$owner,name:$repo){pullRequest(number:$pr){
+  reviewThreads(first:100){nodes{id isResolved path line originalLine
+    first: comments(first:1){nodes{databaseId}}
+    comments(last:1){nodes{databaseId url body author{login __typename}}}}}
+  comments(last:50){nodes{databaseId url body author{login __typename}}}
+  reviews(last:50){nodes{databaseId url body state author{login __typename}}}}}}'
+
+# fetch_comment_items <owner/repo> <number>: one JSON object per open item.
+# Sent: unresolved review threads whose latest comment isn't mine (bots
+# included) and isn't one of address-feedback's own replies, and PR comments
+# and reviews from people (reviews only when they request changes or have a
+# body). Logins in ignore-authors are skipped. PR_REVIEW_INCLUDE_ME=1 counts
+# my own comments too (for testing on a PR where I'm the only reviewer).
+fetch_comment_items() {
+  local me ignore
+  me=$(gh api user -q .login)
+  [ -n "${PR_REVIEW_INCLUDE_ME:-}" ] && me=""
+  ignore=$(grep -v '^#' "$plugin_dir/ignore-authors" 2>/dev/null | jq -R . | jq -s .)
+  gh api graphql -F owner="${1%/*}" -F repo="${1#*/}" -F pr="$2" -f query="$comment_query" |
+    jq -c --arg me "$me" --argjson ignore "${ignore:-[]}" '
+      def who: .login + (if .__typename == "Bot" then "[bot]" else "" end);
+      def skip: .login == $me or (.login | IN($ignore[]));
+      def ours: test("^(Fixed in [0-9a-f]+\\.|Not changing this: )");
+      def item($key; $kind; $author; $where; $url; $body):
+        {key: $key, kind: $kind, author: ($author | who), authorIsBot: ($author.__typename == "Bot"),
+         where: $where, url: $url, body: ($body | gsub("[\t\r\n]+"; " "))};
+      .data.repository.pullRequest
+      | ( .reviewThreads.nodes[]
+          | select(.isResolved | not)
+          | .comments.nodes[0] as $c
+          | select(($c.author | skip | not) and ($c.body | ours | not))
+          | item("thread:\($c.databaseId)"; "thread"; $c.author; "\(.path):\(.line // .originalLine // "?")"; $c.url; $c.body)
+            + {threadId: .id, commentId: .first.nodes[0].databaseId} ),
+        ( .comments.nodes[]
+          | select(.author.__typename != "Bot" and (.author | skip | not) and (.body | ours | not))
+          | item("comment:\(.databaseId)"; "comment"; .author; "PR"; .url; .body) ),
+        ( .reviews.nodes[]
+          | select(.author.__typename != "Bot" and (.author | skip | not))
+          | select(.state == "CHANGES_REQUESTED" or (.body | length > 0))
+          | item("review:\(.databaseId)"; "review"; .author; "review (\(.state | ascii_downcase))"; .url; .body) )'
+}
+
+# fetch_ci_items <owner/repo> <number>: one JSON object per failed check on the
+# PR's head commit.
+fetch_ci_items() {
+  local sha
+  sha=$(gh pr view "$2" -R "$1" --json headRefOid -q .headRefOid)
+  gh pr checks "$2" -R "$1" --json name,bucket,link \
+    --jq '.[] | select(.bucket == "fail" or .bucket == "cancel") | [.name, .link] | @tsv' 2>/dev/null |
+    while IFS=$'\t' read -r name link; do
+      jq -cn --arg key "ci:$sha:$name" --arg where "$name" --arg url "$link" --arg body "failed on ${sha:0:7}" \
+        '{key: $key, kind: "ci", where: $where, url: $url, body: $body}'
+    done
+}

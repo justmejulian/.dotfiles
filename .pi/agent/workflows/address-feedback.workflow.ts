@@ -1,7 +1,8 @@
-// /workflow address-feedback --input-json {"file": "<items.json>"}
+// /workflow address-feedback [--input-json {"file": "<items.json>"}]
 //
 // Started by the PR review tab's watchers (~/.config/herdr/local-plugins/
-// pr-review) with batched CI failures and review comments. CI failures are
+// pr-review) with batched CI failures and review comments. Run by hand
+// without input, it collects the current branch PR's open feedback itself. CI failures are
 // fixed directly; comments are checked first (real, in scope, proportionate).
 // Every fix is an atomic commit that passes the full suite, then a final
 // review, my approval, push, PR description update and replies on GitHub.
@@ -64,6 +65,7 @@ type Setup = BaseSetup & Batch & { marker: string };
 type Work = { kind: "ci" | "comment"; items: Item[] };
 
 const activeDir = path.join(process.env.HOME ?? "", ".cache/pr-review/active");
+const collectScript = path.join(process.env.HOME ?? "", ".config/herdr/local-plugins/pr-review/collect.sh");
 const setupOf = (outputs: Record<string, unknown>) => outputs.setup as Setup;
 const workOf = (outputs: Record<string, unknown>) => (outputs.check_comments as { work: Work[] }).work;
 
@@ -80,10 +82,11 @@ function gh(repository: string, ...args: string[]) {
 export default defineWorkflow({
   name: "address-feedback",
   title: ({ input }) => `address-feedback: ${path.basename(String((input as { file?: string }).file ?? ""))}`,
+  // A missing or bad batch must not throw here: that crashes the runner in a
+  // loop. Without a usable file, setup collects the feedback itself.
   input: (value) => {
     const file = (value as { file?: string } | null)?.file;
-    if (!file || !fs.existsSync(file)) throw new Error("address-feedback needs {\"file\": \"<existing items.json>\"}");
-    return { file };
+    return { file: file && fs.existsSync(file) ? file : null };
   },
   startAt: "start",
   maxSteps: 300,
@@ -91,14 +94,20 @@ export default defineWorkflow({
     start: agent({
       statusDetail: "reading the repo",
       prompt: ({ input }) => {
-        const batch = JSON.parse(fs.readFileSync((input as { file: string }).file, "utf8")) as Batch;
+        const file = (input as { file: string | null }).file;
+        const intro = file
+          ? (() => {
+              const batch = JSON.parse(fs.readFileSync(file, "utf8")) as Batch;
+              return `The PR review tab found new feedback on ${batch.url} (${batch.items.length} item(s)). Prepare to address it.`;
+            })()
+          : "I started this by hand: address the open feedback on the current branch's PR.";
         return `${ORCHESTRATOR}
 
-The PR review tab found new feedback on ${batch.url} (${batch.items.length} item(s)). Prepare to address it.
+${intro}
 
-Run \`git rev-parse --show-toplevel\`, \`git branch --show-current\`, \`gh pr view ${batch.pr} --json headRefName -q .headRefName\`, \`git rev-parse origin/<branch>\` and \`echo $HERDR_PANE_ID\`. The current branch must be the PR's branch.`;
+Run \`git rev-parse --show-toplevel\`, \`git branch --show-current\`, \`gh pr view --json number,headRefName -q '"\\(.number) \\(.headRefName)"'\`, \`gh repo view --json nameWithOwner -q .nameWithOwner\`, \`git rev-parse origin/<branch>\` and \`echo $HERDR_PANE_ID\`. The current branch must be the PR's branch.`;
       },
-      expectedOutput: `{ "repository": "<absolute repo root>", "branch": "...", "base": "<sha of origin/<branch>, the last pushed commit>", "piPane": "<HERDR_PANE_ID>" }`,
+      expectedOutput: `{ "repository": "<absolute repo root>", "branch": "...", "base": "<sha of origin/<branch>, the last pushed commit>", "piPane": "<HERDR_PANE_ID>", "repo": "<owner/name>", "pr": <PR number> }`,
       validate: (output) => {
         const start = output as { repository: string };
         if (!path.isAbsolute(start.repository) || !fs.existsSync(path.join(start.repository, ".git")))
@@ -110,9 +119,17 @@ Run \`git rev-parse --show-toplevel\`, \`git branch --show-current\`, \`gh pr vi
     setup: action({
       effect: manualEffect("address-feedback.setup"),
       run: ({ input, outputs, state }) => {
-        const start = outputs.start as { repository: string; branch: string; base: string; piPane: string };
-        const batch = JSON.parse(fs.readFileSync((input as { file: string }).file, "utf8")) as Batch;
+        const start = outputs.start as { repository: string; branch: string; base: string; piPane: string; repo: string; pr: number };
+        const file = (input as { file: string | null }).file;
+        const batch = (
+          file
+            ? JSON.parse(fs.readFileSync(file, "utf8"))
+            : JSON.parse(execFileSync("bash", [collectScript, start.repo, String(start.pr)], { encoding: "utf8" }))
+        ) as Batch;
         const runDir = runDirFor(start.repository, state.runId);
+        if (batch.items.length === 0) {
+          return { ...start, ...batch, runDir, marker: "", task: "", route: "nothing" };
+        }
         // Watchers hold new feedback while this marker exists.
         fs.mkdirSync(activeDir, { recursive: true });
         const marker = path.join(activeDir, `${batch.repo.replace("/", "_")}_${batch.pr}`);
@@ -121,7 +138,7 @@ Run \`git rev-parse --show-toplevel\`, \`git branch --show-current\`, \`gh pr vi
         const setup: Setup = { ...start, ...batch, runDir, marker, task: "" };
         setup.task = feedbackText(setup);
         fs.writeFileSync(path.join(runDir, "task.md"), `${setup.task}\n`);
-        return setup;
+        return { ...setup, route: "address" };
       },
     }),
 
@@ -317,7 +334,7 @@ ${work.items.map((i) => `${i.where} (@${i.author}): ${i.body}\n${i.url}`).join("
     }),
 
     wrap_done: wrapNode("address-feedback.wrap-done", (o) => fs.rmSync(setupOf(o).marker, { force: true })),
-    wrap_stop: wrapNode("address-feedback.wrap-stop", (o) => setupOf(o) && fs.rmSync(setupOf(o).marker, { force: true })),
+    wrap_stop: wrapNode("address-feedback.wrap-stop", (o) => setupOf(o)?.marker && fs.rmSync(setupOf(o).marker, { force: true })),
 
     done: notifyNode({
       kind: "final",
@@ -327,6 +344,10 @@ ${work.items.map((i) => `${i.where} (@${i.author}): ${i.body}\n${i.url}`).join("
         return `Feedback on PR #${setup.pr} addressed. Run files: ${setup.runDir}`;
       },
     }),
+    nothing: notifyNode({
+      kind: "final",
+      message: ({ outputs }) => `No open feedback on PR #${setupOf(outputs).pr}: no failed checks and no open comments to address.`,
+    }),
     stopped: notifyNode({
       kind: "final",
       message: ({ outputs }) => `Stopped. Run files: ${setupOf(outputs)?.runDir ?? "none"}`,
@@ -334,7 +355,7 @@ ${work.items.map((i) => `${i.where} (@${i.author}): ${i.body}\n${i.url}`).join("
   },
   edges: [
     { from: "start", to: "setup" },
-    { from: "setup", to: "check_comments" },
+    { from: "setup", switch: { on: "$.route", cases: { address: "check_comments", nothing: "nothing" } } },
     { from: "check_comments", to: "next_item" },
     { from: "next_item", switch: { on: "$.route", cases: { implement: "implement_item", done: "has_commits" } } },
     { from: "implement_item", to: "implement_gate" },

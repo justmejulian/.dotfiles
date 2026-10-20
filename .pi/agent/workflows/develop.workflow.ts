@@ -122,14 +122,14 @@ export default defineWorkflow({
 
 Prepare the develop workflow for this request: ${JSON.stringify((input as { task?: string }).task ?? "")}
 
-Run \`git rev-parse --show-toplevel\`, \`git branch --show-current\`, \`git merge-base HEAD origin/main\` (fall back to the repo's default branch) and \`echo $HERDR_PANE_ID\`. Split the request into a Linear issue ID (like VIZ-123, if present) and my notes (the rest).`,
+Run \`git rev-parse --show-toplevel\`, \`git branch --show-current\`, \`git merge-base HEAD origin/main\` (fall back to the repo's default branch) and \`echo $HERDR_PANE_ID\`. Split the request into a Linear issue ID (like VIZ-123, if present) and my notes (the rest). If the request is empty, leave both empty; don't invent a task.`,
       expectedOutput: `{ "repository": "<absolute repo root>", "branch": "...", "base": "<merge-base sha>", "linearId": "<ID or null>", "notes": "...", "piPane": "<HERDR_PANE_ID>" }`,
       validate: (output) => {
         const start = output as Start;
         if (!path.isAbsolute(start.repository) || !fs.existsSync(path.join(start.repository, ".git")))
           throw new Error("repository must be the absolute git root");
         if (start.branch === "main" || start.branch === "master") throw new Error("refusing to work on the default branch");
-        return start;
+        return { ...start, route: start.linearId || start.notes.trim() ? "task" : "empty" };
       },
     }),
 
@@ -523,13 +523,18 @@ ${taskContext(setup, plan)}`;
       },
     }),
 
+    no_task: notifyNode({
+      kind: "final",
+      message: () => "No task given. Start it with /workflow develop <LINEAR-ID and/or what to do>.",
+    }),
+
     stopped: notifyNode({
       kind: "final",
       message: ({ outputs }) => `Stopped. Run files: ${setupOf(outputs)?.runDir ?? "none"}`,
     }),
   },
   edges: [
-    { from: "start", to: "setup" },
+    { from: "start", switch: { on: "$.route", cases: { task: "setup", empty: "no_task" } } },
     { from: "setup", to: "grill" },
     { from: "grill", switch: { on: "$.status", cases: { questions: "answer_round", done: "write_decisions" } } },
     { from: "answer_round", to: "record_answers" },

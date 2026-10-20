@@ -14,44 +14,6 @@ source "$(dirname "$0")/lib.sh"
 repo=$1 pr=$2 pi=$3
 notified="$(state_dir "$repo" "$pr")/comments-notified" # lines: <item key>
 touch "$notified"
-# PR_REVIEW_INCLUDE_ME=1 counts my own comments too (for testing on a PR
-# where I'm the only reviewer).
-me=$(gh api user -q .login)
-[ -n "${PR_REVIEW_INCLUDE_ME:-}" ] && me=""
-ignore=$(grep -v '^#' "$plugin_dir/ignore-authors" 2>/dev/null | jq -R . | jq -s .)
-
-query='query($owner:String!,$repo:String!,$pr:Int!){repository(owner:$owner,name:$repo){pullRequest(number:$pr){
-  reviewThreads(first:100){nodes{id isResolved path line originalLine
-    first: comments(first:1){nodes{databaseId}}
-    comments(last:1){nodes{databaseId url body author{login __typename}}}}}
-  comments(last:50){nodes{databaseId url body author{login __typename}}}
-  reviews(last:50){nodes{databaseId url body state author{login __typename}}}}}}'
-
-# Prints one JSON object per open item, in the shape address-feedback reads.
-fetch_items() {
-  gh api graphql -F owner="${repo%/*}" -F repo="${repo#*/}" -F pr="$pr" -f query="$query" |
-    jq -c --arg me "$me" --argjson ignore "${ignore:-[]}" '
-      def who: .login + (if .__typename == "Bot" then "[bot]" else "" end);
-      def skip: .login == $me or (.login | IN($ignore[]));
-      def item($key; $kind; $author; $where; $url; $body):
-        {key: $key, kind: $kind, author: ($author | who), authorIsBot: ($author.__typename == "Bot"),
-         where: $where, url: $url, body: ($body | gsub("[\t\r\n]+"; " "))};
-      .data.repository.pullRequest
-      | ( .reviewThreads.nodes[]
-          | select(.isResolved | not)
-          | .comments.nodes[0] as $c
-          | select($c.author | skip | not)
-          | item("thread:\($c.databaseId)"; "thread"; $c.author; "\(.path):\(.line // .originalLine // "?")"; $c.url; $c.body)
-            + {threadId: .id, commentId: .first.nodes[0].databaseId} ),
-        ( .comments.nodes[]
-          | select(.author.__typename != "Bot" and (.author | skip | not))
-          | item("comment:\(.databaseId)"; "comment"; .author; "PR"; .url; .body) ),
-        ( .reviews.nodes[]
-          | select(.author.__typename != "Bot" and (.author | skip | not))
-          | select(.state == "CHANGES_REQUESTED" or (.body | length > 0))
-          | item("review:\(.databaseId)"; "review"; .author; "review (\(.state | ascii_downcase))"; .url; .body) )'
-}
-
 while :; do
   clear
   echo "Comments · $repo#$pr · $(date +%H:%M)"
@@ -62,7 +24,7 @@ while :; do
     exit 0
   fi
 
-  if ! items=$(fetch_items); then
+  if ! items=$(fetch_comment_items "$repo" "$pr"); then
     echo "! couldn't fetch comments, retrying next check"
     wait_refresh
     continue
