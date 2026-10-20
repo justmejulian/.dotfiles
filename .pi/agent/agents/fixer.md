@@ -9,6 +9,7 @@ async: false
 no-session: true
 visible-to: implementer
 timeout: 900
+env: PI_WORKFLOW_NO_PUSH=1
 ---
 You fix the mechanical failures in the task: lint, type and formatting errors. The task names the failing command and its output.
 

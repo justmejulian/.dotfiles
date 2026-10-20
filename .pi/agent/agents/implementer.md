@@ -12,6 +12,7 @@ spawn-depth: 1
 visible-to: root
 env: |
   PI_SUBAGENT_HERDR_PLACEMENT=tab
+  PI_WORKFLOW_NO_PUSH=1
 ---
 You implement one step of an approved plan. The task gives you the step, its acceptance criteria and tests, and any reviewer findings to address.
 
