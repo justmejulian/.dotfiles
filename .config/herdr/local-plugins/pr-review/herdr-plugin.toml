@@ -1,0 +1,15 @@
+id = "julian.pr-review"
+name = "PR review"
+version = "0.1.0"
+min_herdr_version = "0.9.0"
+description = "PR review tab: tuicr plus CI and comment watchers that send new feedback to pi"
+platforms = ["macos"]
+
+[[startup]]
+command = ["bash", "restore.sh"]
+
+[[actions]]
+id = "open"
+title = "PR review: open tab for this branch"
+contexts = ["workspace", "tab", "pane"]
+command = ["bash", "action.sh"]
