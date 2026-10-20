@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+# Fuzzy-pick a repo under ~/Documents/git and open a new workspace in it.
+# Run from a herdr popup (see [[keys.command]] in ~/.config/herdr/config.toml).
+set -euo pipefail
+source "$(dirname "$0")/lib.sh"
+
+root="$HOME/Documents/git"
+
+dir=$(
+  find "$root" -maxdepth 3 -name .git -prune 2>/dev/null |
+    sed -e 's|/\.git$||' -e "s|^$root/||" |
+    sort |
+    fzf --reverse --no-info --prompt='new workspace > ' --bind='esc:abort'
+) || exit 0
+
+"$herdr" workspace create --cwd "$root/$dir" --focus >/dev/null

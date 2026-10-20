@@ -1,0 +1,32 @@
+id = "julian.workspace-setup"
+name = "Workspace setup"
+version = "0.3.0"
+min_herdr_version = "0.9.0"
+description = "Open lazygit and serve tabs in every new workspace, restart them after a restore, and number workspaces in the sidebar"
+platforms = ["macos"]
+
+[[startup]]
+command = ["bash", "restore.sh"]
+
+[[startup]]
+command = ["bash", "numbers.sh"]
+
+[[events]]
+on = "workspace.created"
+command = ["bash", "setup.sh"]
+
+[[events]]
+on = "workspace.created"
+command = ["bash", "numbers.sh"]
+
+[[events]]
+on = "workspace.closed"
+command = ["bash", "numbers.sh"]
+
+[[events]]
+on = "workspace.moved"
+command = ["bash", "numbers.sh"]
+
+[[events]]
+on = "workspace.reordered"
+command = ["bash", "numbers.sh"]
