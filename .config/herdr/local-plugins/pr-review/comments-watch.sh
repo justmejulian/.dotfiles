@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # PR review tab, right bottom: open review feedback on the PR, refreshed every
-# 5 minutes. New items are sent to pi once.
+# 5 minutes. New items are queued once and handed to an address-feedback run
+# (see launch_pending in lib.sh).
 #
 # Sent: unresolved review threads whose latest comment isn't mine (bots
 # included), and PR comments and reviews from people (reviews only when they
@@ -17,31 +18,35 @@ me=$(gh api user -q .login)
 ignore=$(grep -v '^#' "$plugin_dir/ignore-authors" 2>/dev/null | jq -R . | jq -s .)
 
 query='query($owner:String!,$repo:String!,$pr:Int!){repository(owner:$owner,name:$repo){pullRequest(number:$pr){
-  reviewThreads(first:100){nodes{isResolved path line originalLine
+  reviewThreads(first:100){nodes{id isResolved path line originalLine
+    first: comments(first:1){nodes{databaseId}}
     comments(last:1){nodes{databaseId url body author{login __typename}}}}}
   comments(last:50){nodes{databaseId url body author{login __typename}}}
   reviews(last:50){nodes{databaseId url body state author{login __typename}}}}}}'
 
-# Prints one line per open item: <key>\t<author>\t<where>\t<url>\t<body>
+# Prints one JSON object per open item, in the shape address-feedback reads.
 fetch_items() {
   gh api graphql -F owner="${repo%/*}" -F repo="${repo#*/}" -F pr="$pr" -f query="$query" |
-    jq -r --arg me "$me" --argjson ignore "${ignore:-[]}" '
+    jq -c --arg me "$me" --argjson ignore "${ignore:-[]}" '
       def who: .login + (if .__typename == "Bot" then "[bot]" else "" end);
       def skip: .login == $me or (.login | IN($ignore[]));
+      def item($key; $kind; $author; $where; $url; $body):
+        {key: $key, kind: $kind, author: ($author | who), authorIsBot: ($author.__typename == "Bot"),
+         where: $where, url: $url, body: ($body | gsub("[\t\r\n]+"; " "))};
       .data.repository.pullRequest
       | ( .reviewThreads.nodes[]
           | select(.isResolved | not)
           | .comments.nodes[0] as $c
           | select($c.author | skip | not)
-          | ["thread:\($c.databaseId)", ($c.author | who), "\(.path):\(.line // .originalLine // "?")", $c.url, $c.body] ),
+          | item("thread:\($c.databaseId)"; "thread"; $c.author; "\(.path):\(.line // .originalLine // "?")"; $c.url; $c.body)
+            + {threadId: .id, commentId: .first.nodes[0].databaseId} ),
         ( .comments.nodes[]
           | select(.author.__typename != "Bot" and (.author | skip | not))
-          | ["comment:\(.databaseId)", (.author | who), "PR", .url, .body] ),
+          | item("comment:\(.databaseId)"; "comment"; .author; "PR"; .url; .body) ),
         ( .reviews.nodes[]
           | select(.author.__typename != "Bot" and (.author | skip | not))
           | select(.state == "CHANGES_REQUESTED" or (.body | length > 0))
-          | ["review:\(.databaseId)", (.author | who), "review (\(.state | ascii_downcase))", .url, .body] )
-      | map(tostring | gsub("[\t\r\n]+"; " ")) | @tsv'
+          | item("review:\(.databaseId)"; "review"; .author; "review (\(.state | ascii_downcase))"; .url; .body) )'
 }
 
 while :; do
@@ -63,33 +68,28 @@ while :; do
   if [ -z "$items" ]; then
     echo "no open feedback"
   else
-    while IFS=$'\t' read -r key author where url body; do
+    while IFS= read -r item; do
+      key=$(jq -r .key <<<"$item")
       mark=" "; grep -qxF "$key" "$notified" && mark="✓"
-      echo "$mark $where  @$author"
-      echo "    $(oneline 110 <<<"$body")"
+      echo "$mark $(jq -r '"\(.where)  @\(.author)"' <<<"$item")"
+      echo "    $(jq -r .body <<<"$item" | oneline 110)"
     done <<<"$items"
-    echo; echo "✓ = already sent to pi"
+    echo; echo "✓ = already handed on"
   fi
 
-  new="" keys=""
-  while IFS=$'\t' read -r key author where url body; do
-    [ -n "$key" ] || continue
+  new=""
+  while IFS= read -r item; do
+    [ -n "$item" ] || continue
+    key=$(jq -r .key <<<"$item")
     grep -qxF "$key" "$notified" && continue
-    new+="- $where, @$author: $(oneline 300 <<<"$body") ($url)"$'\n'
-    keys+="$key"$'\n'
+    new+="$item"$'\n'
+    printf '%s\n' "$key" >>"$notified"
   done <<<"$items"
-
   if [ -n "$new" ]; then
-    msg="New review feedback on PR #$pr ($repo):
-$new
-For each item, first check whether it's valid: a real problem in this PR, not theoretical, and worth a proportionate fix without over-engineering. Fix the valid ones locally with a commit each, and tell me which you skipped and why. Don't push, reply or resolve threads until I confirm."
-    if ask_pi "$pi" "$msg"; then
-      printf '%s' "$keys" >>"$notified"
-      echo; echo "→ sent $(grep -c . <<<"$keys") new item(s) to pi"
-    else
-      echo; echo "! couldn't reach pi ($pi), retrying next check"
-    fi
+    queue_items "$repo" "$pr" "$new"
+    echo; echo "+ queued $(grep -c . <<<"$new") new item(s)"
   fi
+  echo; launch_pending "$repo" "$pr" "$pi"
 
   wait_refresh
 done

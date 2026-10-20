@@ -11,73 +11,63 @@ import {
   action,
   agent,
   checkpoint,
-  choice,
   compute,
-  defineHumanChoices,
   defineWorkflow,
   humanDecision,
   humanDecisionEdge,
   manualEffect,
   notify as notifyNode,
   shell,
-  textInput,
 } from "@osolmaz/pi-workflows";
 import { newSessionId, runClaude } from "./lib/claude.ts";
 import {
   type Decision,
-  git,
   hasSkill,
   loadInterview,
   notify,
-  recordPiUsage,
   renderDecisions,
   runDirFor,
   saveInterview,
-  verifyCommand,
   writeJson,
 } from "./lib/develop.ts";
+import {
+  attemptGate,
+  checkFindingsNode,
+  commitsSince,
+  escalation,
+  type Finding,
+  finalReviewNode,
+  fixEscalation,
+  fixReviewNode,
+  fixUserNode,
+  fixVerifyNode,
+  implementGate,
+  implementNode,
+  MAX_ATTEMPTS,
+  MINUTE,
+  ORCHESTRATOR,
+  obj,
+  pushChoices,
+  retryChoices,
+  type Setup as BaseSetup,
+  str,
+  strs,
+  trackPi,
+  verifyNode,
+  wrapNode,
+} from "./lib/nodes.ts";
 
 const MAX_ROUNDS = 5;
-const MAX_ATTEMPTS = 3;
-const MINUTE = 60_000;
 
 type Start = { repository: string; base: string; branch: string; linearId: string | null; notes: string; piPane: string };
-type Setup = Start & { runDir: string; task: string };
+type Setup = BaseSetup & Start;
 type Step = { title: string; goal: string; files: string[]; acceptance: string[]; checks: string[] };
 type Plan = { summary: string; steps: Step[]; risks: string[] };
-type Finding = {
-  id: string;
-  source: "spec" | "standards" | "review-changes";
-  severity: string;
-  file: string;
-  line: number | null;
-  problem: string;
-  requiredChange: string;
-  documentedRule: boolean;
-};
 
 const setupOf = (outputs: Record<string, unknown>) => outputs.setup as Setup;
 const planOf = (outputs: Record<string, unknown>) => outputs.plan as Plan;
-/** Record pi usage (orchestrator and sub-agents) since the last call. */
-const trackPi = (outputs: Record<string, unknown>) => {
-  const setup = setupOf(outputs);
-  if (setup) recordPiUsage(setup.runDir, setup.repository);
-};
-
-const ORCHESTRATOR = `You are the orchestrator of the develop workflow. You coordinate the planner (Claude), the pi implementer sub-agent and the reviewers, and answer their questions yourself. Before deciding anything, check how the repo already does the same thing and follow that. Avoid over-engineering. Only involve me for product behaviour, scope, or tradeoffs where my preference matters.`;
-
-const IMPLEMENTER_RESULT = `{ "status": "done" | "needs_answer" | "failed", "commit": "<sha or null>", "summary": "...", "checks": [{ "command": "...", "result": "passed" | "failed" }], "notes": "..." }`;
 
 // --- JSON schemas for Claude's answers -------------------------------------
-
-const str = { type: "string" };
-const strs = { type: "array", items: str };
-const obj = (properties: Record<string, unknown>) => ({
-  type: "object",
-  properties,
-  required: Object.keys(properties),
-  additionalProperties: false,
-});
 
 const intakeSchema = obj({ title: str, description: str, comments: strs, links: strs });
 const roundSchema = obj({
@@ -94,84 +84,7 @@ const planVerdictSchema = obj({
   verdict: { type: "string", enum: ["approved", "rejected"] },
   findings: { type: "array", items: obj({ severity: str, problem: str, requiredChange: str }) },
 });
-const reviewSchema = obj({
-  summary: str,
-  findings: {
-    type: "array",
-    items: obj({
-      id: str,
-      source: { type: "string", enum: ["spec", "standards", "review-changes"] },
-      severity: str,
-      file: str,
-      line: { type: ["integer", "null"] },
-      problem: str,
-      requiredChange: str,
-      documentedRule: { type: "boolean" },
-    }),
-  },
-});
-const checkSchema = obj({
-  items: { type: "array", items: obj({ id: str, decision: { type: "string", enum: ["fix", "skip"] }, reason: str }) },
-});
 const prSchema = obj({ url: str });
-
-// --- Human decisions ---------------------------------------------------------
-
-const retryChoices = defineHumanChoices({
-  retry: choice({ label: "Retry", input: textInput({ name: "instructions", prompt: "What should change?" }) }),
-  stop: choice({ label: "Stop the run" }),
-});
-const pushChoices = defineHumanChoices({
-  push: choice({ label: "Push and open a draft PR" }),
-  fix: choice({ label: "Fix first", input: textInput({ name: "instructions", prompt: "What should be fixed?" }) }),
-  stop: choice({ label: "Stop the run" }),
-});
-
-function escalation(title: string, summary: (outputs: Record<string, unknown>) => string) {
-  return humanDecision({
-    audience: "operator",
-    choices: retryChoices,
-    request: ({ outputs }) => {
-      const text = summary(outputs);
-      notify(`develop: ${title}`, text.slice(0, 200));
-      return {
-        title,
-        subject: { summary: text },
-        presentation: {
-          schema: "pi-workflows.decision-presentation.v1",
-          summary: text,
-          blocks: [{ kind: "paragraph", text: `Run files: ${setupOf(outputs).runDir}` }],
-        },
-      };
-    },
-  });
-}
-
-/** Counter that resets after escalating, so a retry gets a fresh 3 attempts. */
-function attemptGate(gate: string, failed: (outputs: Record<string, unknown>) => boolean, okRoute: string, failRoute: string) {
-  return compute({
-    run: ({ outputs }) => {
-      const previous = (outputs[gate] as { attempts?: number } | undefined)?.attempts ?? 0;
-      if (!failed(outputs)) return { route: okRoute, attempts: 0 };
-      const attempts = previous + 1;
-      return attempts >= MAX_ATTEMPTS ? { route: "escalate", attempts: 0 } : { route: failRoute, attempts };
-    },
-  });
-}
-
-function implementPrompt(setup: Setup, brief: string) {
-  return `${ORCHESTRATOR}
-
-Call the implementer sub-agent once and wait for it. Give it this brief:
-
----
-${brief}
-
-Repository: ${setup.repository}. Follow its conventions and skills. Run the checks that cover your change; the full verify suite runs later.
----
-
-If it asks you something with caller_ping, answer from the task, plan, decisions and repo precedent, then resume it. Ask me only if you truly can't decide. When it finishes, submit its final JSON unchanged.`;
-}
 
 function taskContext(setup: Setup, plan?: Plan) {
   const parts = [`Task:\n${setup.task}`];
@@ -449,7 +362,7 @@ ${fs.readFileSync(path.join(setup.runDir, "plan.md"), "utf8")}`,
     }),
 
     plan_gate: attemptGate("plan_gate", (o) => (o.plan_review as { verdict: string }).verdict !== "approved", "approved", "revise"),
-    plan_escalation: escalation("Plan rejected 3 times", (o) =>
+    plan_escalation: escalation("develop", "Plan rejected 3 times", (o) =>
       `The plan reviewer rejected the plan ${MAX_ATTEMPTS} times. Latest findings:\n${(o.plan_review as { findings: { problem: string }[] }).findings.map((f) => `- ${f.problem}`).join("\n")}`,
     ),
 
@@ -461,18 +374,13 @@ ${fs.readFileSync(path.join(setup.runDir, "plan.md"), "utf8")}`,
       },
     }),
 
-    implement: agent({
-      statusDetail: "implementing a plan step",
-      timeoutMs: 90 * MINUTE,
-      prompt: ({ outputs }) => {
+    implement: implementNode("implementing a plan step", (outputs) => {
         const setup = setupOf(outputs);
         const plan = planOf(outputs);
         const index = (outputs.next_step as { index: number }).index;
         const step = plan.steps[index];
         const retry = (outputs.step_escalation as { input?: { instructions?: string } } | undefined)?.input?.instructions;
-        return implementPrompt(
-          setup,
-          `Step ${index + 1} of ${plan.steps.length}: ${step.title}
+        return `Step ${index + 1} of ${plan.steps.length}: ${step.title}
 Goal: ${step.goal}
 Files: ${step.files.join(", ")}
 Acceptance:
@@ -480,157 +388,36 @@ ${step.acceptance.map((a) => `- ${a}`).join("\n")}
 Checks: ${step.checks.join("; ")}
 ${retry ? `\nPrevious attempt failed. My instructions: ${retry}\n` : ""}
 Context:
-${taskContext(setup, plan)}`,
-        );
-      },
-      expectedOutput: IMPLEMENTER_RESULT,
-    }),
+${taskContext(setup, plan)}`;
+      }),
 
-    implement_gate: action({
-      effect: manualEffect("develop.implement-gate"),
-      run: ({ outputs }) => {
-        trackPi(outputs);
-        return { route: (outputs.implement as { status: string }).status === "done" ? "verify" : "escalate" };
-      },
-    }),
-    step_escalation: escalation("Implementer couldn't finish a step", (o) => {
+    implement_gate: implementGate("develop.implement-gate", "implement"),
+
+    step_escalation: escalation("develop", "Implementer couldn't finish a step", (o) => {
       const r = o.implement as { status: string; summary: string; notes: string };
       return `Step ${(o.next_step as { index: number }).index + 1} ended with status "${r.status}": ${r.summary} ${r.notes}`;
     }),
 
-    verify: shell({
-      effect: manualEffect("develop.verify"),
-      statusDetail: "running the full verify suite",
-      timeoutMs: 180 * MINUTE,
-      exec: ({ outputs }) => {
-        const setup = setupOf(outputs);
-        const command = verifyCommand(setup.repository);
-        return {
-          command: "bash",
-          args: ["-lc", command ?? `echo "no verify.conf line for this repo"; exit 0`],
-          cwd: setup.repository,
-          timeoutMs: 180 * MINUTE,
-          allowNonZeroExit: true,
-        };
-      },
-      parse: (result) => ({
-        passed: result.exitCode === 0,
-        tail: `${result.stdout}\n${result.stderr}`.trim().split("\n").slice(-120).join("\n"),
-      }),
-    }),
+    verify: verifyNode("develop.verify"),
 
     verify_gate: attemptGate("verify_gate", (o) => !(o.verify as { passed: boolean }).passed, "passed", "fix"),
-    fix_verify: agent({
-      statusDetail: "fixing verify failures",
-      timeoutMs: 90 * MINUTE,
-      prompt: ({ outputs }) =>
-        implementPrompt(
-          setupOf(outputs),
-          `Fix-up step: the full verify suite failed after the latest commit. Fix the failures this branch caused (use fixer first for mechanical lint/type/format errors) and amend the latest commit with the fix (git commit --amend --no-edit), so every commit passes the suite on its own. Don't create a new commit. If a failure is unrelated to this branch, don't touch it; say so in notes.
+    fix_verify: fixVerifyNode((o) => taskContext(setupOf(o), planOf(o))),
 
-Verify output (last lines):
-${(outputs.verify as { tail: string }).tail}
+    final_review: finalReviewNode("develop.final-review"),
 
-Context:
-${taskContext(setupOf(outputs), planOf(outputs))}`,
-        ),
-      expectedOutput: IMPLEMENTER_RESULT,
-    }),
-
-    final_review: action({
-      effect: manualEffect("develop.final-review"),
-      statusDetail: "final review",
-      timeoutMs: 60 * MINUTE,
-      run: async ({ outputs }) => {
-        trackPi(outputs);
-        const setup = setupOf(outputs);
-        const repoReview = hasSkill(setup.repository, "review-changes");
-        const result = await runClaude<{ summary: string; findings: Finding[] }>({
-          role: "finalReview",
-          cwd: setup.repository,
-          runDir: setup.runDir,
-          schema: reviewSchema,
-          prompt: `Final review of this branch against ${setup.base}.
-
-1. Use the Skill tool to run mattpocock-skills:code-review with fixed point ${setup.base}. The spec is the task below; don't look for another spec and don't ask for one.
-${repoReview ? `2. Use the Skill tool to run the repo's review-changes skill with base ${setup.base}.` : ""}
-
-Return every finding. source is "spec" or "standards" for code-review findings and "review-changes" for the repo skill. severity: for review-changes use blocker/suggestion/nit; for standards say whether it's a documented-rule breach or a smell. documentedRule is true only when the finding cites a rule written in the repo's docs.
-
-Task (the spec):
-${setup.task}`,
-        });
-        writeJson(path.join(setup.runDir, `final-review-${Date.now()}.json`), result.output);
-        return result.output;
-      },
-    }),
-
-    check_findings: action({
-      effect: manualEffect("develop.check-findings"),
-      statusDetail: "checking review findings",
-      timeoutMs: 30 * MINUTE,
-      run: async ({ outputs }) => {
-        trackPi(outputs);
-        const setup = setupOf(outputs);
-        const review = outputs.final_review as { findings: Finding[] };
-        if (review.findings.length === 0) return { blocking: [], noted: [], skipped: [] };
-        const result = await runClaude<{ items: { id: string; decision: "fix" | "skip"; reason: string }[] }>({
-          role: "checker",
-          cwd: setup.repository,
-          runDir: setup.runDir,
-          schema: checkSchema,
-          prompt: `Be skeptical. For each review finding below decide "fix" or "skip". Keep a finding only if it is:
-- real: a concrete failing input or code path in this branch, not "could theoretically";
-- in scope: about this branch's change (git diff ${setup.base}...HEAD);
-- worth it: the fix is proportionate, with no new abstractions, options or flexibility just in case.
-Verify each claim in the code (use workflow-explorer). Give a one-line reason.
-
-${JSON.stringify(review.findings, null, 2)}`,
-        });
-        const fix = new Set(result.output.items.filter((i) => i.decision === "fix").map((i) => i.id));
-        const blocks = (f: Finding) =>
-          f.source === "spec" || (f.source === "standards" && f.documentedRule) || (f.source === "review-changes" && /blocker/i.test(f.severity));
-        const checked = { items: result.output.items, findings: review.findings };
-        writeJson(path.join(setup.runDir, `checked-findings-${Date.now()}.json`), checked);
-        return {
-          blocking: review.findings.filter((f) => fix.has(f.id) && blocks(f)),
-          noted: review.findings.filter((f) => fix.has(f.id) && !blocks(f)),
-          skipped: result.output.items.filter((i) => i.decision === "skip"),
-        };
-      },
-    }),
+    check_findings: checkFindingsNode("develop.check-findings"),
 
     review_gate: attemptGate("review_gate", (o) => (o.check_findings as { blocking: unknown[] }).blocking.length > 0, "approved", "fix"),
-    fix_review: agent({
-      statusDetail: "fixing review findings",
-      timeoutMs: 90 * MINUTE,
-      prompt: ({ outputs }) => {
-        const blocking = (outputs.check_findings as { blocking: Finding[] }).blocking;
-        return implementPrompt(
-          setupOf(outputs),
-          `Fix-up step: address these confirmed review findings with one commit, minimally:
-${blocking.map((f) => `- ${f.file}${f.line ? `:${f.line}` : ""}: ${f.problem} → ${f.requiredChange}`).join("\n")}
+    fix_review: fixReviewNode((o) => taskContext(setupOf(o), planOf(o))),
 
-Context:
-${taskContext(setupOf(outputs), planOf(outputs))}`,
-        );
-      },
-      expectedOutput: IMPLEMENTER_RESULT,
-    }),
-    fix_escalation: escalation("Fixes didn't converge", (o) => {
-      const verify = o.verify as { passed: boolean; tail: string } | undefined;
-      const blocking = (o.check_findings as { blocking: Finding[] } | undefined)?.blocking ?? [];
-      return verify && !verify.passed
-        ? `Verify still fails after ${MAX_ATTEMPTS} fix attempts:\n${verify.tail.split("\n").slice(-15).join("\n")}`
-        : `Review findings still open after ${MAX_ATTEMPTS} attempts:\n${blocking.map((f) => `- ${f.problem}`).join("\n")}`;
-    }),
+    fix_escalation: fixEscalation("develop"),
 
     approve_push: humanDecision({
       audience: "operator",
       choices: pushChoices,
       request: ({ outputs }) => {
         const setup = setupOf(outputs);
-        const commits = git(setup.repository, "log", "--oneline", `${setup.base}..HEAD`).split("\n").filter(Boolean);
+        const commits = commitsSince(setup);
         const checked = outputs.check_findings as { noted: Finding[]; skipped: { id: string; reason: string }[] };
         const decided = loadInterview(setup.runDir).decisions.filter((d) => d.decidedBy !== "you");
         notify("develop: ready to push", `${commits.length} commit(s) on ${setup.branch}`);
@@ -654,25 +441,7 @@ ${taskContext(setupOf(outputs), planOf(outputs))}`,
       },
     }),
 
-    fix_user: agent({
-      statusDetail: "applying your fixes",
-      timeoutMs: 90 * MINUTE,
-      prompt: ({ outputs }) => {
-        const instructions =
-          (outputs.approve_push as { input?: { instructions?: string } } | undefined)?.input?.instructions ??
-          (outputs.fix_escalation as { input?: { instructions?: string } } | undefined)?.input?.instructions ??
-          "";
-        return implementPrompt(
-          setupOf(outputs),
-          `Fix-up step from me. Do exactly this, as one commit:
-${instructions}
-
-Context:
-${taskContext(setupOf(outputs), planOf(outputs))}`,
-        );
-      },
-      expectedOutput: IMPLEMENTER_RESULT,
-    }),
+    fix_user: fixUserNode((o) => taskContext(setupOf(o), planOf(o)), ["approve_push", "fix_escalation"]),
 
     push: shell({
       effect: manualEffect("develop.push"),
@@ -718,21 +487,9 @@ ${taskContext(setupOf(outputs), planOf(outputs))}`,
       },
     }),
 
-    wrap_done: action({
-      effect: manualEffect("develop.wrap-done"),
-      run: ({ outputs }) => {
-        trackPi(outputs);
-        return { ok: true };
-      },
-    }),
+    wrap_done: wrapNode("develop.wrap-done"),
 
-    wrap_stop: action({
-      effect: manualEffect("develop.wrap-stop"),
-      run: ({ outputs }) => {
-        trackPi(outputs);
-        return { ok: true };
-      },
-    }),
+    wrap_stop: wrapNode("develop.wrap-stop"),
 
     done: notifyNode({
       kind: "final",

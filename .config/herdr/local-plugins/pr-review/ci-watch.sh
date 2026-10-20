@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # PR review tab, right top: GitHub checks for the PR, refreshed every 5 minutes.
-# New failures on the PR's head commit are sent to pi once.
+# New failures on the PR's head commit are queued once and handed to an
+# address-feedback run (see launch_pending in lib.sh).
 #
 #   ci-watch.sh <owner/repo> <number> <pi-pane>
 set -uo pipefail
@@ -45,25 +46,21 @@ while :; do
     grep $'^pending\t' <<<"$checks" | cut -f2 | sed 's/^/◔ /'
   fi
 
-  new=""
+  # New failures go into the PR's pending batch; launch_pending starts one
+  # address-feedback run with everything queued (comments included).
+  items=""
   while IFS=$'\t' read -r name link; do
     [ -n "$name" ] || continue
-    grep -qxF "$sha"$'\t'"$name" "$notified" || new+="- $name: $link"$'\n'
+    grep -qxF "$sha"$'\t'"$name" "$notified" && continue
+    items+=$(jq -cn --arg key "ci:$sha:$name" --arg where "$name" --arg url "$link" --arg body "failed on ${sha:0:7}" \
+      '{key: $key, kind: "ci", where: $where, url: $url, body: $body}')$'\n'
+    printf '%s\t%s\n' "$sha" "$name" >>"$notified"
   done <<<"$failed"
-
-  if [ -n "$new" ]; then
-    msg="CI failed on PR #$pr ($repo, commit ${sha:0:7}):
-$new
-Check the failures, for example with \`gh run view <run-id> -R $repo --log-failed\`. If this PR caused them, fix them. Don't push until I confirm."
-    if ask_pi "$pi" "$msg"; then
-      while IFS=$'\t' read -r name _; do
-        [ -n "$name" ] && printf '%s\t%s\n' "$sha" "$name" >>"$notified"
-      done <<<"$failed"
-      echo; echo "→ sent new failures to pi"
-    else
-      echo; echo "! couldn't reach pi ($pi), retrying next check"
-    fi
+  if [ -n "$items" ]; then
+    queue_items "$repo" "$pr" "$items"
+    echo; echo "+ queued $(grep -c . <<<"$items") new failure(s)"
   fi
+  echo; launch_pending "$repo" "$pr" "$pi"
 
   wait_refresh
 done
