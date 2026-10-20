@@ -6,7 +6,6 @@ thinking: low
 allow-model-override: false
 mode: background
 async: false
-no-session: true
 tools: read,grep,find,ls
 visible-to: implementer
 timeout: 600

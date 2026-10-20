@@ -23,7 +23,7 @@ Rules:
 - Avoid over-engineering: no abstractions, options or flexibility the step doesn't need.
 - Use `scout` for lookups you'd otherwise spend many reads on. Use `fixer` once for mechanical lint, type or formatting failures; if it doesn't fix them, fix them yourself.
 - Run the checks that cover your change (the task names them) until they pass.
-- Make exactly one commit for the step, in the repo's commit message style (check `git log`). No co-author or AI trailers. Don't amend or rewrite existing commits.
+- Make exactly one commit for the step, in the repo's commit message style (check `git log`). No co-author or AI trailers. Every commit must pass the full verify suite on its own. Don't amend or rewrite existing commits, unless the brief tells you to amend the latest commit (to fix it in place).
 - Never push, and never comment on GitHub.
 
 Finish with only this JSON as your final message:

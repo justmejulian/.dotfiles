@@ -29,6 +29,7 @@ import {
   hasSkill,
   loadInterview,
   notify,
+  recordPiUsage,
   renderDecisions,
   runDirFor,
   saveInterview,
@@ -57,6 +58,11 @@ type Finding = {
 
 const setupOf = (outputs: Record<string, unknown>) => outputs.setup as Setup;
 const planOf = (outputs: Record<string, unknown>) => outputs.plan as Plan;
+/** Record pi usage (orchestrator and sub-agents) since the last call. */
+const trackPi = (outputs: Record<string, unknown>) => {
+  const setup = setupOf(outputs);
+  if (setup) recordPiUsage(setup.runDir, setup.repository);
+};
 
 const ORCHESTRATOR = `You are the orchestrator of the develop workflow. You coordinate the planner (Claude), the pi implementer sub-agent and the reviewers, and answer their questions yourself. Before deciding anything, check how the repo already does the same thing and follow that. Avoid over-engineering. Only involve me for product behaviour, scope, or tradeoffs where my preference matters.`;
 
@@ -240,6 +246,7 @@ Run \`git rev-parse --show-toplevel\`, \`git branch --show-current\`, \`git merg
       statusDetail: "planner interview",
       timeoutMs: 30 * MINUTE,
       run: async ({ outputs }) => {
+        trackPi(outputs);
         const setup = setupOf(outputs);
         const interview = loadInterview(setup.runDir);
         interview.round += 1;
@@ -321,6 +328,7 @@ ${open.map((d) => `[${d.id}] ${d.question}\n    Recommendation: ${d.recommendati
     record_answers: action({
       effect: manualEffect("develop.record-answers"),
       run: ({ outputs }) => {
+        trackPi(outputs);
         const setup = setupOf(outputs);
         const interview = loadInterview(setup.runDir);
         const answers = (outputs.answer_round as { answers: { id: string; answer: string; reason: string }[] }).answers;
@@ -359,6 +367,7 @@ ${open.map((d) => `[${d.id}] ${d.question}\n    Recommendation: ${d.recommendati
     record_review: action({
       effect: manualEffect("develop.record-review"),
       run: ({ outputs }) => {
+        trackPi(outputs);
         const setup = setupOf(outputs);
         const raw = outputs.decisions_review;
         const answer = (typeof raw === "string" ? raw : JSON.stringify(raw ?? "")).trim();
@@ -384,6 +393,7 @@ ${open.map((d) => `[${d.id}] ${d.question}\n    Recommendation: ${d.recommendati
       statusDetail: "writing the plan",
       timeoutMs: 30 * MINUTE,
       run: async ({ outputs }) => {
+        trackPi(outputs);
         const setup = setupOf(outputs);
         const interview = loadInterview(setup.runDir);
         const review = outputs.plan_review as { verdict: string; findings: { problem: string; requiredChange: string }[] } | undefined;
@@ -419,6 +429,7 @@ Use workflow-planner for the design and workflow-explorer to confirm precedent. 
       statusDetail: "reviewing the plan",
       timeoutMs: 30 * MINUTE,
       run: async ({ outputs }) => {
+        trackPi(outputs);
         const setup = setupOf(outputs);
         const result = await runClaude({
           role: "planReview",
@@ -475,8 +486,12 @@ ${taskContext(setup, plan)}`,
       expectedOutput: IMPLEMENTER_RESULT,
     }),
 
-    implement_gate: compute({
-      run: ({ outputs }) => ({ route: (outputs.implement as { status: string }).status === "done" ? "next" : "escalate" }),
+    implement_gate: action({
+      effect: manualEffect("develop.implement-gate"),
+      run: ({ outputs }) => {
+        trackPi(outputs);
+        return { route: (outputs.implement as { status: string }).status === "done" ? "verify" : "escalate" };
+      },
     }),
     step_escalation: escalation("Implementer couldn't finish a step", (o) => {
       const r = o.implement as { status: string; summary: string; notes: string };
@@ -511,7 +526,7 @@ ${taskContext(setup, plan)}`,
       prompt: ({ outputs }) =>
         implementPrompt(
           setupOf(outputs),
-          `Fix-up step: the verify suite failed. Fix the failures this branch caused (use fixer first for mechanical lint/type/format errors) and commit the fix as one commit. If a failure is unrelated to this branch, don't touch it; say so in notes.
+          `Fix-up step: the full verify suite failed after the latest commit. Fix the failures this branch caused (use fixer first for mechanical lint/type/format errors) and amend the latest commit with the fix (git commit --amend --no-edit), so every commit passes the suite on its own. Don't create a new commit. If a failure is unrelated to this branch, don't touch it; say so in notes.
 
 Verify output (last lines):
 ${(outputs.verify as { tail: string }).tail}
@@ -527,6 +542,7 @@ ${taskContext(setupOf(outputs), planOf(outputs))}`,
       statusDetail: "final review",
       timeoutMs: 60 * MINUTE,
       run: async ({ outputs }) => {
+        trackPi(outputs);
         const setup = setupOf(outputs);
         const repoReview = hasSkill(setup.repository, "review-changes");
         const result = await runClaude<{ summary: string; findings: Finding[] }>({
@@ -554,6 +570,7 @@ ${setup.task}`,
       statusDetail: "checking review findings",
       timeoutMs: 30 * MINUTE,
       run: async ({ outputs }) => {
+        trackPi(outputs);
         const setup = setupOf(outputs);
         const review = outputs.final_review as { findings: Finding[] };
         if (review.findings.length === 0) return { blocking: [], noted: [], skipped: [] };
@@ -673,6 +690,7 @@ ${taskContext(setupOf(outputs), planOf(outputs))}`,
       statusDetail: "opening a draft PR",
       timeoutMs: 20 * MINUTE,
       run: async ({ outputs }) => {
+        trackPi(outputs);
         const setup = setupOf(outputs);
         const skill = hasSkill(setup.repository, "pull-request-creation") ? "the repo's pull-request-creation skill" : "the mattpocock-skills:pr skill to write the body, then gh pr create";
         const result = await runClaude<{ url: string }>({
@@ -700,6 +718,22 @@ ${taskContext(setupOf(outputs), planOf(outputs))}`,
       },
     }),
 
+    wrap_done: action({
+      effect: manualEffect("develop.wrap-done"),
+      run: ({ outputs }) => {
+        trackPi(outputs);
+        return { ok: true };
+      },
+    }),
+
+    wrap_stop: action({
+      effect: manualEffect("develop.wrap-stop"),
+      run: ({ outputs }) => {
+        trackPi(outputs);
+        return { ok: true };
+      },
+    }),
+
     done: notifyNode({
       kind: "final",
       message: ({ outputs }) => {
@@ -721,27 +755,29 @@ ${taskContext(setupOf(outputs), planOf(outputs))}`,
     { from: "record_answers", to: "grill" },
     { from: "write_decisions", to: "decisions_review" },
     { from: "decisions_review", to: "record_review" },
-    { from: "record_review", switch: { on: "$.route", cases: { plan: "plan", changes: "grill", stop: "stopped" } } },
+    { from: "record_review", switch: { on: "$.route", cases: { plan: "plan", changes: "grill", stop: "wrap_stop" } } },
     { from: "plan", to: "plan_review" },
     { from: "plan_review", to: "plan_gate" },
     { from: "plan_gate", switch: { on: "$.route", cases: { approved: "next_step", revise: "plan", escalate: "plan_escalation" } } },
-    humanDecisionEdge({ from: "plan_escalation", choices: retryChoices, cases: { retry: "plan", stop: "stopped" } }),
-    { from: "next_step", switch: { on: "$.route", cases: { implement: "implement", done: "verify" } } },
+    humanDecisionEdge({ from: "plan_escalation", choices: retryChoices, cases: { retry: "plan", stop: "wrap_stop" } }),
+    { from: "next_step", switch: { on: "$.route", cases: { implement: "implement", done: "final_review" } } },
     { from: "implement", to: "implement_gate" },
-    { from: "implement_gate", switch: { on: "$.route", cases: { next: "next_step", escalate: "step_escalation" } } },
-    humanDecisionEdge({ from: "step_escalation", choices: retryChoices, cases: { retry: "implement", stop: "stopped" } }),
+    { from: "implement_gate", switch: { on: "$.route", cases: { verify: "verify", escalate: "step_escalation" } } },
+    humanDecisionEdge({ from: "step_escalation", choices: retryChoices, cases: { retry: "implement", stop: "wrap_stop" } }),
     { from: "verify", to: "verify_gate" },
-    { from: "verify_gate", switch: { on: "$.route", cases: { passed: "final_review", fix: "fix_verify", escalate: "fix_escalation" } } },
+    { from: "verify_gate", switch: { on: "$.route", cases: { passed: "next_step", fix: "fix_verify", escalate: "fix_escalation" } } },
     { from: "fix_verify", to: "verify" },
     { from: "final_review", to: "check_findings" },
     { from: "check_findings", to: "review_gate" },
     { from: "review_gate", switch: { on: "$.route", cases: { approved: "approve_push", fix: "fix_review", escalate: "fix_escalation" } } },
     { from: "fix_review", to: "verify" },
-    humanDecisionEdge({ from: "fix_escalation", choices: retryChoices, cases: { retry: "fix_user", stop: "stopped" } }),
-    humanDecisionEdge({ from: "approve_push", choices: pushChoices, cases: { push: "push", fix: "fix_user", stop: "stopped" } }),
+    humanDecisionEdge({ from: "fix_escalation", choices: retryChoices, cases: { retry: "fix_user", stop: "wrap_stop" } }),
+    humanDecisionEdge({ from: "approve_push", choices: pushChoices, cases: { push: "push", fix: "fix_user", stop: "wrap_stop" } }),
     { from: "fix_user", to: "verify" },
     { from: "push", to: "create_pr" },
     { from: "create_pr", to: "open_review" },
-    { from: "open_review", to: "done" },
+    { from: "open_review", to: "wrap_done" },
+    { from: "wrap_done", to: "done" },
+    { from: "wrap_stop", to: "stopped" },
   ],
 });

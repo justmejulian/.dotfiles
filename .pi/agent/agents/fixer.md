@@ -6,7 +6,6 @@ thinking: low
 allow-model-override: false
 mode: background
 async: false
-no-session: true
 visible-to: implementer
 timeout: 900
 env: PI_WORKFLOW_NO_PUSH=1

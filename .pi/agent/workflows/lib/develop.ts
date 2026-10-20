@@ -61,6 +61,72 @@ export function git(repository: string, ...args: string[]): string {
 }
 
 // ---------------------------------------------------------------------------
+// pi usage: the orchestrator session and its sub-agents (implementer, scout,
+// fixer) write cost per message into ~/.pi/agent/sessions/<cwd>/. Record what
+// was spent since the last call into stats.jsonl, per agent and model.
+
+const sessionsRoot = path.join(os.homedir(), ".pi/agent/sessions");
+
+function sessionDir(repository: string): string | null {
+  const slug = `-${repository.replace(/\//g, "-")}--`;
+  const direct = path.join(sessionsRoot, slug);
+  return fs.existsSync(direct) ? direct : null;
+}
+
+export function recordPiUsage(runDir: string, repository: string) {
+  const dir = sessionDir(repository);
+  if (!dir) return;
+  const marker = path.join(runDir, "pi-usage.json");
+  const { since } = readJson<{ since: string }>(marker, {
+    since: fs.statSync(path.join(runDir, "task.md"), { throwIfNoEntry: false })?.birthtime.toISOString() ?? new Date(0).toISOString(),
+  });
+  const now = new Date().toISOString();
+  const totals = new Map<string, { agent: string; model: string; costUsd: number; tokens: number; turns: number; sessions: Set<string> }>();
+
+  for (const name of fs.readdirSync(dir)) {
+    const file = path.join(dir, name);
+    if (!name.endsWith(".jsonl") || fs.statSync(file).mtime.toISOString() < since) continue;
+    let agent = "orchestrator";
+    for (const line of fs.readFileSync(file, "utf8").split("\n")) {
+      if (!line) continue;
+      const entry = JSON.parse(line);
+      if (entry.customType === "pi-subagents_launch_metadata") agent = entry.data?.agent ?? agent;
+      const message = entry.message;
+      if (entry.type !== "message" || message?.role !== "assistant" || !message.usage) continue;
+      if (entry.timestamp <= since || entry.timestamp > now) continue;
+      const key = `${agent}|${message.model}`;
+      const total = totals.get(key) ?? { agent, model: message.model, costUsd: 0, tokens: 0, turns: 0, sessions: new Set() };
+      total.costUsd += message.usage.cost?.total ?? 0;
+      total.tokens += message.usage.totalTokens ?? 0;
+      total.turns += 1;
+      total.sessions.add(name);
+      totals.set(key, total);
+    }
+  }
+
+  const stats = path.join(runDir, "stats.jsonl");
+  for (const total of totals.values()) {
+    fs.appendFileSync(
+      stats,
+      `${JSON.stringify({
+        at: now,
+        kind: "pi",
+        role: total.agent,
+        model: total.model,
+        outcome: "ok",
+        costUsd: total.costUsd,
+        tokens: total.tokens,
+        turns: total.turns,
+        durationMs: 0,
+        warnings: [],
+        sessions: [...total.sessions],
+      })}\n`,
+    );
+  }
+  writeJson(marker, { since: now });
+}
+
+// ---------------------------------------------------------------------------
 // Planner interview: every question, who settled it, and whether I reviewed it.
 
 export type DecidedBy = "precedent" | "orchestrator" | "you" | "round limit";
