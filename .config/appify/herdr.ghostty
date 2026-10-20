@@ -1,15 +1,21 @@
 font-size = 12
 maximize = true
 
+# Match the main Ghostty config and Neovim (Catppuccin Mocha).
+theme = Catppuccin Mocha
+font-family = "JetBrainsMono Nerd Font Mono"
+
 # Herdr.app: release these cmd chords so they reach herdr, which binds them in
 # ~/.config/herdr/config.toml.
 keybind = cmd+t=unbind
 keybind = cmd+n=unbind
+keybind = cmd+shift+n=unbind
 keybind = cmd+w=unbind
+keybind = cmd+k=unbind
+keybind = cmd+b=unbind
 keybind = cmd+shift+w=unbind
 keybind = cmd+r=unbind
 keybind = cmd+shift+r=unbind
-keybind = cmd+k=unbind
 keybind = cmd+d=unbind
 keybind = cmd+shift+d=unbind
 keybind = cmd+shift+enter=unbind
@@ -21,6 +27,8 @@ keybind = cmd+bracket_left=unbind
 keybind = cmd+bracket_right=unbind
 keybind = cmd+shift+bracket_left=unbind
 keybind = cmd+shift+bracket_right=unbind
+keybind = cmd+e=unbind
+keybind = cmd+p=unbind
 keybind = cmd+alt+left=unbind
 keybind = cmd+alt+right=unbind
 keybind = cmd+alt+up=unbind
@@ -48,6 +56,30 @@ keybind = cmd+digit_7=unbind
 keybind = cmd+digit_8=unbind
 keybind = cmd+digit_9=unbind
 
-# Ghostty sends ctrl+tab chords as plain tab, so encode them explicitly (CSI-u).
-keybind = ctrl+tab=text:\x1b[9;5u
-keybind = ctrl+shift+tab=text:\x1b[9;6u
+# Release Ghostty's tab-switching chords so herdr gets them (next/previous
+# workspace). herdr enables the Kitty keyboard protocol, so Ghostty encodes
+# them itself, like the cmd chords above.
+keybind = ctrl+tab=unbind
+keybind = ctrl+shift+tab=unbind
+keybind = cmd+o=unbind
+keybind = cmd+semicolon=unbind
+
+# ctrl+1..9 switch herdr workspaces (switch_workspace in app.toml).
+keybind = ctrl+1=unbind
+keybind = ctrl+2=unbind
+keybind = ctrl+3=unbind
+keybind = ctrl+4=unbind
+keybind = ctrl+5=unbind
+keybind = ctrl+6=unbind
+keybind = ctrl+7=unbind
+keybind = ctrl+8=unbind
+keybind = ctrl+9=unbind
+keybind = ctrl+digit_1=unbind
+keybind = ctrl+digit_2=unbind
+keybind = ctrl+digit_3=unbind
+keybind = ctrl+digit_4=unbind
+keybind = ctrl+digit_5=unbind
+keybind = ctrl+digit_6=unbind
+keybind = ctrl+digit_7=unbind
+keybind = ctrl+digit_8=unbind
+keybind = ctrl+digit_9=unbind
