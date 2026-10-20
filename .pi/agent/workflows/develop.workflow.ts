@@ -21,13 +21,16 @@ import {
 } from "@osolmaz/pi-workflows";
 import { newSessionId, runClaude } from "./lib/claude.ts";
 import {
+  currentDecisions,
   type Decision,
   hasSkill,
   loadInterview,
   notify,
+  parseReviewAnswer,
   renderDecisions,
   runDirFor,
   saveInterview,
+  verifyCommand,
   writeJson,
 } from "./lib/develop.ts";
 import {
@@ -72,8 +75,18 @@ const planOf = (outputs: Record<string, unknown>) => outputs.plan as Plan;
 const intakeSchema = obj({ title: str, description: str, comments: strs, links: strs });
 const roundSchema = obj({
   status: { type: "string", enum: ["questions", "done"] },
-  decided: { type: "array", items: obj({ question: str, answer: str, reason: str, precedent: str }) },
-  questions: { type: "array", items: obj({ question: str, recommendation: str, precedent: str }) },
+  decided: {
+    type: "array",
+    items: obj({
+      question: str,
+      answer: str,
+      reason: str,
+      precedent: str,
+      basis: { type: "string", enum: ["precedent", "your annotation"] },
+      replaces: str,
+    }),
+  },
+  questions: { type: "array", items: obj({ question: str, recommendation: str, precedent: str, replaces: str }) },
 });
 const planSchema = obj({
   summary: str,
@@ -89,7 +102,7 @@ const prSchema = obj({ url: str });
 function taskContext(setup: Setup, plan?: Plan) {
   const parts = [`Task:\n${setup.task}`];
   if (plan) parts.push(`Plan summary: ${plan.summary}`);
-  const decisions = loadInterview(setup.runDir).decisions.filter((d) => d.answer);
+  const decisions = currentDecisions(loadInterview(setup.runDir));
   if (decisions.length) parts.push(`Decisions:\n${decisions.map((d) => `- ${d.question} → ${d.answer}`).join("\n")}`);
   return parts.join("\n\n");
 }
@@ -168,8 +181,9 @@ Run \`git rev-parse --show-toplevel\`, \`git branch --show-current\`, \`git merg
         interview.sessionId ??= newSessionId();
 
         const contract = `Return one round as JSON:
-- "decided": questions you settled from repo precedent this round, with the precedent (file:line).
+- "decided": questions you settled this round, with the precedent (file:line). basis is "your annotation" when my annotation decided it, else "precedent".
 - "questions": the open frontier that precedent doesn't settle, each with your recommended answer and the precedent you checked ("none found" or the conflicting places).
+- "replaces": the id of an earlier decision this one replaces (e.g. after my annotation), or "".
 - "status": "done" when nothing is left open.
 ${last ? `This is the last round (${MAX_ROUNDS}): ask nothing new. Put every open question in "questions" with your best recommendation and set status "done".` : ""}`;
 
@@ -191,8 +205,8 @@ ${contract}`;
 
         const result = await runClaude<{
           status: "questions" | "done";
-          decided: { question: string; answer: string; reason: string; precedent: string }[];
-          questions: { question: string; recommendation: string; precedent: string }[];
+          decided: { question: string; answer: string; reason: string; precedent: string; basis: string; replaces: string }[];
+          questions: { question: string; recommendation: string; precedent: string; replaces: string }[];
         }>({
           role: "planner",
           cwd: setup.repository,
@@ -203,17 +217,31 @@ ${contract}`;
         });
 
         let next = interview.decisions.length;
-        const add = (decision: Omit<Decision, "id" | "round" | "reviewed">) =>
-          interview.decisions.push({ ...decision, id: String(++next), round: interview.round, reviewed: false });
+        const add = (decision: Omit<Decision, "id" | "round" | "reviewed">, replaces: string) => {
+          const id = String(++next);
+          const old = interview.decisions.find((d) => d.id === replaces.replace(/\D/g, ""));
+          if (old) old.supersededBy = id;
+          interview.decisions.push({ ...decision, id, round: interview.round, reviewed: false });
+        };
         for (const d of result.output.decided)
-          add({ question: d.question, recommendation: d.answer, precedent: d.precedent, answer: d.answer, reason: d.reason, decidedBy: "precedent" });
+          add(
+            {
+              question: d.question,
+              recommendation: d.answer,
+              precedent: d.precedent,
+              answer: d.answer,
+              reason: d.reason,
+              decidedBy: d.basis === "your annotation" ? "you" : "precedent",
+            },
+            d.replaces,
+          );
         for (const q of result.output.questions)
           add({
             question: q.question,
             recommendation: q.recommendation,
             precedent: q.precedent,
             ...(last ? { answer: q.recommendation, reason: "round limit reached", decidedBy: "round limit" as const } : {}),
-          });
+          }, q.replaces);
         interview.inbox = undefined;
         saveInterview(setup.runDir, interview);
 
@@ -259,10 +287,12 @@ ${open.map((d) => `[${d.id}] ${d.question}\n    Recommendation: ${d.recommendati
       effect: manualEffect("develop.write-decisions"),
       run: ({ outputs }) => {
         const setup = setupOf(outputs);
+        const interview = loadInterview(setup.runDir);
+        if (!interview.decisions.some((d) => !d.reviewed && !d.supersededBy)) return { route: "plan" };
         const file = path.join(setup.runDir, "decisions.md");
-        fs.writeFileSync(file, renderDecisions(setup.task, loadInterview(setup.runDir)));
+        fs.writeFileSync(file, renderDecisions(setup.task, interview));
         notify("develop: decisions ready", `Review with /reply-editor ${file}`);
-        return { file };
+        return { route: "review", file };
       },
     }),
 
@@ -282,22 +312,16 @@ ${open.map((d) => `[${d.id}] ${d.question}\n    Recommendation: ${d.recommendati
       run: ({ outputs }) => {
         trackPi(outputs);
         const setup = setupOf(outputs);
-        const raw = outputs.decisions_review;
-        const answer = (typeof raw === "string" ? raw : JSON.stringify(raw ?? "")).trim();
+        const { route, text } = parseReviewAnswer(outputs.decisions_review);
+        if (route === "stop") return { route };
         const interview = loadInterview(setup.runDir);
-        if (/^"?stop\b/i.test(answer)) return { route: "stop" };
-        const annotated = /\[an:/i.test(answer);
-        const plainOk = /^"?(ok|yes|approve[d]?|lgtm)?"?$/i.test(answer);
-        if (!annotated && (plainOk || /annotated reply below:/i.test(answer))) {
-          for (const d of interview.decisions) d.reviewed = true;
-          saveInterview(setup.runDir, interview);
-          return { route: "plan" };
-        }
-        // Annotated or free-text changes: my word is final on what I touched.
         for (const d of interview.decisions) d.reviewed = true;
-        interview.inbox = `I reviewed the decisions and annotated them. My annotations are final for the questions they touch; update those decisions and only ask about what my changes open up.\n\n${answer}`;
+        if (route === "changes") {
+          // My word is final on what I touched.
+          interview.inbox = `I reviewed the decisions and annotated them. My annotations are final for the questions they touch: record each as a decided question with basis "your annotation" and "replaces" set to the original id, and only ask about what my changes open up.\n\n${text}`;
+        }
         saveInterview(setup.runDir, interview);
-        return { route: "changes" };
+        return { route };
       },
     }),
 
@@ -419,7 +443,7 @@ ${taskContext(setup, plan)}`;
         const setup = setupOf(outputs);
         const commits = commitsSince(setup);
         const checked = outputs.check_findings as { noted: Finding[]; skipped: { id: string; reason: string }[] };
-        const decided = loadInterview(setup.runDir).decisions.filter((d) => d.decidedBy !== "you");
+        const decided = currentDecisions(loadInterview(setup.runDir)).filter((d) => d.decidedBy !== "you");
         notify("develop: ready to push", `${commits.length} commit(s) on ${setup.branch}`);
         return {
           title: `Push ${setup.branch} and open a draft PR?`,
@@ -467,7 +491,7 @@ ${taskContext(setup, plan)}`;
           cwd: setup.repository,
           runDir: setup.runDir,
           schema: prSchema,
-          prompt: `The branch ${setup.branch} is pushed. Use the Skill tool to run ${skill} and open the PR as a **draft** (gh pr create --draft). Base it on the diff against ${setup.base}.${setup.linearId ? ` It implements Linear issue ${setup.linearId}.` : ""} Return the PR URL.`,
+          prompt: `The branch ${setup.branch} is pushed. Use the Skill tool to run ${skill} and open the PR as a **draft** (gh pr create --draft). Base it on the diff against ${setup.base}.${setup.linearId ? ` It implements Linear issue ${setup.linearId}.` : ""} The workflow's verify step already ran \`${verifyCommand(setup.repository) ?? "no verify command"}\` after every commit and it passed; use that as the test evidence instead of running it yourself. Return the PR URL.`,
         });
         return result.output;
       },
@@ -510,7 +534,7 @@ ${taskContext(setup, plan)}`;
     { from: "grill", switch: { on: "$.status", cases: { questions: "answer_round", done: "write_decisions" } } },
     { from: "answer_round", to: "record_answers" },
     { from: "record_answers", to: "grill" },
-    { from: "write_decisions", to: "decisions_review" },
+    { from: "write_decisions", switch: { on: "$.route", cases: { review: "decisions_review", plan: "plan" } } },
     { from: "decisions_review", to: "record_review" },
     { from: "record_review", switch: { on: "$.route", cases: { plan: "plan", changes: "grill", stop: "wrap_stop" } } },
     { from: "plan", to: "plan_review" },

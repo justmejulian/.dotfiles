@@ -143,6 +143,8 @@ export interface Decision {
   decidedBy?: DecidedBy;
   /** Shown to me in a decisions review I approved. */
   reviewed: boolean;
+  /** Replaced by a later decision (e.g. after my annotation). */
+  supersededBy?: string;
 }
 
 export interface Interview {
@@ -172,7 +174,7 @@ const sections: [DecidedBy, string][] = [
 
 /** decisions.md: only what I haven't approved yet, grouped by who decided. */
 export function renderDecisions(task: string, interview: Interview): string {
-  const pending = interview.decisions.filter((decision) => !decision.reviewed);
+  const pending = interview.decisions.filter((decision) => !decision.reviewed && !decision.supersededBy);
   const approved = interview.decisions.length - pending.length;
   const out = [
     "# Decisions for review",
@@ -199,4 +201,28 @@ export function renderDecisions(task: string, interview: Interview): string {
     }
   }
   return out.join("\n");
+}
+
+/** Current decisions: answered and not replaced by a later one. */
+export function currentDecisions(interview: Interview): Decision[] {
+  return interview.decisions.filter((decision) => decision.answer && !decision.supersededBy);
+}
+
+/**
+ * How I answered the decisions review. A checkpoint answer arrives as
+ * { answer }, either my own text or my annotated reply relayed by the
+ * orchestrator. Annotations mean changes; a short approval in any wording
+ * means approve; `stop` cancels; other text is treated as changes.
+ */
+export function parseReviewAnswer(raw: unknown): { route: "plan" | "changes" | "stop"; text: string } {
+  const value = raw && typeof raw === "object" && "answer" in raw ? (raw as { answer: unknown }).answer : raw;
+  const text = (typeof value === "string" ? value : JSON.stringify(value ?? "")).trim();
+  const plain = text.toLowerCase().replace(/[^a-z ]/g, " ").replace(/\s+/g, " ").trim();
+  if (/\[an:/i.test(text)) return { route: "changes", text };
+  if (/^stop\b/.test(plain)) return { route: "stop", text };
+  const approval = /^(ok|okay|yes|y|approve|approved|approve all|lgtm|looks good|looks good to me|go|go ahead|continue|fine|all good|agreed)( .{0,30})?$/;
+  if (plain === "" || /annotated reply below/i.test(text) || (plain.length <= 40 && approval.test(plain))) {
+    return { route: "plan", text };
+  }
+  return { route: "changes", text };
 }
