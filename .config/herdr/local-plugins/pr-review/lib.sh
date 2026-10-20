@@ -20,7 +20,7 @@ ask_pi() {
 
 # pi_idle <pane>: pi is waiting for input (typing a /command now runs it).
 pi_idle() {
-  case "$("$herdr" agent get "$1" 2>/dev/null | jq -r '.result.agent.status // empty')" in
+  case "$("$herdr" agent get "$1" 2>/dev/null | jq -r '.result.agent.agent_status // .result.agent.status // empty')" in
     idle | done) return 0 ;;
     *) return 1 ;;
   esac

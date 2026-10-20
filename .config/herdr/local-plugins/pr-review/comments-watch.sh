@@ -14,7 +14,10 @@ source "$(dirname "$0")/lib.sh"
 repo=$1 pr=$2 pi=$3
 notified="$(state_dir "$repo" "$pr")/comments-notified" # lines: <item key>
 touch "$notified"
+# PR_REVIEW_INCLUDE_ME=1 counts my own comments too (for testing on a PR
+# where I'm the only reviewer).
 me=$(gh api user -q .login)
+[ -n "${PR_REVIEW_INCLUDE_ME:-}" ] && me=""
 ignore=$(grep -v '^#' "$plugin_dir/ignore-authors" 2>/dev/null | jq -R . | jq -s .)
 
 query='query($owner:String!,$repo:String!,$pr:Int!){repository(owner:$owner,name:$repo){pullRequest(number:$pr){
