@@ -17,7 +17,7 @@ me=$(gh api user -q .login)
 ignore=$(grep -v '^#' "$plugin_dir/ignore-authors" 2>/dev/null | jq -R . | jq -s .)
 
 query='query($owner:String!,$repo:String!,$pr:Int!){repository(owner:$owner,name:$repo){pullRequest(number:$pr){
-  reviewThreads(first:100){nodes{isResolved path line
+  reviewThreads(first:100){nodes{isResolved path line originalLine
     comments(last:1){nodes{databaseId url body author{login __typename}}}}}
   comments(last:50){nodes{databaseId url body author{login __typename}}}
   reviews(last:50){nodes{databaseId url body state author{login __typename}}}}}}'
@@ -33,7 +33,7 @@ fetch_items() {
           | select(.isResolved | not)
           | .comments.nodes[0] as $c
           | select($c.author | skip | not)
-          | ["thread:\($c.databaseId)", ($c.author | who), "\(.path):\(.line // "?")", $c.url, $c.body] ),
+          | ["thread:\($c.databaseId)", ($c.author | who), "\(.path):\(.line // .originalLine // "?")", $c.url, $c.body] ),
         ( .comments.nodes[]
           | select(.author.__typename != "Bot" and (.author | skip | not))
           | ["comment:\(.databaseId)", (.author | who), "PR", .url, .body] ),

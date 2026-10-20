@@ -34,7 +34,7 @@ comments_pane=$("$herdr" pane split "$ci_pane" --direction down --cwd "$dir" |
   jq -r '.result.pane.pane_id')
 
 q() { printf '%q' "$1"; }
-tuicr_cmd="tuicr pr $pr"
+tuicr_cmd="tuicr pr $url"
 ci_cmd="$(q "$plugin_dir/ci-watch.sh") $repo $pr $pi"
 comments_cmd="$(q "$plugin_dir/comments-watch.sh") $repo $pr $pi"
 
