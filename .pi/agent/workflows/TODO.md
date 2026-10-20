@@ -13,3 +13,16 @@ Things to change in the develop / address-feedback workflows.
 - Split the push approval into an editable push review (/reply-editor on
   push-review.md; annotations become fix instructions) and a protected
   Push / Stop decision.
+
+## Setup on a new machine
+
+pi-workflows' resolver runs outside pi and needs pi's own packages next to
+it. Without them no workflow starts ("Cannot find package
+'@earendil-works/pi-ai'"). Install them at pi's version (`pi --version`),
+and again after pi updates:
+
+    cd ~/.pi/agent/npm && npm install --save-exact \
+      @earendil-works/pi-ai@<pi version> \
+      @earendil-works/pi-coding-agent@<pi version> \
+      @earendil-works/pi-tui@<pi version> \
+      typebox@<pi's typebox version>

@@ -1,0 +1,14 @@
+{
+  "lastChangelogVersion": "1.2.0",
+  "deviceId": "813fb88a-82d4-4fff-a6c8-d9cc5b0ad4be",
+  "defaultProvider": "openai-codex",
+  "defaultModel": "gpt-6.1-sol",
+  "packages": [
+    "npm:pi-cursor-sdk@0.5.3",
+    "npm:pi-declutter",
+    "npm:@osolmaz/pi-workflows",
+    "git:github.com/edxeth/pi-subagents",
+    "npm:pi-annotated-reply",
+    "npm:pi-vim"
+  ]
+}
