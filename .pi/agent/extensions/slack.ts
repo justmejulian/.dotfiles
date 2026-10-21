@@ -27,7 +27,9 @@ export default function (pi) {
     handler: async (args, ctx) => {
       const [link, ...question] = (args ?? "").trim().split(/\s+/);
       if (!link) {
-        ctx.ui.notify("Usage: /slack <slack link> [question]", "warning");
+        // Picking /slack from autocomplete submits it at once: put it back in
+        // the input so I can paste the link.
+        ctx.ui.pasteToEditor("/slack ");
         return;
       }
       ctx.ui.notify("Fetching from Slack…", "info");
