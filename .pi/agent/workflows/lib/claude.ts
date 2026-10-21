@@ -18,9 +18,15 @@ const SUBAGENTS = "Agent(workflow-explorer,workflow-planner)";
 const LINEAR = ["get_issue", "list_comments", "get_attachment", "extract_images"].map(
   (tool) => `mcp__claude_ai_Linear__${tool}`,
 );
+// Read-only. Haiku can't use the claude.ai Slack connector headless, so the
+// slack role runs on Sonnet at low effort.
+const SLACK = ["slack_read_thread", "slack_read_channel", "slack_read_user_profile"].map(
+  (tool) => `mcp__claude_ai_Slack__${tool}`,
+);
 
 export type ClaudeRole =
   | "intake"
+  | "slack"
   | "planner"
   | "planReview"
   | "finalReview"
@@ -38,6 +44,7 @@ interface RoleConfig {
 
 export const roles: Record<ClaudeRole, RoleConfig> = {
   intake: { model: SONNET, effort: "low", tools: [...READ, ...LINEAR] },
+  slack: { model: SONNET, effort: "low", tools: SLACK },
   planner: {
     model: OPUS,
     effort: "xhigh",

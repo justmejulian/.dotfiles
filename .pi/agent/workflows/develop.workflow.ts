@@ -20,6 +20,7 @@ import {
   shell,
 } from "@osolmaz/pi-workflows";
 import { newSessionId, runClaude } from "./lib/claude.ts";
+import { fetchSlack, formatSlack, slackLinks } from "./lib/slack.ts";
 import {
   currentDecisions,
   type Decision,
@@ -135,7 +136,7 @@ Run \`git rev-parse --show-toplevel\`, \`git branch --show-current\`, \`git merg
 
     setup: action({
       effect: manualEffect("develop.setup"),
-      statusDetail: "fetching the Linear issue",
+      statusDetail: "fetching the Linear issue and Slack threads",
       timeoutMs: 10 * MINUTE,
       run: async ({ outputs, state }) => {
         const start = outputs.start as Start;
@@ -160,6 +161,12 @@ Run \`git rev-parse --show-toplevel\`, \`git branch --show-current\`, \`git merg
             .filter(Boolean)
             .join("\n\n");
         }
+        // Slack threads linked from my notes or the ticket are part of the task.
+        const links = slackLinks(task).slice(0, 5);
+        const threads = await Promise.all(
+          links.map((link) => fetchSlack(link, { runDir, cwd: start.repository }).then(formatSlack, (e) => `Slack link ${link}: couldn't fetch (${e})`)),
+        );
+        if (threads.length) task = `${task}\n\nLinked Slack threads:\n\n${threads.join("\n\n")}`;
         fs.writeFileSync(path.join(runDir, "task.md"), `${task}\n`);
         writeJson(path.join(runDir, "start.json"), start);
         return { ...start, runDir, task } satisfies Setup;
