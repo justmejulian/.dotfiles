@@ -55,9 +55,10 @@ function adHocRunDir() {
   return dir;
 }
 
-export async function fetchSlack(link: string, options: { question?: string; runDir?: string; cwd?: string } = {}) {
+export async function fetchSlack(link: string, options: { question?: string; runDir?: string; cwd?: string; signal?: AbortSignal } = {}) {
   const result = await runClaude<SlackFetch>({
     role: "slack",
+    signal: options.signal,
     cwd: options.cwd ?? os.homedir(),
     runDir: options.runDir ?? adHocRunDir(),
     schema,

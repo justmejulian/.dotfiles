@@ -196,7 +196,7 @@ export function verifyNode(effect: string) {
       };
     },
     parse: (result) => ({
-      passed: result.exitCode === 0,
+      passed: result.exitCode === 0 && result.signal === null && result.stdout.length < 1_000_000 && result.stderr.length < 1_000_000,
       tail: `${result.stdout}\n${result.stderr}`.trim().split("\n").slice(-120).join("\n"),
     }),
   });
@@ -218,21 +218,25 @@ ${context(outputs)}`,
 
 // --- Final review ------------------------------------------------------------------
 
-export function finalReviewNode(effect: string) {
+export function finalReviewNode(effect: string, scope: (outputs: Outputs) => string = (o) => `git diff ${setupOf(o).base}...HEAD; committed changes only`) {
   return action({
     effect: manualEffect(effect),
     statusDetail: "final review",
     timeoutMs: 60 * MINUTE,
-    run: async ({ outputs }) => {
+    run: async ({ outputs, signal }) => {
       trackPi(outputs);
       const setup = setupOf(outputs);
       const repoReview = hasSkill(setup.repository, "review-changes");
       const result = await runClaude<{ summary: string; findings: Finding[] }>({
         role: "finalReview",
+        signal,
         cwd: setup.repository,
         runDir: setup.runDir,
         schema: reviewSchema,
-        prompt: `Final review of this branch's commits since ${setup.base}.
+        prompt: `Final review.
+
+${scope(outputs)}
+Scope instructions above override any skill default (including base...HEAD). Review exactly those changes, including working-tree changes when requested.
 
 1. Use the Skill tool to run mattpocock-skills:code-review with fixed point ${setup.base}. The spec is the task below; don't look for another spec and don't ask for one.
 ${repoReview ? `2. Use the Skill tool to run the repo's review-changes skill with base ${setup.base}.` : ""}
@@ -249,27 +253,38 @@ ${setup.task}`,
 }
 
 /** Skeptical check; only spec, documented-rule and blocker findings block. */
-export function checkFindingsNode(effect: string) {
+export function checkFindingsNode(effect: string, scope: (outputs: Outputs) => string = (o) => `git diff ${setupOf(o).base}...HEAD; committed changes only`) {
   return action({
     effect: manualEffect(effect),
     statusDetail: "checking review findings",
     timeoutMs: 30 * MINUTE,
-    run: async ({ outputs }) => {
+    run: async ({ outputs, signal }) => {
       trackPi(outputs);
       const setup = setupOf(outputs);
       const review = outputs.final_review as { findings: Finding[] };
-      if (review.findings.length === 0) return { blocking: [], noted: [], skipped: [] };
+      if (review.findings.length === 0) return { blocking: [], noted: [], skipped: [], evidence: [] };
       const result = await runClaude<{ items: { id: string; decision: "fix" | "skip"; reason: string }[] }>({
         role: "checker",
+        signal,
         cwd: setup.repository,
         runDir: setup.runDir,
         schema: checkSchema,
-        prompt: `For each review finding below decide "fix" or "skip". The branch's change is git diff ${setup.base}...HEAD.
+        prompt: `For each review finding below decide "fix" or "skip".
+
+${scope(outputs)}
+Give exactly one decision per finding; cite concrete code evidence in each reason.
 
 ${CHECK_RULES}
 
+Task (the same spec as the reviewer):
+${setup.task}
+
 ${JSON.stringify(review.findings, null, 2)}`,
       });
+      const ids = review.findings.map((f) => f.id);
+      const items = result.output.items;
+      if (new Set(ids).size !== ids.length || items.length !== ids.length || new Set(items.map((i) => i.id)).size !== ids.length || items.some((i) => !ids.includes(i.id) || !["fix", "skip"].includes(i.decision) || !i.reason.trim()))
+        throw new Error("checker must cover every finding exactly once with evidence");
       const fix = new Set(result.output.items.filter((i) => i.decision === "fix").map((i) => i.id));
       const blocks = (f: Finding) =>
         f.source === "spec" ||
@@ -283,6 +298,7 @@ ${JSON.stringify(review.findings, null, 2)}`,
         blocking: review.findings.filter((f) => fix.has(f.id) && blocks(f)),
         noted: review.findings.filter((f) => fix.has(f.id) && !blocks(f)),
         skipped: result.output.items.filter((i) => i.decision === "skip"),
+        evidence: result.output.items,
       };
     },
   });

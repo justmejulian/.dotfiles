@@ -13,6 +13,7 @@ export function repoName(repository: string): string {
   const common = execFileSync("git", ["rev-parse", "--path-format=absolute", "--git-common-dir"], {
     cwd: repository,
     encoding: "utf8",
+    timeout: 30_000,
   }).trim();
   return path.basename(path.dirname(common));
 }
@@ -57,7 +58,7 @@ export function notify(title: string, body: string, sound: "none" | "done" | "re
 }
 
 export function git(repository: string, ...args: string[]): string {
-  return execFileSync("git", args, { cwd: repository, encoding: "utf8" }).trim();
+  return execFileSync("git", args, { cwd: repository, encoding: "utf8", timeout: 30_000 }).trim();
 }
 
 // ---------------------------------------------------------------------------

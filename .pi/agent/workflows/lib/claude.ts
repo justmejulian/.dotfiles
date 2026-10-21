@@ -95,6 +95,7 @@ export interface ClaudeRunOptions {
   /** Continue a session started with sessionId. */
   resume?: string;
   timeoutMs?: number;
+  signal?: AbortSignal;
 }
 
 export interface ClaudeRunResult<T = unknown> {
@@ -135,7 +136,7 @@ export async function runClaude<T = unknown>(options: ClaudeRunOptions): Promise
   else args.push("--no-session-persistence");
 
   const started = Date.now();
-  const lines = await run("claude", args, options.cwd, transcript, options.timeoutMs ?? 45 * 60_000);
+  const lines = await run("claude", args, options.cwd, transcript, options.timeoutMs ?? 45 * 60_000, options.signal);
   const events = lines.flatMap((line) => {
     try {
       return [JSON.parse(line)];
@@ -211,13 +212,15 @@ export async function runClaude<T = unknown>(options: ClaudeRunOptions): Promise
 export const newSessionId = randomUUID;
 
 /** Runs a command, writes stdout to `transcript` as it arrives, returns its lines. */
-function run(command: string, args: string[], cwd: string, transcript: string, timeoutMs: number) {
+function run(command: string, args: string[], cwd: string, transcript: string, timeoutMs: number, signal?: AbortSignal) {
   return new Promise<string[]>((resolve, reject) => {
+    signal?.throwIfAborted();
     const file = fs.createWriteStream(transcript);
     const child = spawn(command, args, {
       cwd,
       env: { ...process.env, CLAUDE_CODE_FORK_SUBAGENT: "0" }, // wait for sub-agents
       stdio: ["ignore", "pipe", "pipe"],
+      detached: process.platform !== "win32",
     });
     let buffer = "";
     let stderr = "";
@@ -226,12 +229,21 @@ function run(command: string, args: string[], cwd: string, transcript: string, t
       buffer += chunk;
     });
     child.stderr.on("data", (chunk) => (stderr += chunk));
-    const timer = setTimeout(() => child.kill("SIGTERM"), timeoutMs);
-    child.on("error", reject);
-    child.on("close", (code, signal) => {
-      clearTimeout(timer);
-      file.end();
-      if (signal) return reject(new Error(`${command} stopped by ${signal} after ${timeoutMs} ms`));
+    const stop = () => {
+      if (!child.pid) return;
+      try {
+        if (process.platform === "win32") child.kill("SIGKILL");
+        else process.kill(-child.pid, "SIGKILL");
+      } catch (error) { if ((error as NodeJS.ErrnoException).code !== "ESRCH") throw error; }
+    };
+    const timer = setTimeout(stop, timeoutMs);
+    signal?.addEventListener("abort", stop, { once: true });
+    if (signal?.aborted) stop();
+    const cleanup = () => { clearTimeout(timer); signal?.removeEventListener("abort", stop); file.end(); };
+    child.on("error", (error) => { cleanup(); reject(error); });
+    child.on("close", (code, stopped) => {
+      cleanup();
+      if (stopped || signal?.aborted) return reject(new Error(`${command} stopped (${stopped ?? "cancelled"})`));
       if (code !== 0 && !buffer.includes('"type":"result"')) {
         return reject(new Error(`${command} exited ${code}: ${stderr.slice(-2000)}`));
       }

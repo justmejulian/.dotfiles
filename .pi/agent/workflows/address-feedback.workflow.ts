@@ -12,7 +12,10 @@ import path from "node:path";
 import {
   action,
   agent,
+  compute,
   defineWorkflow,
+  includedResult,
+  includeWorkflow,
   humanDecision,
   humanDecisionEdge,
   manualEffect,
@@ -20,16 +23,16 @@ import {
   shell,
 } from "@osolmaz/pi-workflows";
 import { runClaude } from "./lib/claude.ts";
+import review from "./review.workflow.ts";
+import { observe, type Revision } from "./lib/stages.ts";
 import { git, notify, runDirFor, writeJson } from "./lib/develop.ts";
 import {
   attemptGate,
   CHECK_RULES,
-  checkFindingsNode,
   checkSchema,
   commitsSince,
   escalation,
   type Finding,
-  finalReviewNode,
   fixEscalation,
   fixReviewNode,
   fixUserNode,
@@ -90,6 +93,9 @@ export default defineWorkflow({
   },
   startAt: "start",
   maxSteps: 300,
+  includes: {
+    review: includeWorkflow(review, { input: ({ outputs }) => ({ ...setupOf(outputs), scope: { paths: [], includeUncommitted: false } }) }),
+  },
   nodes: {
     start: agent({
       statusDetail: "reading the repo",
@@ -225,11 +231,19 @@ ${work.items.map((i) => `${i.where} (@${i.author}): ${i.body}\n${i.url}`).join("
       run: ({ outputs }) => ({ route: commitsSince(setupOf(outputs)).length ? "review" : "approve" }),
     }),
 
-    final_review: finalReviewNode("address-feedback.final-review"),
-    check_findings: checkFindingsNode("address-feedback.check-findings"),
+    check_findings: compute({ run: ({ outputs }) => {
+      const result = includedResult(review, outputs.review);
+      if (result.exit !== "ready") throw new Error("review did not complete");
+      return result.output;
+    } }),
     review_gate: attemptGate("review_gate", (o) => (o.check_findings as { blocking: unknown[] }).blocking.length > 0, "approved", "fix"),
     fix_review: fixReviewNode((o) => feedbackText(setupOf(o), workOf(o))),
     fix_escalation: fixEscalation("address-feedback"),
+
+    approve_snapshot: action({
+      effect: manualEffect("address-feedback.approval-snapshot"), timeoutMs: MINUTE,
+      run: ({ outputs }) => observe({ ...setupOf(outputs), scope: { paths: [], includeUncommitted: true } }),
+    }),
 
     approve: humanDecision({
       audience: "operator",
@@ -250,7 +264,7 @@ ${work.items.map((i) => `${i.where} (@${i.author}): ${i.body}\n${i.url}`).join("
         notify("address-feedback: ready", `PR #${setup.pr}: ${commits.length} commit(s), ${replies.length} reply(ies)`);
         return {
           title: commits.length ? `Push ${commits.length} fix(es) to PR #${setup.pr} and reply?` : `Reply on PR #${setup.pr}?`,
-          subject: { commits, replies, runDir: setup.runDir },
+          subject: { commits, replies, runDir: setup.runDir, revision: outputs.approve_snapshot },
           presentation: {
             schema: "pi-workflows.decision-presentation.v1",
             summary: `${commits.length} commit(s) to push, ${replies.length} GitHub reply(ies).`,
@@ -272,7 +286,11 @@ ${work.items.map((i) => `${i.where} (@${i.author}): ${i.body}\n${i.url}`).join("
 
     push_route: action({
       effect: manualEffect("address-feedback.push-route"),
-      run: ({ outputs }) => ({ route: commitsSince(setupOf(outputs)).length ? "push" : "reply" }),
+      run: ({ outputs }) => {
+        const current = observe({ ...setupOf(outputs), scope: { paths: [], includeUncommitted: true } });
+        if (JSON.stringify(current) !== JSON.stringify(outputs.approve_snapshot)) throw new Error("Git state changed after human approval; require a fresh decision");
+        return { route: commitsSince(setupOf(outputs)).length ? "push" : "reply" };
+      },
     }),
 
     push: shell({
@@ -280,7 +298,7 @@ ${work.items.map((i) => `${i.where} (@${i.author}): ${i.body}\n${i.url}`).join("
       statusDetail: "pushing",
       exec: ({ outputs }) => ({
         command: "git",
-        args: ["push", "origin", "HEAD"],
+        args: ["push", "origin", `${(outputs.approve_snapshot as Revision).head}:refs/heads/${setupOf(outputs).branch}`],
         cwd: setupOf(outputs).repository,
         timeoutMs: 5 * MINUTE,
       }),
@@ -364,12 +382,14 @@ ${work.items.map((i) => `${i.where} (@${i.author}): ${i.body}\n${i.url}`).join("
     { from: "verify", to: "verify_gate" },
     { from: "verify_gate", switch: { on: "$.route", cases: { passed: "next_item", fix: "fix_verify", escalate: "fix_escalation" } } },
     { from: "fix_verify", to: "verify" },
-    { from: "has_commits", switch: { on: "$.route", cases: { review: "final_review", approve: "approve" } } },
-    { from: "final_review", to: "check_findings" },
+    { from: "has_commits", switch: { on: "$.route", cases: { review: "review", approve: "approve_snapshot" } } },
+    { from: "review.ready", to: "check_findings" },
+    { from: "review.blocked", to: "wrap_stop" },
     { from: "check_findings", to: "review_gate" },
-    { from: "review_gate", switch: { on: "$.route", cases: { approved: "approve", fix: "fix_review", escalate: "fix_escalation" } } },
+    { from: "review_gate", switch: { on: "$.route", cases: { approved: "approve_snapshot", fix: "fix_review", escalate: "fix_escalation" } } },
     { from: "fix_review", to: "verify" },
     humanDecisionEdge({ from: "fix_escalation", choices: retryChoices, cases: { retry: "fix_user", stop: "wrap_stop" } }),
+    { from: "approve_snapshot", to: "approve" },
     humanDecisionEdge({ from: "approve", choices: pushChoices, cases: { push: "push_route", fix: "fix_user", stop: "wrap_stop" } }),
     { from: "fix_user", to: "verify" },
     { from: "push_route", switch: { on: "$.route", cases: { push: "push", reply: "reply" } } },
