@@ -1,6 +1,8 @@
 // Workflow pieces shared by develop and address-feedback: the orchestrator
 // voice, escalations, retry gates, implementer briefs, verify with in-place
 // fixes, and the final review with its skeptical finding check.
+import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
 import {
   action,
@@ -33,7 +35,7 @@ export type Setup = {
 
 export type Finding = {
   id: string;
-  source: "spec" | "standards" | "review-changes";
+  source: "spec" | "standards" | "review-changes" | "clean-code";
   severity: string;
   file: string;
   line: number | null;
@@ -73,7 +75,7 @@ const reviewSchema = obj({
     type: "array",
     items: obj({
       id: str,
-      source: { type: "string", enum: ["spec", "standards", "review-changes"] },
+      source: { type: "string", enum: ["spec", "standards", "review-changes", "clean-code"] },
       severity: str,
       file: str,
       line: { type: ["integer", "null"] },
@@ -140,6 +142,15 @@ export function attemptGate(gate: string, failed: (outputs: Outputs) => boolean,
   });
 }
 
+/** My TypeScript clean code rules; applied when a change touches TypeScript. */
+export const CLEAN_CODE_GUIDE = path.join(os.homedir(), ".pi/agent/skills/clean-code/typescript-clean-code.md");
+
+function touchesTypeScript(setup: Setup) {
+  return git(setup.repository, "diff", "--name-only", `${setup.base}...HEAD`)
+    .split("\n")
+    .some((file) => /\.(ts|tsx|mts|cts)$/.test(file));
+}
+
 // --- Implementer ---------------------------------------------------------------
 
 export function implementPrompt(setup: Setup, brief: string) {
@@ -150,7 +161,7 @@ Call the implementer sub-agent once and wait for it. Give it this brief:
 ---
 ${brief}
 
-Repository: ${setup.repository}. Follow its conventions and skills. Run the checks that cover your change; the full verify suite runs after every commit.
+Repository: ${setup.repository}. Follow its conventions and skills. For TypeScript, also follow the clean code rules in ${CLEAN_CODE_GUIDE}; where they conflict with the repo's conventions, the repo wins. Run the checks that cover your change; the full verify suite runs after every commit.
 ---
 
 If it asks you something with caller_ping, answer from the task, plan, decisions and repo precedent, then resume it. Ask me only if you truly can't decide. When it finishes, submit its final JSON unchanged.`;
@@ -227,6 +238,7 @@ export function finalReviewNode(effect: string, scope: (outputs: Outputs) => str
       trackPi(outputs);
       const setup = setupOf(outputs);
       const repoReview = hasSkill(setup.repository, "review-changes");
+      const cleanCode = touchesTypeScript(setup) && fs.existsSync(CLEAN_CODE_GUIDE) ? fs.readFileSync(CLEAN_CODE_GUIDE, "utf8") : "";
       const result = await runClaude<{ summary: string; findings: Finding[] }>({
         role: "finalReview",
         signal,
@@ -240,8 +252,13 @@ Scope instructions above override any skill default (including base...HEAD). Rev
 
 1. Use the Skill tool to run mattpocock-skills:code-review with fixed point ${setup.base}. The spec is the task below; don't look for another spec and don't ask for one.
 ${repoReview ? `2. Use the Skill tool to run the repo's review-changes skill with base ${setup.base}.` : ""}
+${cleanCode ? `3. Review the TypeScript changes in git diff ${setup.base}...HEAD against the clean code rules below. Cite the rule number in each finding's problem (e.g. "G25: magic number 86400"). Where a rule conflicts with the repo's documented conventions or its clear existing patterns, the repo wins: don't report it. Only report violations introduced by this branch.
 
-Return every finding. source is "spec" or "standards" for code-review findings and "review-changes" for the repo skill. severity: for review-changes use blocker/suggestion/nit; for standards say whether it's a documented-rule breach or a smell. documentedRule is true only when the finding cites a rule written in the repo's docs.
+<clean-code-rules>
+${cleanCode}
+</clean-code-rules>` : ""}
+
+Return every finding. source is "spec" or "standards" for code-review findings, "review-changes" for the repo skill and "clean-code" for the clean code rules. severity: for review-changes use blocker/suggestion/nit; for standards say whether it's a documented-rule breach or a smell. documentedRule is true only when the finding cites a rule written in the repo's docs.
 
 Task (the spec):
 ${setup.task}`,
@@ -252,7 +269,7 @@ ${setup.task}`,
   });
 }
 
-/** Skeptical check; only spec, documented-rule and blocker findings block. */
+/** Skeptical check; spec, clean-code, documented-rule and blocker findings block. */
 export function checkFindingsNode(effect: string, scope: (outputs: Outputs) => string = (o) => `git diff ${setupOf(o).base}...HEAD; committed changes only`) {
   return action({
     effect: manualEffect(effect),
@@ -288,6 +305,7 @@ ${JSON.stringify(review.findings, null, 2)}`,
       const fix = new Set(result.output.items.filter((i) => i.decision === "fix").map((i) => i.id));
       const blocks = (f: Finding) =>
         f.source === "spec" ||
+        f.source === "clean-code" ||
         (f.source === "standards" && f.documentedRule) ||
         (f.source === "review-changes" && /blocker/i.test(f.severity));
       writeJson(path.join(setup.runDir, `checked-findings-${Date.now()}.json`), {
