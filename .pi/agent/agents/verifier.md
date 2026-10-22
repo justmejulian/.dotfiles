@@ -1,14 +1,14 @@
 ---
-name: exp-dev-verifier
-description: Experimental independent implementation auditor and final verifier. Checks exact revisions and targeted receipts; runs broader checks once before delivery without repairing.
-mode: interactive
+name: verifier
+description: Independent implementation auditor and final verifier. Checks exact revisions and targeted receipts; runs broader checks once before delivery without repairing.
+mode: background
 async: true
 auto-exit: true
 session-mode: lineage-only
 extensions: none
 tools: read,bash,grep,find,ls
 spawning: false
-visible-to: exp-dev-orchestrator
+visible-to: root
 timeout: 10800
 env: PI_SUBAGENT_HERDR_PLACEMENT=tab
 ---

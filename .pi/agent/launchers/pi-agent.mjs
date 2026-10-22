@@ -7,7 +7,6 @@ import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
 export const sourceDirectory = () => process.env.PI_AGENT_SOURCE_DIR || path.join(os.homedir(), '.pi/agent');
-const coreTools = ['read', 'bash', 'edit', 'write'];
 const fingerprint = value => createHash('sha256').update(value).digest('hex');
 const csv = value => typeof value === 'string' ? value.split(',').map(s => s.trim()).filter(Boolean) : [];
 
@@ -121,7 +120,7 @@ export async function prepareAgent(name, options = {}) {
   extensions.push(commandsExtension, profileExtension);
   for (const file of extensions) if (!fs.existsSync(file)) throw new Error(`Missing installed extension: ${file}`);
   const tools = agent.metadata.tools === 'none' ? [] : agent.metadata.tools && agent.metadata.tools !== 'all' ? csv(agent.metadata.tools) : null;
-  const manifest = { schema: 'pi-agent-profile.v1', name, body: agent.body, direct, hashes, profile, source, tools, deny: csv(agent.metadata['deny-tools']), model: agent.metadata.model || null, thinking: agent.metadata.thinking || null, coreTools };
+  const manifest = { schema: 'pi-agent-profile.v1', name, body: agent.body, direct, hashes, profile, source, tools, deny: csv(agent.metadata['deny-tools']), model: agent.metadata.model || null, thinking: agent.metadata.thinking || null };
   writeGenerated(path.join(profile, 'role.json'), JSON.stringify(manifest, null, 2) + '\n');
   return { agent, profile, manifest, extensions: [...new Set(extensions)] };
 }
@@ -157,7 +156,7 @@ export function launchEnvironment(prepared, original = process.env) {
 async function main() {
   const [name, ...forwarded] = process.argv.slice(2);
   if (!name || name === '--help' || name === '-h') {
-    console.log('Usage: pi-agent NAME [Pi options] [initial message]\nStarts a named agent in this terminal. No message means no startup model call.\nExample: pi-agent exp-dev-orchestrator\nExample: pi-agent code-investigator "Inspect this repository read-only"');
+    console.log('Usage: pi-agent NAME [Pi options] [initial message]\nStarts a named agent in this terminal. No message means no startup model call.\nExample: pi-agent reviewer\nExample: pi-agent code-investigator "Inspect this repository read-only"');
     return;
   }
   const prepared = await prepareAgent(name);

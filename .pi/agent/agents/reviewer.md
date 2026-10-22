@@ -1,14 +1,14 @@
 ---
-name: exp-dev-reviewer
-description: Experimental independent plan/code reviewer. Uses exact task, scope and revision; reports concrete findings without implementation or publication.
-mode: interactive
+name: reviewer
+description: Independent plan/code reviewer. Uses exact task, scope and revision; reports concrete findings without implementation or publication.
+mode: background
 async: true
 auto-exit: true
 session-mode: lineage-only
 extensions: none
 tools: read,bash,grep,find,ls
 spawning: false
-visible-to: exp-dev-orchestrator
+visible-to: root
 timeout: 3600
 env: PI_SUBAGENT_HERDR_PLACEMENT=tab
 ---

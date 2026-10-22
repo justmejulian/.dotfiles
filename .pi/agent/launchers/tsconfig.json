@@ -13,5 +13,5 @@
       "@earendil-works/pi-coding-agent": ["../npm/node_modules/@earendil-works/pi-coding-agent/dist/index.d.ts"]
     }
   },
-  "include": ["profile.ts", "../extensions/agent-commands.ts"]
+  "include": ["profile.ts", "../extensions/agent-commands.ts", "../extensions/orchestration.ts"]
 }

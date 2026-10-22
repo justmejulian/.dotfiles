@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# workspace.created hook: name the first tab "ai" and start pi in it. In a git
+# workspace.created hook: name the first tab "ai" and start pi-dev in it. In a git
 # repo, add a "lazygit" tab, then a "serve" tab if the repo has a serve command
 # in serve.conf.
 set -euo pipefail
@@ -12,10 +12,10 @@ read -r first_pane first_tab cwd < <("$herdr" pane list --workspace "$ws" |
   jq -r '.result.panes[0] | "\(.pane_id) \(.tab_id) \(.cwd // "")"')
 [ -n "$cwd" ] || cwd="$HOME"
 
-# pi's herdr integration resumes this session after a restart, so restore.sh
-# doesn't need to start it again.
+# Open the conversational development orchestrator directly in the workspace cwd.
+# restore.sh continues to handle only the utility tabs.
 "$herdr" tab rename "$first_tab" ai >/dev/null
-"$herdr" pane run "$first_pane" pi >/dev/null
+"$herdr" pane run "$first_pane" pi-dev >/dev/null
 
 if is_git_repo "$cwd"; then
   git_pane=$("$herdr" tab create --workspace "$ws" --cwd "$cwd" --label lazygit --no-focus |

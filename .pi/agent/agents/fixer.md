@@ -4,9 +4,11 @@ description: Cheap fixer for mechanical lint, type and formatting failures. One 
 model: openai-codex/gpt-6-luna
 thinking: low
 allow-model-override: false
-mode: interactive
+mode: background
 async: false
 auto-exit: true
+extensions: none
+tools: read,bash,grep,find,ls,edit,write
 visible-to: implementer
 timeout: 900
 env: |

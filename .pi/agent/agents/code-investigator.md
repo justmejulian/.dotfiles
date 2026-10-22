@@ -3,7 +3,7 @@ name: code-investigator
 description: Investigates local code, tests, configuration, dependency versions, and git history. Returns evidence-backed explanations without implementing changes.
 model: openai-codex/gpt-6.1-sol
 allow-model-override: false
-mode: interactive
+mode: background
 async: true
 auto-exit: true
 env: PI_SUBAGENT_HERDR_PLACEMENT=tab

@@ -1,14 +1,14 @@
 ---
-name: exp-dev-planner
-description: Experimental precedent-first planner. Produces minimal atomic steps, explicit decisions and proportionate verification without implementing.
-mode: interactive
+name: planner
+description: Precedent-first planner. Produces minimal atomic steps, explicit decisions and proportionate verification without implementing.
+mode: background
 async: true
 auto-exit: true
 session-mode: lineage-only
 extensions: none
 tools: read,bash,grep,find,ls
 spawning: false
-visible-to: exp-dev-orchestrator
+visible-to: root
 timeout: 1800
 env: PI_SUBAGENT_HERDR_PLACEMENT=tab
 ---
