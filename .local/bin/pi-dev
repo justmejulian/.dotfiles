@@ -1,8 +1,0 @@
-#!/usr/bin/env bash
-set -euo pipefail
-# Direct specialist sessions may use an isolated profile; this mode uses normal Pi.
-if [[ -n "${PI_AGENT_SOURCE_DIR:-}" ]]; then
-  export PI_CODING_AGENT_DIR="$PI_AGENT_SOURCE_DIR"
-fi
-unset PI_AGENT_PROFILE
-exec pi --orchestrator "$@"

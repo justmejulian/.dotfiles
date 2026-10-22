@@ -84,17 +84,18 @@ test('every personal agent can be prepared as a standalone profile', async () =>
   }
 });
 
-test('actual pi-dev wrapper launches one Pi process with no initial message or fabricated child identity', () => {
+test('direct specialist CLI launches one Pi process with no initial message or fabricated child identity', () => {
   const bin = path.join(root, 'bin');
   fs.mkdirSync(bin);
   const trace = path.join(root, 'launch.json');
   fs.writeFileSync(path.join(bin, 'pi'), '#!/usr/bin/env node\nrequire("fs").writeFileSync(process.env.LAUNCH_TRACE, JSON.stringify({args:process.argv.slice(2),profile:process.env.PI_CODING_AGENT_DIR,identity:process.env.PI_SUBAGENT_AGENT}));\n', { mode: 0o755 });
-  const result = spawnSync(path.join(os.homedir(), '.local/bin/pi-dev'), [], { env: { ...process.env, PATH: `${bin}:${process.env.PATH}`, PI_AGENT_SOURCE_DIR: fixture, LAUNCH_TRACE: trace }, encoding: 'utf8', timeout: 15000 });
+  const result = spawnSync(path.join(os.homedir(), '.local/bin/pi-agent'), ['code-investigator'], { env: { ...process.env, PATH: `${bin}:${process.env.PATH}`, PI_AGENT_SOURCE_DIR: fixture, LAUNCH_TRACE: trace }, encoding: 'utf8', timeout: 15000 });
   assert.equal(result.status, 0, result.stderr);
   const launched = JSON.parse(fs.readFileSync(trace, 'utf8'));
   assert.equal(launched.identity, undefined);
-  assert.equal(launched.profile, fixture);
-  assert.deepEqual(launched.args, ['--orchestrator']);
+  assert.equal(launched.profile, path.join(fixture, 'profiles/agent-cli/code-investigator'));
+  assert.equal(launched.args[launched.args.indexOf('--name') + 1], 'code-investigator');
+  assert.equal(launched.args[launched.args.indexOf('--model') + 1], 'openai-codex/gpt-6.1-sol');
   assert.ok(!launched.args.includes('--print'));
 });
 

@@ -19,7 +19,7 @@ const spawnTools = ["subagent", "subagent_resume", "subagent_kill"];
 
 function loadProfile(): AgentProfile {
   const file = process.env.PI_AGENT_PROFILE;
-  if (!file) throw new Error("Named-agent profile was not provided; use pi-agent or pi-dev.");
+  if (!file) throw new Error("Named-agent profile was not provided; use pi-agent.");
   const profile = JSON.parse(fs.readFileSync(file, "utf8")) as AgentProfile;
   if (profile.schema !== "pi-agent-profile.v1" || !profile.name || !profile.body || !Array.isArray(profile.direct) || !Array.isArray(profile.deny) || (profile.tools !== null && !Array.isArray(profile.tools))) {
     throw new Error("Invalid named-agent profile; relaunch with pi-agent.");

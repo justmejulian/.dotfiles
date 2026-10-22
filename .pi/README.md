@@ -21,7 +21,6 @@ Disabling a mode stops future injection; it cannot erase conversation history.
 ```sh
 pi                         # ordinary Pi, no orchestration guidance
 pi --orchestrator          # ordinary Pi + orchestration guidance
-pi-dev                     # shorthand for pi --orchestrator
 pi-agent reviewer          # separate direct specialist chat
 ```
 
@@ -36,7 +35,7 @@ Manual agent commands do not need a parent LLM routing call, but are **not manag
 subagent calls**: results stay in their own conversations. The orchestrator uses
 the `subagent` tool for delegation and automatic result delivery.
 
-The Herdr new-workspace hook starts `pi-dev` in the first `ai` tab. Existing
+The Herdr new-workspace hook starts `pi --orchestrator` in the first `ai` tab. Existing
 lazygit/serve/shell tab setup is retained; existing workspaces are not restarted.
 
 ## Agents
@@ -133,7 +132,7 @@ the agent-based flow uses targeted checks and separate final verification.
 | `agent/skills/` | Personal skill definitions/symlinks |
 | `agent/workflows/` | Retained legacy workflows, helpers and history |
 | `agent/npm/`, `agent/git/` | Installed dependencies; not cleanup targets |
-| `~/.local/bin/pi-dev`, `~/.local/bin/pi-agent` | Terminal shorthands |
+| `~/.local/bin/pi-agent` | Direct specialist terminal launcher |
 | `backups/` | Recovery copies; not committed or automatically loaded |
 
 Run `/reload` after changing Pi resources. Keep credentials, sessions, histories,

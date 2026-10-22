@@ -8,7 +8,6 @@ There is no separate orchestrator agent or mandatory workflow graph.
 ```sh
 pi                       # normal Pi; minimal base context
 pi --orchestrator        # normal Pi + orchestration instructions
-pi-dev                   # shorthand for pi --orchestrator
 ```
 
 Inside a session:
@@ -26,7 +25,7 @@ custom session entry excluded from model context, so native session resume can
 restore it. Managed children do not inherit the main-session mode. Turning it off
 cannot erase instructions already present in conversation history.
 
-`pi-dev` no longer creates an isolated orchestrator profile. It uses ordinary Pi,
+`pi --orchestrator` uses ordinary Pi,
 its normal settings, providers, authentication, project context and integrations.
 The Herdr new-workspace hook opens it in the first `ai` tab. Existing workspaces
 are not restarted. Plain `pi` remains unchanged.
@@ -138,7 +137,7 @@ Existing workflow implementation files remain unchanged.
 
 Tests use temporary fixtures and fake executables: profile preparation, all-agent
 command registration, safe task quoting, tool/visibility guards, instruction-only
-mode switching, child isolation and the CLI shorthand. Native offline no-prompt
+mode switching, child isolation and direct specialist CLI launching. Native offline no-prompt
 RPC checks validate startup without model tokens. Live task delegation and actual
 Herdr tab creation are not exercised by those tests.
 
