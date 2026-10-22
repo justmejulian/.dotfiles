@@ -7,6 +7,7 @@ retain the task intake entry point.
 
 | Stage | Work | Named exits |
 | --- | --- | --- |
+| `investigate` | Read-only framing, coordinated code/web research, cross-checking, bounded follow-ups and an evidence-backed report | terminal result: `answered`, `needs_evidence`, `blocked` |
 | `plan` | Linear/linked Slack intake, precedent-first interview, decisions review, planning and Claude plan review | `ready`, `blocked` |
 | `implement` | Explicit approved plan **or** validated review, Pi `implementer`, full verification after each atomic commit, up to two in-place verification repairs | `ready`, `blocked` |
 | `review` | Existing Claude final-review skills, then skeptical checker; no edits, commits, app launch, repairs or publication | `ready`, `blocked` |
@@ -19,6 +20,46 @@ PR maintenance and reply behavior remain its own. Reviewer/checker model,
 effort, tools and repo skills are unchanged. No child run is started: typed
 `includeWorkflow()` mounts share the root's progress, cancellation and pause.
 Parents consume only named child results, never child node outputs.
+
+## Investigation: understand before changing code
+
+```text
+/workflow investigate --input-json '{"task":"Why does X happen instead of Y?","repository":"/absolute/path/to/repo"}'
+```
+
+Invoke the workflow directly; there is no separate investigation skill. Its
+methodology and research orchestration are defined in `investigate.workflow.ts`.
+`task` is required; `repository` is optional (for public-only or non-repository
+questions) and must be absolute when supplied. Optional
+`constraints` records boundaries. `maxFollowUps` defaults to 2, accepts 0–3,
+and should change only when requested. Unknown input fields are rejected.
+
+Stages: `frame → research → check → [followUp → record → check] → report`.
+One research stage coordinates the named `code-investigator` and `web-researcher`
+helpers, launching independent tracks together. If public research needs a local
+version first, that dependency is resolved before web dispatch. The parent owns
+relevant private GitHub/Linear/Slack context. Each stage saves accepted output;
+helper progress within an unsubmitted research stage is not independently durable.
+
+Cross-checking chooses answered, a targeted follow-up, or blocked. Follow-ups
+save their request and evidence separately. Exhausting the budget yields
+`needs_evidence`, never an invented conclusion. Failed/timed-out research stages
+produce a blocked report; accepted evidence remains in run state. A failed report
+leaves the prepared result saved but the run failed for ordinary terminal recovery.
+Cancellation stays terminal and never routes into recovery/reporting.
+
+Input and submitted records are limited to 8,000 JSON characters each so the
+bounded follow-up history fits the installed engine's prompt budget. Summarize
+findings with exact references instead of copying raw logs. Agent deadlines are
+explicit (10 minutes framing/report, 30 minutes research/follow-up, 15 minutes
+cross-checking); disconnected, waiting and paused time does not count.
+
+No edits, commits, installations, deployments or remote mutations are authorized.
+This is trusted-agent policy, **not an OS sandbox**: shell and helper tools must
+still be used read-only. Missing sources and skipped core tracks need a concrete
+reason. Existing workflow pause/resume/cancel and source-identity rules apply.
+Tests use scripted researchers and the installed engine; live model/helper
+handoff and real internal-service access are not exercised.
 
 ## Review only: latest commit plus endpoint-marker working-tree changes
 

@@ -26,6 +26,9 @@ Rules:
 - Make exactly one commit for the step, in the repo's commit message style (check `git log`). No co-author or AI trailers. Every commit must pass the full verify suite on its own. Don't amend or rewrite existing commits, unless the brief tells you to amend the latest commit (to fix it in place).
 - Never push, and never comment on GitHub.
 - Don't be over-specify
+- opt for a functional approach
+- keep comments minimal and avoid where possible
+- opt for functions over comments
 
 Finish with only this JSON as your final message:
 
