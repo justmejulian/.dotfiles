@@ -1,3 +1,4 @@
+// Read-only investigation: research the code and the web, cross-check, and report an evidence-backed answer.
 import { agent, assistantMessage, compute, defineWorkflow, type WorkflowNodeContext } from "@osolmaz/pi-workflows";
 import {
   MAX_INVESTIGATION_RECORD_CHARS, investigationResult, parseAssessment, parseFrame, parseInvestigationInput, parseResearch,
