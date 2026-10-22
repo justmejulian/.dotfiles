@@ -1,6 +1,6 @@
 ---
 name: typescript-clean-code
-description: Use when writing, fixing, editing, reviewing, or refactoring any TypeScript code. Enforces Robert Martin's complete Clean Code catalog—naming, functions, comments, DRY, and boundary conditions.
+description: Use only for TypeScript code (.ts, .tsx, .mts, .cts) when writing, fixing, editing, reviewing, or refactoring it. Not for JavaScript, other languages, config, docs or shell scripts. Enforces Robert Martin's Clean Code catalog adapted to TypeScript—naming, functions, comments, DRY, and boundary conditions.
 ---
 
 # Clean TypeScript: Complete Reference

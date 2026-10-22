@@ -143,7 +143,7 @@ export function attemptGate(gate: string, failed: (outputs: Outputs) => boolean,
 }
 
 /** My TypeScript clean code rules; applied when a change touches TypeScript. */
-export const CLEAN_CODE_GUIDE = path.join(os.homedir(), ".pi/agent/skills/clean-code/typescript-clean-code.md");
+export const CLEAN_CODE_GUIDE = path.join(os.homedir(), ".pi/agent/skills/typescript-clean-code/SKILL.md");
 
 function touchesTypeScript(setup: Setup) {
   return git(setup.repository, "diff", "--name-only", `${setup.base}...HEAD`)
