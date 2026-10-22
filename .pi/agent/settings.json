@@ -9,6 +9,7 @@
     "npm:@osolmaz/pi-workflows",
     "git:github.com/edxeth/pi-subagents",
     "npm:pi-annotated-reply",
-    "npm:pi-vim"
+    "npm:pi-vim",
+    "npm:pi-web-access"
   ]
 }
