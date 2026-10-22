@@ -108,7 +108,8 @@ test('native loader registers every personal agent slash command without launchi
 });
 
 test('standalone specialist profile binds its role/tools and blocks writes or undelegated children', async () => {
-  const prepared = await prepareAgent('code-investigator', { source: fixture });
+  fs.writeFileSync(path.join(fixture, 'agents/read-only-test.md'), '---\nname: read-only-test\ntools: read,bash,grep,find,ls\nspawning: false\nextensions: none\n---\nRead-only fixture role.\n');
+  const prepared = await prepareAgent('read-only-test', { source: fixture });
   const loaded = await profileExtension(prepared);
   const allowed = ['read', 'bash', 'grep', 'find', 'ls'];
   let active = ['read', 'bash', 'edit', 'write'];
@@ -121,7 +122,7 @@ test('standalone specialist profile binds its role/tools and blocks writes or un
   assert.deepEqual(active, allowed);
   const event = { messageType: 'user', systemPromptOptions: {} };
   await extension.handlers.get('before_agent_start')[0](event, ctx);
-  assert.match(event.systemPromptOptions.customPrompt, /local-code track/);
+  assert.match(event.systemPromptOptions.customPrompt, /Read-only fixture role/);
   assert.ok(!event.systemPromptOptions.customPrompt.startsWith('---'));
   const check = extension.handlers.get('tool_call')[0];
   assert.equal((await check({ toolName: 'write', input: {} }, ctx)).block, true);
