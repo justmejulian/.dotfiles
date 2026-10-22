@@ -7,20 +7,36 @@ Existing workflows and agents remain unchanged by this experiment.
 
 ## Start and use
 
-Reload Pi resources with `/reload`, then ask the root Pi session:
+Start directly in the current terminal:
 
-> Open exp-dev-orchestrator in a tab. I want to chat with it about development.
+```sh
+cd /absolute/path/to/repository
+pi-dev
+```
 
-Or include a concrete entry point and explicit repository:
+This opens an idle root Pi session with the orchestrator role, without a startup
+model prompt or an extra parent Pi session. Chat directly in that terminal. An
+explicit initial message is optional:
 
-> Open exp-dev-orchestrator for /absolute/path/to/repository. Start by reviewing
-> the current branch; do not implement anything yet.
+```sh
+pi-dev "Start by reviewing this branch. Do not change code."
+```
 
-The root launches the named agent using `subagent`, with an explicit machine
-name and title. Continue chatting **in the orchestrator's Herdr tab**. It stays
-open after answers; it does not route ordinary human questions back through the
-launching parent. The parent can remain available separately. Normal child
-lifecycle still applies: closing the launching parent may terminate its children.
+Every named agent can also start directly with `pi-agent NAME [Pi options]
+[initial message]`, for example `pi-agent exp-dev-implementer`. Direct sessions
+stay open and ask the human directly instead of using caller_ping.
+
+Inside Pi running in Herdr, run `/reload`, then `/exp-dev-orchestrator` to open
+an idle standalone tab. All enabled personal agents have corresponding slash
+commands, including `/code-investigator`, `/web-researcher`, `/scout`, `/fixer`,
+`/exp-dev-implementer` and the remaining names below. Add task text to send an
+initial prompt. `/agent NAME [task]` is the generic form. Commands require a
+Herdr-managed pane and never call a parent model to route the launch.
+
+These manual slash/CLI launches are **standalone conversations**, not managed
+subagents. Their answers stay in their own tabs, not the calling chat. Normal
+model-driven `subagent` calls remain available for managed delegation, with their
+usual result delivery and parent-close policy.
 
 Examples of requests inside that conversation:
 
@@ -45,7 +61,9 @@ Definitions: `~/.pi/agent/agents/exp-dev-*.md`.
 | `exp-dev-orchestrator` | Persistent human-facing coordinator; delegates, asks direct questions, chooses the route |
 | `exp-dev-context` | Repository/requirement intake, precedent and external run notes |
 | `exp-dev-planner` | Decisions and proportionate atomic implementation plans |
-| `exp-dev-implementer` | One authorized step/repair, targeted checks and one commit |
+| `exp-dev-implementer` | One authorized step/repair, targeted checks, one commit and delegation to its own helpers |
+| `exp-dev-scout` | Focused read-only repository lookup for the implementer |
+| `exp-dev-fixer` | One mechanical lint/type/format repair attempt; never commits |
 | `exp-dev-verifier` | Independent commit/state audit and final delivery checks |
 | `exp-dev-reviewer` | Plan or exact-scope code review |
 | `exp-dev-checker` | Skeptical finding validation |
@@ -54,16 +72,36 @@ Definitions: `~/.pi/agent/agents/exp-dev-*.md`.
 All run in dedicated interactive Herdr tabs. Models/thinking inherit from the
 launching parent; this does **not** reproduce the old workflows' fixed Claude
 model assignments. The orchestrator is root-visible, can spawn only its seven
-specialists and has no direct filesystem/shell tools. Specialists are visible
-only to that orchestrator, cannot spawn further agents, and exit automatically.
+direct specialists and has no direct filesystem/shell tools. The experimental
+implementer can additionally spawn its own scout/fixer; those helpers are visible
+only to it and cannot spawn further agents. Other specialists cannot spawn.
+Specialists/helpers exit automatically; scout/fixer calls wait synchronously.
 The orchestrator itself remains open (`auto-exit: false`); automatic completion
 and caller-ping exit tools are denied there.
 
 The orchestrator loads the installed pi-question-tool extension for direct
-question/choice forms. Other experimental agents disable normal extensions and
-use explicit native tool lists. Required subagent lifecycle support is still
-injected. A supported terminal multiplexer is required. Existing children/resumed
-sessions retain their original launch configuration.
+question/choice forms. Managed experimental specialists disable normal extensions
+and use explicit native tool lists. Required subagent lifecycle support is still
+injected for managed launches. A supported terminal multiplexer is required for
+managed interactive children; a direct CLI session itself can run in any terminal.
+Existing managed children/resumed sessions retain their original configuration.
+
+Direct CLI launches create a narrowly generated root profile under
+`~/.pi/agent/profiles/agent-cli/NAME/`. Canonical agent files are not modified.
+Only allowed immediate children become root-visible in that profile; nested
+helpers retain their parent visibility. The profile references existing auth and
+model files by symlink (no credential copies), keeps sessions/artifacts separate,
+and loads only required installed extensions plus command/profile support.
+Default model selection is retained; explicit role model/thinking settings and
+user CLI overrides are supported. Custom provider extensions are not loaded
+unless declared by the role. No package is installed by the launcher.
+
+The profile uses ordinary root semantics, not fabricated subagent identity or
+completion sidecars. It reasserts tool restrictions and rejects project agent
+overrides that would shadow its permitted catalog. These guards remain trusted
+extension code, not an OS sandbox. Direct manual sessions do not apply the
+managed-child timeout/auto-exit settings. Resume may process pending delegated
+work; the no-startup-prompt guarantee describes a fresh launch without a message.
 
 ## Default flow, not mandatory routing
 
@@ -72,7 +110,7 @@ Human chats with orchestrator
     ↕ direct questions and decisions
 Orchestrator chooses among:
     context → planning → plan review
-    approved implementation → targeted audit
+    approved implementation → scout/fixer as needed → targeted audit
     code review → skeptical check → bounded repairs
     final delivery verification → publication handoff
 ```
@@ -157,18 +195,29 @@ Other gaps compared with the current workflows:
 
 ## Validation so far
 
-- All eight definitions parse with installed pi-subagents 2.9.2.
-- Installed spawn-policy functions accept root → orchestrator → each specialist
-  and reject root → specialist; the configured remaining depth is one.
+- Canonical agent definitions are parsed with installed pi-subagents 2.9.2.
+- The orchestrator allows two nested levels, implementer one, helpers none.
+  Direct root profiles expose only immediate permitted children while preserving
+  nested-helper visibility; canonical files remain unchanged.
 - Interactive placement, inherited models, async launches and lifecycle settings
   were checked. No global spawn-depth/width ceilings were present in the inspected
   parent environment; other launching sessions may differ.
 - Pi 1.2.0's native extension loader registers both direct-question tools.
+- `node --test ~/.pi/agent/launchers/launcher.test.mjs` exercises generated profile
+  visibility, credential references rather than copies, stale-profile refusal,
+  a fake-Pi no-prompt CLI launch, all personal slash-command registrations, profile
+  prompt/tool restrictions, shadowed-catalog rejection and fake-Herdr task quoting.
+- Native Pi extension loading succeeds for the orchestrator's question, subagent,
+  command and profile extensions without starting a session or model.
+- An actual `pi-dev --offline --mode rpc --no-session` startup returned the
+  expected session name, idle state, zero user/assistant messages, zero tool calls
+  and zero tokens/cost. No initial prompt was supplied and no tabs were opened.
+- The two TypeScript extensions pass the focused launcher tsconfig typecheck;
+  all seven isolated launcher/command tests and shell syntax checks pass.
 - Direct Node import of the full tool-policy module was unavailable because that
-  checkout lacks a standalone pi-tui dependency. No dependencies were installed;
-  tool allowlists were checked from parsed definitions and inspected source.
-- No experimental agents, live nested tabs, application tests or publication
-  operations were launched. Direct conversational behavior remains untested.
+  checkout lacks a standalone pi-tui dependency. No dependencies were installed.
+- No live experimental agent conversations, nested tabs, application tests or
+  publication operations were launched. Actual Herdr/model behavior remains untested.
 - Existing workflow implementation/configuration files still match their backup.
 
 ## Before removing the workflow system

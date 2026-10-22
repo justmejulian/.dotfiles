@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+set -euo pipefail
+source_dir="${PI_AGENT_SOURCE_DIR:-$HOME/.pi/agent}"
+exec node "$source_dir/launchers/pi-agent.mjs" "$@"

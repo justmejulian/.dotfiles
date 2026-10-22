@@ -7,15 +7,35 @@ session, selected model, runtime and enabled capabilities.
 
 ## At a glance
 
-- **13 personal agents** (5 original + 8 experimental conversational-development agents)
+- **15 personal agents** (5 original + 10 experimental conversational-development agents)
 - **8 configured skills**
 - **8 personal workflows + 7 discoverable packaged workflows**
-- **7 personal extensions + 8 configured extension packages**
+- **8 personal extensions + 8 configured extension packages**
 - Default parent model: `openai-codex/gpt-6.1-sol`
 
 ## Agents
 
 Definitions: `agent/agents/`.
+
+### Starting agents directly
+
+```sh
+pi-dev                         # idle conversational development orchestrator
+pi-agent exp-dev-implementer    # idle direct implementer session
+pi-agent code-investigator "Inspect this repo read-only"
+```
+
+From Pi inside Herdr, every enabled personal agent also has a slash command:
+`/code-investigator`, `/web-researcher`, `/implementer`, `/scout`, `/fixer`, and all
+`/exp-dev-*` names below. `/agent NAME [task]` is the generic form. Without a task,
+a command opens an idle agent conversation; with a task, only that agent receives
+the initial prompt. No parent LLM routing call is used.
+
+**Manual commands open standalone sessions for direct chat**, not managed
+subagents returning results into the calling conversation. Model-driven
+`subagent` calls keep their original visibility, lifecycle and result delivery.
+Manual sessions stay open; the auto-exit/time limits below describe managed
+subagent launches. Use `/reload` to load newly added commands.
 
 | Agent | Purpose | Default model / thinking | Execution |
 | --- | --- | --- | --- |
@@ -46,16 +66,20 @@ than fixed graph routing.
 | `exp-dev-orchestrator` | Persistent conversation, delegation and direct human questions |
 | `exp-dev-context` | Repository intake, precedent and external run notes |
 | `exp-dev-planner` | Decisions and minimal atomic plans |
-| `exp-dev-implementer` | Approved single-step implementation and targeted checks |
+| `exp-dev-implementer` | Approved single-step implementation, targeted checks and delegation to its own scout/fixer |
+| `exp-dev-scout` | Focused read-only lookups for the experimental implementer |
+| `exp-dev-fixer` | One mechanical repair attempt for the experimental implementer |
 | `exp-dev-verifier` | Independent state/commit audit and final delivery checks |
 | `exp-dev-reviewer` | Plan or code review |
 | `exp-dev-checker` | Skeptical validation of findings |
 | `exp-dev-publisher` | Publication preparation only; no push/GitHub mutations yet |
 
-All are interactive Herdr tabs with inherited models. Only the orchestrator is
-root-visible; it can launch its seven specialists, which cannot spawn children.
+All experimental agents are interactive Herdr tabs with inherited models. Only the orchestrator is
+root-visible to model-driven launches; it can launch seven direct specialists.
+The experimental implementer can additionally call `exp-dev-scout` and
+`exp-dev-fixer`; other specialists cannot spawn children.
 The orchestrator stays open and uses `question`/`questionnaire` for direct human
-input; specialists auto-exit. Its filesystem/shell work is delegated.
+input; specialists/helpers auto-exit. Its filesystem/shell work is delegated.
 
 This experiment uses targeted checks per step and broader checks once before
 delivery; existing workflow verification rules have not changed. It lacks the
@@ -304,6 +328,7 @@ Definitions: `agent/extensions/`.
 | Extension | Function |
 | --- | --- |
 | `slack.ts` | Slack read tool and command |
+| `agent-commands.ts` | Direct standalone Herdr-tab slash command for each enabled personal agent, plus `/agent NAME [task]` |
 | `clear.ts` | `/clear` starts a new session |
 | `pr-review.ts` | `/pr-review [number\|url]` and automatic review-tab opening after successful `gh pr create`; only registered inside Herdr |
 | `herdr-agent-state.ts` | Report agent lifecycle/state through Herdr sockets |
@@ -341,6 +366,9 @@ were found in personal settings.
 | --- | --- |
 | `agent/settings.json` | Models, configured packages and resource selections |
 | `agent/agents/` | Personal Pi agent definitions |
+| `agent/launchers/` | Direct named-agent CLI/profile code and isolated tests |
+| `agent/profiles/agent-cli/` | Ignored generated profiles; references existing credentials/models without copying them |
+| `~/.local/bin/pi-agent`, `~/.local/bin/pi-dev` | Terminal entry points |
 | `agent/experiments/agent-development/` | Conversational orchestrator experiment guide and private run notes |
 | `agent/skills/` | Personal skill definitions/symlinks |
 | `agent/workflows/` | Personal workflows, shared helpers and workflow documentation |
