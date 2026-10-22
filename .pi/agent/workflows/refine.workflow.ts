@@ -1,7 +1,9 @@
 // Review -> authorized implementation/verify -> review; never intake or publish.
 import {
+  action,
   compute,
   defineWorkflow,
+  idempotentEffect,
   includedResult,
   includeWorkflow,
 } from "@osolmaz/pi-workflows";
@@ -15,6 +17,7 @@ import {
   parseReview,
   parseStage,
   loopDecision,
+  prepare,
   type Authority,
   type ImplementReady,
   type ReviewReady,
@@ -59,13 +62,7 @@ export default defineWorkflow({
   },
   includes: {
     review: includeWorkflow(review, {
-      input: ({ input: rawInput }) => {
-        const input = rawInput as ReturnType<typeof parseStage> & {
-          authority?: Authority;
-          maxRounds: number;
-        };
-        return parseStage(input);
-      },
+      input: ({ outputs }) => parseStage(outputs.start),
     }),
     implement: includeWorkflow(implement, {
       input: ({ input: rawInput, outputs }) => {
@@ -85,7 +82,11 @@ export default defineWorkflow({
     }),
   },
   nodes: {
-    start: compute({ run: () => ({}) }),
+    start: action({
+      effect: idempotentEffect("refine.setup"),
+      timeoutMs: 60_000,
+      run: ({ input, state }) => prepare(parseStage(input), state.runId),
+    }),
     round: compute({
       run: ({ input: rawInput, outputs }) => {
         const input = rawInput as ReturnType<typeof parseStage> & {
@@ -141,7 +142,13 @@ export default defineWorkflow({
     }),
   },
   edges: [
-    { from: "start", to: "review" },
+    {
+      from: "start",
+      switch: {
+        on: "$result.outcome",
+        cases: { ok: "review", failed: "blocked", timed_out: "blocked" },
+      },
+    },
     { from: "review.ready", to: "round" },
     { from: "review.blocked", to: "blocked" },
     {

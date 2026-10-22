@@ -26,6 +26,7 @@ import {
   prepare,
   scopeText,
   type ReviewReady,
+  type ImplementReady,
   type Prepared,
 } from "../lib/stages.ts";
 import { roles, runClaude } from "../lib/claude.ts";
@@ -403,6 +404,39 @@ test("review snapshot notices index-only changes and committed-only scope exclud
     scope: { paths: ["endpoint.ts"], includeUncommitted: false },
   };
   assert.match(scopeText(committed, observe(committed)), /Exclude index/);
+});
+
+test("refine freezes a relative base across repairs and keeps publication receipts compatible", async () => {
+  const f = fixture();
+  fs.appendFileSync(path.join(f.repository, "endpoint.ts"), "original change\n");
+  git(f.repository, "add", "endpoint.ts");
+  git(f.repository, "-c", "core.hooksPath=/dev/null", "commit", "-qm", "original change");
+  replies(issues(), checked(), clean());
+  const w = await definition("refine");
+  mockVerify(w, true);
+  const { engine, store } = harness(f.dir, implementer(f.repository));
+  try {
+    const r = await engine.run(w, { ...f.input, base: "HEAD~1", authority });
+    assert.equal(r.state.status, "completed", JSON.stringify(r.state.error));
+    const o = r.state.finalOutput as { review: ReviewReady; implementation: ImplementReady };
+    assert.equal(o.review.setup.base, f.input.base);
+    assert.equal(o.review.revision.base, f.input.base);
+    assert.equal(o.implementation.setup.base, f.input.base);
+    const reviewPrompts = fs.readFileSync(calls, "utf8").trim().split("\n")
+      .map(line => JSON.parse(line) as string[])
+      .map(args => args[args.indexOf("-p") + 1])
+      .filter(prompt => prompt.startsWith("Final review."));
+    assert.equal(reviewPrompts.length, 2);
+    for (const prompt of reviewPrompts)
+      assert.ok(prompt.includes(`Exact review scope (the same for reviewer and checker): base ${f.input.base},`));
+    const publication = await definition("publish");
+    const snapshot = publication.nodes.snapshot;
+    assert.ok(snapshot.nodeType === "action" && "run" in snapshot);
+    const result = await snapshot.run({ input: o } as unknown as WorkflowActionContext) as { route: string };
+    assert.equal(result.route, "approve");
+  } finally {
+    store.close();
+  }
 });
 
 test("refine repairs validated blockers, verifies, re-enters review with fresh child state, preserves unrelated dirt", async () => {
