@@ -374,6 +374,36 @@ test("skeptical validation separates blocking, noted and skipped findings with e
   }
 });
 
+test("validated clean-code findings reach refinement as blockers and are repaired", async () => {
+  const f = fixture();
+  const cleanCodeFinding = { ...finding, source: "clean-code", problem: "G25: unnamed constant" };
+  replies({ summary: "clean-code finding", findings: [cleanCodeFinding] }, checked(), clean());
+  const w = await definition("refine");
+  mockVerify(w, true);
+  const repair = implementer(f.repository);
+  let repairs = 0;
+  const { engine, store } = harness(f.dir, async request => {
+    assert.match(request.prompt, /G25: unnamed constant/);
+    repairs++;
+    return repair(request);
+  });
+  try {
+    const r = await engine.run(w, { ...f.input, authority });
+    assert.equal(r.state.status, "completed", JSON.stringify(r.state.error));
+    const o = r.state.finalOutput as { rounds: number; review: ReviewReady };
+    assert.equal(repairs, 1);
+    assert.equal(o.rounds, 1);
+    assert.deepEqual(o.review.blocking, []);
+    const checkedReview = ready(f.setup);
+    assert.throws(() => parseReview({ ...checkedReview, blocking: [{ ...cleanCodeFinding, source: "unknown" }] }), /invalid finding/);
+    const reviewCall = JSON.parse(fs.readFileSync(calls, "utf8").split("\n")[0]) as string[];
+    const schema = JSON.parse(reviewCall[reviewCall.indexOf("--json-schema") + 1]);
+    assert.ok(schema.properties.findings.items.properties.source.enum.includes("clean-code"));
+  } finally {
+    store.close();
+  }
+});
+
 test("review blocks when its repository evidence changes between reviewer and checker", async () => {
   const f = fixture();
   replies(issues(), checked());

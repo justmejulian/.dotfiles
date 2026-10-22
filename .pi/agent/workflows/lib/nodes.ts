@@ -33,9 +33,11 @@ export type Setup = {
   task: string;
 };
 
+export const FINDING_SOURCES = ["spec", "standards", "review-changes", "clean-code"] as const;
+
 export type Finding = {
   id: string;
-  source: "spec" | "standards" | "review-changes" | "clean-code";
+  source: (typeof FINDING_SOURCES)[number];
   severity: string;
   file: string;
   line: number | null;
@@ -75,7 +77,7 @@ const reviewSchema = obj({
     type: "array",
     items: obj({
       id: str,
-      source: { type: "string", enum: ["spec", "standards", "review-changes", "clean-code"] },
+      source: { type: "string", enum: FINDING_SOURCES },
       severity: str,
       file: str,
       line: { type: ["integer", "null"] },

@@ -4,7 +4,7 @@ import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import { git, runDirFor } from "./develop.ts";
-import type { Finding, Setup } from "./nodes.ts";
+import { FINDING_SOURCES, type Finding, type Setup } from "./nodes.ts";
 
 export type Step = {
   title: string;
@@ -172,7 +172,7 @@ export function parseReview(value: unknown): ReviewReady {
     for (const k of ["id", "file", "severity", "problem", "requiredChange"])
       text(f[k], k);
     if (
-      !["spec", "standards", "review-changes"].includes(String(f.source)) ||
+      !FINDING_SOURCES.some(source => source === f.source) ||
       typeof f.documentedRule !== "boolean" ||
       (f.line !== null && !Number.isInteger(f.line))
     )
