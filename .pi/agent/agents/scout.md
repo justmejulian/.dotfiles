@@ -4,8 +4,10 @@ description: Cheap read-only lookup for the implementer. Finds where something l
 model: openai-codex/gpt-6-luna
 thinking: low
 allow-model-override: false
-mode: background
+mode: interactive
 async: false
+auto-exit: true
+env: PI_SUBAGENT_HERDR_PLACEMENT=tab
 tools: read,grep,find,ls
 visible-to: implementer
 timeout: 600

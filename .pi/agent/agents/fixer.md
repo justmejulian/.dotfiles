@@ -4,11 +4,14 @@ description: Cheap fixer for mechanical lint, type and formatting failures. One 
 model: openai-codex/gpt-6-luna
 thinking: low
 allow-model-override: false
-mode: background
+mode: interactive
 async: false
+auto-exit: true
 visible-to: implementer
 timeout: 900
-env: PI_WORKFLOW_NO_PUSH=1
+env: |
+  PI_SUBAGENT_HERDR_PLACEMENT=tab
+  PI_WORKFLOW_NO_PUSH=1
 ---
 You fix the mechanical failures in the task: lint, type and formatting errors. The task names the failing command and its output.
 

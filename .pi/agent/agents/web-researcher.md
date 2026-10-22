@@ -3,9 +3,10 @@ name: web-researcher
 description: Investigates public documentation, upstream source, changelogs, and issues. Returns linked, version-aware evidence without changing local code or remote state.
 model: openai-codex/gpt-6-luna
 allow-model-override: false
-mode: background
+mode: interactive
 async: true
 auto-exit: true
+env: PI_SUBAGENT_HERDR_PLACEMENT=tab
 session-mode: lineage-only
 extensions: npm:pi-web-access
 tools: all

@@ -10,6 +10,7 @@
     "git:github.com/edxeth/pi-subagents",
     "npm:pi-annotated-reply",
     "npm:pi-vim",
-    "npm:pi-web-access"
+    "npm:pi-web-access",
+    "npm:pi-question-tool@0.1.1"
   ]
 }
