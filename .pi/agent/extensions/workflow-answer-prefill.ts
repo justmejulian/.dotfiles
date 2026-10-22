@@ -3,7 +3,8 @@
 //
 // When a decision appears, pick a choice from a list; choices that take text
 // ask for it next. The finished answer command is then left in the input, so
-// one Enter sends it.
+// one Enter sends it. Existing drafts are preserved; the command is shown in
+// chat instead when the editor isn't empty.
 // Esc leaves `/workflow answer <id> ` in the input; /decide reopens the picker
 // for the latest pending decision.
 //
@@ -55,6 +56,20 @@ export default function (pi) {
   let timer: ReturnType<typeof setInterval> | undefined;
   let asking = false;
 
+  function offerCommand(ctx, command: string, notice: string) {
+    if (ctx.ui.getEditorText()) {
+      pi.sendMessage({
+        customType: "workflow-decision-answer",
+        content: `Your editor draft was preserved. Copy this command when ready:\n\n${command}`,
+        display: true,
+      });
+      ctx.ui.notify("Draft preserved. The decision command is shown in chat.", "info");
+      return;
+    }
+    ctx.ui.pasteToEditor(command);
+    ctx.ui.notify(notice, "info");
+  }
+
   async function ask(ctx, decision: Decision) {
     if (asking) return;
     asking = true;
@@ -66,8 +81,7 @@ export default function (pi) {
       const picked = await ctx.ui.select(decision.title, labels);
       const choice = ids[labels.indexOf(picked)];
       if (!choice) {
-        ctx.ui.pasteToEditor(`/workflow answer ${decision.id} `);
-        ctx.ui.notify("Decision still open. /decide reopens it.", "info");
+        offerCommand(ctx, `/workflow answer ${decision.id} `, "Decision still open. /decide reopens it.");
         return;
       }
       const response: { choice: string; input?: Record<string, string> } = { choice };
@@ -82,9 +96,7 @@ export default function (pi) {
       }
       // Extensions can't run commands (sendUserMessage goes to the model), so
       // leave the finished command in the input for one Enter.
-      ctx.ui.setEditorText("");
-      ctx.ui.pasteToEditor(`/workflow answer ${decision.id} ${JSON.stringify(response)}`);
-      ctx.ui.notify("Press Enter to send your answer.", "info");
+      offerCommand(ctx, `/workflow answer ${decision.id} ${JSON.stringify(response)}`, "Press Enter to send your answer.");
     } catch (error) {
       ctx.ui.notify(`Couldn't open the decision picker: ${error instanceof Error ? error.message : error}`, "error");
     } finally {
