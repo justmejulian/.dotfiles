@@ -16,8 +16,8 @@ export default function (pi) {
       link: Type.String({ description: "Slack message link" }),
       question: Type.Optional(Type.String({ description: "What to find out from the messages" })),
     }),
-    async execute(_id, params, _signal, _onUpdate, ctx) {
-      const result = await fetchSlack(params.link, { question: params.question, cwd: ctx?.cwd });
+    async execute(_id, params, signal, _onUpdate, ctx) {
+      const result = await fetchSlack(params.link, { question: params.question, cwd: ctx?.cwd, signal });
       return { content: [{ type: "text", text: formatSlack(result) }], details: result };
     },
   });

@@ -1017,13 +1017,8 @@ test("Claude cancellation stops an already-running mock process", async () => {
   const started = `${queue}.started`;
   fs.rmSync(started, { force: true });
   const controller = new AbortController();
-  const watcher = fs.watch(root, (_event, file) => {
-    if (
-      file === path.basename(started) &&
-      fs.existsSync(started) &&
-      fs.readFileSync(started, "utf8")
-    )
-      controller.abort();
+  fs.watchFile(started, { interval: 10 }, (stat) => {
+    if (stat.size > 0) controller.abort();
   });
   try {
     await assert.rejects(
@@ -1040,6 +1035,6 @@ test("Claude cancellation stops an already-running mock process", async () => {
     const pid = Number(fs.readFileSync(started, "utf8"));
     assert.throws(() => process.kill(pid, 0), /ESRCH/);
   } finally {
-    watcher.close();
+    fs.unwatchFile(started);
   }
 });
