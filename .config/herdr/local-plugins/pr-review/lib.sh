@@ -115,6 +115,42 @@ Triage this feedback in our current conversation and use managed subagents where
   fi
 )
 
+# Bounded Herdr-only retries after a one-shot watcher finishes. No GitHub polling.
+deliver_pending_feedback() {
+  local dir attempt output
+  dir=$(state_dir "$1" "$2") || return 1
+  for attempt in 0 1 2 3 4 5 6 7 8 9 10; do
+    output=$(launch_pending "$1" "$2" "$3") || { printf '%s\n' "$output"; return 1; }
+    [ -z "$output" ] || printf '%s\n' "$output"
+    [ -s "$dir/pending.jsonl" ] || return 0
+    if [ -f "$dir/delivery-inflight.json" ]; then return 0; fi
+    case "$output" in
+      *"waiting for main Pi"*|*"main Pi is no longer idle"*|*"rejected the prompt as blocked"*) ;;
+      *) echo "⏸ queue retained; reopen PR review after reconciling the delivery target"; return 0 ;;
+    esac
+    if [ "$attempt" -eq 10 ]; then
+      echo "⏸ delivery retry window ended; queue retained for next watcher/reopen"
+      return 0
+    fi
+    sleep 30 || return 1
+  done
+}
+
+# Recover durable items if a watcher stopped before writing its detection ledger.
+feedback_was_queued() {
+  local dir key=$3 batch
+  dir=$(state_dir "$1" "$2") || return 1
+  if [ -f "$dir/pending.jsonl" ] &&
+    jq -se --arg key "$key" 'any(.[]; .key == $key)' "$dir/pending.jsonl" >/dev/null; then
+    return 0
+  fi
+  for batch in "$dir"/batch-*.json; do
+    [ -f "$batch" ] || continue
+    if jq -e --arg key "$key" 'any(.items[]?; .key == $key)' "$batch" >/dev/null; then return 0; fi
+  done
+  return 1
+}
+
 # wait_refresh: sleep until the next refresh, or until Enter is pressed.
 wait_refresh() {
   printf '\nnext check %s, Enter to check now ' "$(date -v+"${interval}"S +%H:%M)"
@@ -151,7 +187,8 @@ comment_query='query($owner:String!,$repo:String!,$pr:Int!){repository(owner:$ow
 # my own comments too (for testing on a PR where I'm the only reviewer).
 fetch_comment_items() {
   local me ignore
-  me=$(gh api user -q .login)
+  me=$(gh api user -q .login) || return 1
+  [ -n "$me" ] || return 1
   [ -n "${PR_REVIEW_INCLUDE_ME:-}" ] && me=""
   ignore=$(grep -v '^#' "$plugin_dir/ignore-authors" 2>/dev/null | jq -R . | jq -s .)
   gh api graphql -F owner="${1%/*}" -F repo="${1#*/}" -F pr="$2" -f query="$comment_query" |
@@ -162,7 +199,9 @@ fetch_comment_items() {
       def item($key; $kind; $author; $where; $url; $body):
         {key: $key, kind: $kind, author: ($author | who), authorIsBot: ($author.__typename == "Bot"),
          where: $where, url: $url, body: ($body | gsub("[\t\r\n]+"; " "))};
-      .data.repository.pullRequest
+      if ((.errors // []) | length) > 0 then error("GitHub GraphQL returned errors")
+      elif (.data.repository.pullRequest | type) != "object" then error("missing pull request")
+      else .data.repository.pullRequest end
       | ( .reviewThreads.nodes[]
           | select(.isResolved | not)
           | .comments.nodes[0] as $c

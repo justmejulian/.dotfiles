@@ -26,38 +26,6 @@ head_sha() {
   printf '%s' "$value"
 }
 
-flush_feedback() {
-  local attempt output
-  for attempt in 0 1 2 3 4 5 6 7 8 9 10; do
-    output=$(launch_pending "$repo" "$pr" "$pi_pane") || { printf '%s\n' "$output"; return 1; }
-    [ -z "$output" ] || printf '%s\n' "$output"
-    [ -s "$dir/pending.jsonl" ] || return 0
-    if [ -f "$dir/delivery-inflight.json" ]; then return 0; fi
-    case "$output" in
-      *"waiting for main Pi"*|*"main Pi is no longer idle"*|*"rejected the prompt as blocked"*) ;;
-      *) echo "⏸ queue retained; reopen PR review after reconciling the delivery target"; return 0 ;;
-    esac
-    if [ "$attempt" -eq 10 ]; then
-      echo "⏸ delivery retry window ended; queue retained for next watcher/reopen"
-      return 0
-    fi
-    sleep 30 || return 1
-  done
-}
-
-result_was_queued() {
-  local key=$1 batch
-  if [ -f "$dir/pending.jsonl" ] &&
-    jq -se --arg key "$key" 'any(.[]; .key == $key)' "$dir/pending.jsonl" >/dev/null; then
-    return 0
-  fi
-  for batch in "$dir"/batch-*.json; do
-    [ -f "$batch" ] || continue
-    if jq -e --arg key "$key" 'any(.items[]?; .key == $key)' "$batch" >/dev/null; then return 0; fi
-  done
-  return 1
-}
-
 watch_once() {
   local cycle sha current watch_rc summary_rc raw checks digest key item counts failed outcome expected_rc
   local results marker notice
@@ -144,7 +112,7 @@ watch_once() {
       continue
     fi
     if [ ! -f "$marker" ]; then
-      if ! result_was_queued "$key"; then
+      if ! feedback_was_queued "$repo" "$pr" "$key"; then
         queue_items "$repo" "$pr" "$item" || return 1
       fi
       printf '%s\n' "$key" >"$marker" || return 1
@@ -166,5 +134,5 @@ watch_once() {
 
 watch_once
 result=$?
-flush_feedback || { [ "$result" -ne 0 ] || result=1; }
+deliver_pending_feedback "$repo" "$pr" "$pi_pane" || { [ "$result" -ne 0 ] || result=1; }
 exit "$result"
