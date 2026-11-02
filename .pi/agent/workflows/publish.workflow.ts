@@ -181,7 +181,7 @@ export default defineWorkflow({
             runDir: setup.runDir,
             signal,
             schema: obj({ url: str }),
-            prompt: `The approved commit ${input.review.revision.head} on branch ${setup.branch} is pushed. Use the Skill tool to run ${skill}, then gh pr create --draft --head ${JSON.stringify(setup.branch)}. Never push, merge, mark ready, or delete branches. Base the body on diff against ${setup.base}. ${setup.linearId ? `Linear issue: ${setup.linearId}.` : ""} Full verify passed; use the supplied evidence instead of rerunning it: ${JSON.stringify(input.implementation.verification)}. Task: ${setup.task}. Return the draft PR URL.`,
+            prompt: `The approved commit ${input.review.revision.head} on branch ${setup.branch} is pushed. Use the Skill tool to run ${skill}, then gh pr create --draft --head ${JSON.stringify(setup.branch)} --assignee jv-foxglove --label 'ai review'. Never push, merge, mark ready, or delete branches. Base the body on diff against ${setup.base}. ${setup.linearId ? `Linear issue: ${setup.linearId}.` : ""} Full verify passed; use the supplied evidence instead of rerunning it: ${JSON.stringify(input.implementation.verification)}. Task: ${setup.task}. Return the draft PR URL.`,
           })
         ).output;
       },
