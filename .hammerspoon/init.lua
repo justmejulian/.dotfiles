@@ -140,45 +140,132 @@ end)
 
 screenWatcher.start()
 
+-- Highlight the focused Screen Sharing window without intercepting clicks.
+local screenSharingBorder = hs.canvas.new { x = 0, y = 0, w = 1, h = 1 }
+screenSharingBorder:level(hs.canvas.windowLevels.overlay)
+screenSharingBorder:behavior { 'canJoinAllSpaces', 'fullScreenAuxiliary', 'stationary' }
+screenSharingBorder:clickActivating(false)
+screenSharingBorder:canvasMouseEvents(false, false, false, false)
+screenSharingBorder[1] = {
+  type = 'rectangle',
+  action = 'stroke',
+  strokeColor = { red = 1, green = 0.1, blue = 0.1, alpha = 1 },
+  strokeWidth = 4,
+  frame = { x = 2, y = 2, w = 1, h = 1 },
+}
+
+local function updateScreenSharingBorder()
+  local win = hs.window.focusedWindow()
+  local app = win and win:application()
+  if not app or app:bundleID() ~= 'com.apple.ScreenSharing' then
+    screenSharingBorder:hide()
+    return
+  end
+
+  local frame = win:frame()
+  if frame.w <= 4 or frame.h <= 4 then
+    screenSharingBorder:hide()
+    return
+  end
+
+  screenSharingBorder:frame(frame)
+  screenSharingBorder[1].frame = { x = 2, y = 2, w = frame.w - 4, h = frame.h - 4 }
+  screenSharingBorder:show()
+end
+
+-- Polling also follows resizing, fullscreen transitions, and Space changes.
+screenSharingBorderTimer = hs.timer.doEvery(0.1, updateScreenSharingBorder)
+updateScreenSharingBorder()
+
+-- Release local shortcuts while Screen Sharing is frontmost.
+local hotkeys = {}
+
+-- Set { keepInScreenSharing = true } as the fourth argument to reserve a
+-- combination locally, even while controlling the remote Mac.
+local function bind(modifiers, key, callback, options)
+  local hotkey = hs.hotkey.bind(modifiers, key, callback)
+  table.insert(hotkeys, {
+    hotkey = hotkey,
+    keepInScreenSharing = options and options.keepInScreenSharing or false,
+  })
+  return hotkey
+end
+
+local function updateHotkeys()
+  local app = hs.application.frontmostApplication()
+  local isScreenSharing = app and app:bundleID() == 'com.apple.ScreenSharing'
+
+  for _, binding in ipairs(hotkeys) do
+    if isScreenSharing and not binding.keepInScreenSharing then
+      binding.hotkey:disable()
+    else
+      binding.hotkey:enable()
+    end
+  end
+end
+
+screenSharingWatcher = hs.application.watcher.new(function(_, event)
+  if event == hs.application.watcher.activated then
+    updateHotkeys()
+    updateScreenSharingBorder()
+  end
+end)
+screenSharingWatcher:start()
+
+-- Shortcuts reserved for the host, including during Screen Sharing.
+bind(hyper, 'd', function()
+  hs.application.launchOrFocusByBundleID 'com.apple.ScreenSharing'
+end, { keepInScreenSharing = true })
+
+bind(hyper, 'escape', function()
+  local app = hs.application.frontmostApplication()
+  if app and app:bundleID() == 'com.apple.ScreenSharing' then
+    app:hide()
+  end
+  hs.spaces.toggleShowDesktop()
+end, { keepInScreenSharing = true })
+
 -- Reload config
-hs.hotkey.bind(hyper, 'r', hs.reload)
+bind(hyper, 'r', hs.reload)
 
 -- App summon: launch, focus, or rotate windows
 for key, name in pairs(apps) do
-  hs.hotkey.bind(hyper, key, function()
+  bind(hyper, key, function()
     summon.launchOrFocusOrRotate(name)
-  end)
+  end, { keepInScreenSharing = key == 'm' })
 end
 
 -- Cycle between Claude and ChatGPT
-hs.hotkey.bind(hyper, 'c', function()
+bind(hyper, 'c', function()
   summon.cycleApps { 'Claude', 'ChatGPT' }
 end)
 
 -- Window sizing
-hs.hotkey.bind(cmdalt, 'return', windows.maximize)
-hs.hotkey.bind(cmdalt, 'left', windows.snapLeft)
-hs.hotkey.bind(cmdalt, 'right', windows.snapRight)
-hs.hotkey.bind(cmdalt, '1', function()
+bind(cmdalt, 'return', windows.maximize)
+bind(cmdalt, 'left', windows.snapLeft)
+bind(cmdalt, 'right', windows.snapRight)
+bind(cmdalt, '1', function()
   windows.snapThird(1)
 end)
-hs.hotkey.bind(cmdalt, '2', function()
+bind(cmdalt, '2', function()
   windows.snapThird(2)
 end)
-hs.hotkey.bind(cmdalt, '3', function()
+bind(cmdalt, '3', function()
   windows.snapThird(3)
 end)
 
 -- Move window to next screen (and maximize)
-hs.hotkey.bind(cmdalt, 'm', windows.moveToNextScreen)
+bind(cmdalt, 'm', windows.moveToNextScreen)
 
 -- Move window between spaces
-hs.hotkey.bind(cmdalt, 'n', function()
+bind(cmdalt, 'n', function()
   spaces.moveWindowToSpace 'next'
 end)
-hs.hotkey.bind(cmdaltshift, 'n', function()
+bind(cmdaltshift, 'n', function()
   spaces.moveWindowToSpace 'prev'
 end)
+
+updateHotkeys()
 
 -- ActivityWatch: ask what I was doing after AFK periods
 awAway.start()
