@@ -31,6 +31,20 @@ local hyper = { 'cmd', 'alt', 'ctrl' }
 local cmdalt = { 'cmd', 'alt' }
 local cmdaltshift = { 'cmd', 'alt', 'shift' }
 
+-- Observe Hyper combinations even when local hotkeys are disabled for Screen Sharing.
+hyperKeyLogger = hs.eventtap.new({ hs.eventtap.event.types.keyDown }, function(event)
+  local flags = event:getFlags()
+  if flags.cmd and flags.alt and flags.ctrl then
+    local keycode = event:getKeyCode()
+    local key = hs.keycodes.map[keycode] or tostring(keycode)
+    local app = hs.application.frontmostApplication()
+    print(string.format('Hyper%s+%s observed; frontmost=%s',
+      flags.shift and '+Shift' or '', key, app and app:bundleID() or 'unknown'))
+  end
+  return false
+end)
+hyperKeyLogger:start()
+
 -- summon key → app name
 local apps = {
   m = 'Slack', -- messages
@@ -188,7 +202,12 @@ local hotkeys = {}
 -- Set { keepInScreenSharing = true } as the fourth argument to reserve a
 -- combination locally, even while controlling the remote Mac.
 local function bind(modifiers, key, callback, options)
-  local hotkey = hs.hotkey.bind(modifiers, key, callback)
+  local hotkey = hs.hotkey.bind(modifiers, key, function()
+    if modifiers == hyper then
+      print('Hyper+' .. key .. ' pressed')
+    end
+    callback()
+  end)
   table.insert(hotkeys, {
     hotkey = hotkey,
     keepInScreenSharing = options and options.keepInScreenSharing or false,
