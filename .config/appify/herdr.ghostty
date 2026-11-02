@@ -33,7 +33,10 @@ keybind = cmd+t=unbind
 keybind = cmd+n=unbind
 keybind = cmd+shift+n=unbind
 keybind = cmd+w=unbind
+keybind = cmd+h=unbind
+keybind = cmd+j=unbind
 keybind = cmd+k=unbind
+keybind = cmd+l=unbind
 keybind = cmd+b=unbind
 keybind = cmd+shift+w=unbind
 keybind = cmd+r=unbind
@@ -51,6 +54,7 @@ keybind = cmd+shift+bracket_left=unbind
 keybind = cmd+shift+bracket_right=unbind
 keybind = cmd+e=unbind
 keybind = cmd+p=unbind
+keybind = cmd+shift+p=unbind
 keybind = cmd+alt+left=unbind
 keybind = cmd+alt+right=unbind
 keybind = cmd+alt+up=unbind

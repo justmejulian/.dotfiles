@@ -4,6 +4,10 @@ onboarding = false
 # Catppuccin Mocha, matching Ghostty and Neovim.
 name = "catppuccin"
 
+[theme.custom]
+# Highlight the active Space and focused Agent against the dark sidebar.
+active_row_bg = "#263450"
+
 [ui]
 # Agents waiting on me first in the sidebar.
 agent_panel_sort = "priority"
@@ -42,7 +46,7 @@ rows = [
 #
 # Herdr catches these keys before the pane sees them. Before adding or changing
 # a binding, check it is not used by Claude Code, Codex, Neovim
-# (~/.config/nvim, e.g. <D-c> and <D-s> in lua/config/keymaps.lua) or tuicr.
+# (~/.config/nvim, e.g. <D-c> and <D-s> in lua/config/keymaps.lua).
 [keys]
 goto = "cmd+o"
 new_worktree = "cmd+n"
@@ -63,11 +67,11 @@ split_horizontal = "cmd+shift+d"
 close_pane = "cmd+shift+w"
 zoom = "cmd+shift+enter"
 toggle_sidebar = "cmd+b"
-focus_pane_left = "cmd+alt+h"
-focus_pane_down = "cmd+alt+j"
-focus_pane_up = "cmd+alt+k"
-focus_pane_right = "cmd+alt+l"
+focus_pane_left = "cmd+h"
+focus_pane_down = "cmd+j"
+focus_pane_up = "cmd+k"
+focus_pane_right = "cmd+l"
 
-next_agent = "cmd+]"
-previous_agent = "cmd+["
+next_agent = "ctrl+]"
+previous_agent = "ctrl+["
 open_notification_target = "cmd+;"

@@ -4,6 +4,10 @@ onboarding = false
 # Catppuccin Mocha, matching Ghostty and Neovim.
 name = "catppuccin"
 
+[theme.custom]
+# Highlight the active Space and focused Agent against the dark sidebar.
+active_row_bg = "#263450"
+
 [ui.toast]
 delivery = "terminal"
 
@@ -30,6 +34,15 @@ rows = [
   ],
 ]
 
+# Cmd pane navigation leaves Ctrl+H/J/K/L available to Neovim.
+[keys]
+focus_pane_left = "cmd+h"
+focus_pane_down = "cmd+j"
+focus_pane_up = "cmd+k"
+focus_pane_right = "cmd+l"
+next_agent = "ctrl+]"
+previous_agent = "ctrl+["
+
 # herdr-nvim (herdr plugin install ChmaraX/herdr-nvim). Custom commands are read
 # from the server config, so they live here, not in app.toml.
 [[keys.command]]
@@ -39,7 +52,7 @@ command = "chmarax.herdr-nvim.toggle"
 description = "nvim sidebar"
 
 [[keys.command]]
-key = "cmd+p"
+key = "cmd+shift+p"
 type = "plugin_action"
 command = "chmarax.herdr-nvim.pick-file"
 description = "open file from agent output"
@@ -68,7 +81,7 @@ height = "40%"
 # operations, plugin actions and own commands from
 # ~/.config/herdr/plugins/config/vjeantet.palette/config.toml.
 [[keys.command]]
-key = "cmd+k"
+key = "cmd+p"
 type = "plugin_action"
 command = "vjeantet.palette.open"
 description = "command palette"
