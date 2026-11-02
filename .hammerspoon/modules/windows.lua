@@ -32,6 +32,15 @@ function M.snapThird(n)
   end
 end
 
+-- side = 'left' or 'right'
+function M.snapTwoThirds(side)
+  local win = hs.window.focusedWindow()
+  if win then
+    local f = win:screen():frame()
+    win:setFrame { x = f.x + (side == 'right' and f.w / 3 or 0), y = f.y, w = f.w * 2 / 3, h = f.h }
+  end
+end
+
 function M.moveToNextScreen()
   local win = hs.window.focusedWindow()
   if win then

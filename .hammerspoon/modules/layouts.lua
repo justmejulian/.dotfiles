@@ -9,6 +9,7 @@ end
 function M.apply(name)
   local fn = M._layouts[name]
   if fn then
+    print('layouts: applying ' .. name)
     fn(hs.screen.allScreens())
   else
     print('layouts: unknown layout: ' .. tostring(name))

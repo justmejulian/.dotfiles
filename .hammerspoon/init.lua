@@ -68,8 +68,13 @@ layouts.register('ghostty_right', function(_screens)
 end)
 
 layouts.register('non_ghostty_left', function(_screens)
+  local secondary = layouts.screenByName 'LG HDR WQHD'
+  if not secondary then
+    return
+  end
+
   for _, win in ipairs(hs.window.visibleWindows()) do
-    if win:isStandard() and not win:isFullScreen() then
+    if win:isStandard() and not win:isFullScreen() and win:screen():id() == secondary:id() then
       local app = win:application()
       if app and app:name() ~= 'Ghostty' then
         windows.snapLeft(win)
@@ -240,6 +245,34 @@ bind(hyper, 'c', function()
   summon.cycleApps { 'Claude', 'ChatGPT' }
 end)
 
+-- Toggle Notification Center with Globe+N after releasing Hyper.
+bind(hyper, 'n', function()
+  hs.timer.waitUntil(function()
+    local mods = hs.eventtap.checkKeyboardModifiers()
+    return not (mods.cmd or mods.alt or mods.ctrl or mods.shift)
+  end, function()
+    for _, isDown in ipairs { true, false } do
+      local event = hs.eventtap.event.newKeyEvent('n', isDown)
+      event:setFlags { fn = true }
+      event:post()
+    end
+  end, 0.02)
+end)
+
+-- Toggle Control Center with Globe+C after releasing Hyper.
+bind(hyper, 's', function()
+  hs.timer.waitUntil(function()
+    local mods = hs.eventtap.checkKeyboardModifiers()
+    return not (mods.cmd or mods.alt or mods.ctrl or mods.shift)
+  end, function()
+    for _, isDown in ipairs { true, false } do
+      local event = hs.eventtap.event.newKeyEvent('c', isDown)
+      event:setFlags { fn = true }
+      event:post()
+    end
+  end, 0.02)
+end)
+
 -- Window sizing
 bind(cmdalt, 'return', windows.maximize)
 bind(cmdalt, 'left', windows.snapLeft)
@@ -252,6 +285,14 @@ bind(cmdalt, '2', function()
 end)
 bind(cmdalt, '3', function()
   windows.snapThird(3)
+end)
+
+-- Two-thirds width, anchored to either side
+bind(cmdalt, '4', function()
+  windows.snapTwoThirds 'left'
+end)
+bind(cmdalt, '5', function()
+  windows.snapTwoThirds 'right'
 end)
 
 -- Move window to next screen (and maximize)

@@ -3,8 +3,10 @@
 --   "I was here"           → rewrite the AFK event as not-afk, so the focused app counts
 --   "Save" (Enter) + text  → keep it as AFK and add the text as the reason on the AFK event;
 --                            past reasons are suggested below the input, fuzzy filtered as you type
---   "Save" empty           → keep it as AFK
---   "Cancel" (Escape)      → keep it as AFK
+--   "Save" empty           → keep it as AFK, with an empty reason
+--   "Cancel" (Escape)      → keep it as AFK, with an empty reason
+-- Every finished AFK event gets a reason key, empty when there is none, so it
+-- can be filled in later in the web UI (which only edits existing keys).
 -- Sleep needs no separate prompt: the screen locks on sleep, so the AFK watcher
 -- is already AFK and its event spans the sleep.
 local M = {}
@@ -262,8 +264,9 @@ local function ask(bucket, event)
         M._prompting = false
         if action == 'here' then
           rewrite(bucket, event, { status = 'not-afk' })
-        elseif action == 'save' and text and text:match '%S' then
-          rewrite(bucket, event, { status = 'afk', reason = text:match '^%s*(.-)%s*$' })
+        else
+          local reason = action == 'save' and text and text:match '^%s*(.-)%s*$' or ''
+          rewrite(bucket, event, { status = 'afk', reason = reason })
         end
       end)
     end)
@@ -294,15 +297,17 @@ local function poll()
     for i = 2, #events do
       local e = events[i]
       if e.data.status == 'afk' then
-        if e.data.reason then return end -- already answered
+        if e.data.reason ~= nil then return end -- answered or filled in, and so are older ones
         local ended = parseUtc(e.timestamp) + e.duration
         if e.id > lastAsked and e.duration >= M.minAway and os.time() - ended <= M.maxAge then
           hs.settings.set(settingsKey, e.id)
           -- leave the HTTP callback before showing the dialog; keep a
           -- reference so the timer is not garbage collected before it fires
           M._askTimer = hs.timer.doAfter(0, function() ask(bucket, e) end)
+          return
         end
-        return
+        -- not asked about (short, old or asked before): add the key for the web UI
+        rewrite(bucket, e, { status = 'afk', reason = '' })
       end
     end
   end)

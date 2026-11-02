@@ -73,6 +73,7 @@ Window sizing and movement. All functions accept an optional `win` param — def
 | `cmd+alt+left` | Snap left half |
 | `cmd+alt+right` | Snap right half |
 | `cmd+alt+1/2/3` | Snap to third |
+| `cmd+alt+4/5` | Snap left/right two-thirds |
 | `cmd+alt+m` | Move to next screen |
 | `hyper+h` | Focus window west |
 | `hyper+l` | Focus window east |
@@ -113,17 +114,21 @@ It asks in a small dialog window (a webview), so Hammerspoon keeps working while
 |---|---|
 | **I was here** | AFK event is changed to `not-afk` in place, so the focused app counts again |
 | **Save** / Enter + text | Stays AFK, text is added as `reason` to the AFK event (visible in Timeline) |
-| **Save** empty, **Cancel** / Escape, closing the window | Stays AFK |
+| **Save** empty, **Cancel** / Escape, closing the window | Stays AFK, with an empty `reason` |
 
 Reasons from the last 60 days are listed below the input, fuzzy filtered as you type: ↑/↓ + Enter or click to pick one, Tab to copy it into the input.
 
-Already answered events (with a `reason`) are not asked again. Sleep needs no separate prompt: the screen locks on sleep, so the AFK event spans the sleep and is asked about after waking.
+Every finished AFK event gets a `reason` key, empty when there is none (also the ones too short or too old to ask about), so it can be filled in later in the web UI, which only edits existing keys. Events with a `reason` key are not asked again. Sleep needs no separate prompt: the screen locks on sleep, so the AFK event spans the sleep and is asked about after waking.
 
 Tune `minAway` / `maxAge` at the top of the module.
 
 ---
 
 ## Misc
+
+**Control Center:** `hyper+s`
+
+**Notification Center:** `hyper+n`
 
 **Reload config:** `hyper+r`
 
