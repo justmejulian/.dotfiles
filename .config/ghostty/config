@@ -14,7 +14,9 @@ macos-titlebar-style = tabs
 window-padding-x = 8
 window-padding-y = 8
 
-keybind = cmd+opt+h=goto_split:left
-keybind = cmd+opt+l=goto_split:right
+keybind = cmd+h=goto_split:left
+keybind = cmd+j=goto_split:down
+keybind = cmd+k=goto_split:up
+keybind = cmd+l=goto_split:right
 
 keybind = global:cmd+ctrl+alt+q=toggle_quick_terminal

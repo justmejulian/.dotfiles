@@ -36,7 +36,7 @@ defaults write NSGlobalDomain AppleShowAllExtensions -bool true
 defaults write com.apple.finder ShowPathbar -bool true
 
 # Finder: View > as list
-defaults write com.apple.finder FXPreferredViewStyle -string "nlsv"
+defaults write com.apple.finder FXPreferredViewStyle -string "Nlsv"
 
 # Keyboard: enable moving focus with Tab
 defaults write NSGlobalDomain AppleKeyboardUIMode -int "0"

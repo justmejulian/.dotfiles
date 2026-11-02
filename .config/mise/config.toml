@@ -1,5 +1,5 @@
 [settings]
-idiomatic_version_file_enable_tools = ["node", "python"]
+idiomatic_version_file_enable_tools = ["node", "python", "rust"]
 python.uv_venv_auto = "source"
 
 [tools]
@@ -9,4 +9,5 @@ java = "latest"
 node = "lts"
 python = "latest"
 ruby = 'latest'
+rust = "latest"
 uv = "latest"
