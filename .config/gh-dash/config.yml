@@ -87,9 +87,9 @@ keybindings:
           builtin: quit
     prs:
         - key: t
-          name: Review in tuicr
+          name: Review in Atlas
           command: >
-              ~/.config/gh-dash/quick-terminal.sh tuicr --no-update-check pr {{.RepoName}}#{{.PrNumber}}
+              ~/.config/gh-dash/quick-terminal.sh "nvim -c 'Atlas review https://github.com/{{.RepoName}}/pull/{{.PrNumber}}'"
 repoPaths: {}
 theme:
     ui:

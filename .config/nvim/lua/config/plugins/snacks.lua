@@ -28,6 +28,46 @@ return {
     },
     scope = {},
     picker = {
+      sources = {
+        git_status = {
+          win = {
+            input = {
+              keys = {
+                ['<Tab>'] = { 'list_down', mode = { 'n', 'i' } },
+                ['<S-Tab>'] = { 'list_up', mode = { 'n', 'i' } },
+                ['s'] = { 'git_stage', mode = 'n' },
+                ['-'] = { 'git_stage', mode = 'n' },
+                ['X'] = { 'git_restore', mode = 'n' },
+              },
+            },
+            list = {
+              keys = {
+                ['<Tab>'] = 'list_down',
+                ['<S-Tab>'] = 'list_up',
+                ['s'] = 'git_stage',
+                ['-'] = 'git_stage',
+                ['X'] = 'git_restore',
+              },
+            },
+          },
+        },
+        git_diff = {
+          win = {
+            input = {
+              keys = {
+                ['<Tab>'] = { 'list_down', mode = { 'n', 'i' } },
+                ['<S-Tab>'] = { 'list_up', mode = { 'n', 'i' } },
+              },
+            },
+            list = {
+              keys = {
+                ['<Tab>'] = 'list_down',
+                ['<S-Tab>'] = 'list_up',
+              },
+            },
+          },
+        },
+      },
       matcher = {
         frecency = true,
       },
@@ -62,6 +102,13 @@ return {
         Snacks.picker.files()
       end,
       desc = 'Files',
+    },
+    {
+      ';j',
+      function()
+        Snacks.picker.zoxide()
+      end,
+      desc = 'Zoxide',
     },
     {
       ';g',
@@ -114,6 +161,29 @@ return {
         Snacks.picker.git_status()
       end,
       desc = 'Git [S]tatus',
+    },
+    {
+      '<leader>gf',
+      function()
+        local git_base = require 'config.git_base'
+        Snacks.picker.pick {
+          title = 'Branch Files',
+          cwd = git_base.root(),
+          items = vim.tbl_map(function(file)
+            return { file = file, text = file }
+          end, git_base.changed_files()),
+          format = 'file',
+          preview = 'file',
+        }
+      end,
+      desc = '[G]it Branch [F]iles',
+    },
+    {
+      '<leader>gc',
+      function()
+        Snacks.picker.git_diff { base = require('config.git_base').default_branch() }
+      end,
+      desc = '[G]it Branch [C]hanges',
     },
 
     -- LSP
