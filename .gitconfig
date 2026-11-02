@@ -8,6 +8,7 @@
 [core]
    editor = nvim
 	excludesfile = ~/.gitignore_global
+	hooksPath = /Users/julianvisser/.git-hooks
 [commit]
    verbose = true
 [push]
