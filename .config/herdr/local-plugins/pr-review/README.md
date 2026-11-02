@@ -1,4 +1,55 @@
-# PR review watchers
+# PR review workspaces and watchers
+
+## Opening and restoring
+
+The palette action **PR review: open workspace for this branch** finds the unique
+Pi in the source development workspace's `ai` tab. It opens a background workspace
+named `review - <repo>#<PR>` with Neovim/Atlas on the left, CI on the upper right,
+and comments on the lower right. The workspace and panes keep the original source
+checkout as cwd, never an Atlas disposable worktree. Watcher commands keep the
+original development Pi pane as their anchor; feedback resolves the `ai` tab in
+that source workspace, not in the review workspace.
+
+There is one saved review workspace per source workspace + owner/repository + PR.
+Records under `~/.cache/pr-review/workspaces/` contain that identity, live workspace,
+tab and pane IDs, cwd, source anchor and commands. Reopening reuses a record only
+if its workspace label and all saved IDs/memberships still match. Names alone
+never select a workspace, so different owners or development workspaces can have
+the same display label. Reuse does not restart Neovim or watchers. Stale records
+are discarded without closing or modifying their old workspace/panes.
+
+The startup hook restores valid saved workspaces and still supports legacy
+`tabs/<tab-id>` records, including converting old `tuicr pr` commands to Atlas.
+Existing review tabs are not adopted, moved or closed. `workspace-setup/setup.sh`
+reserves the `review - ` prefix and skips its Pi/utility-tab setup before doing
+any layout changes. The label is supplied on workspace creation to avoid a hook
+race; do not use that prefix for normal development workspaces.
+
+## Atlas / CodeDiff LSP
+
+`~/.config/nvim/lua/config/plugins/atlas.lua` keeps CodeDiff and enables Atlas LSP
+worktrees at:
+
+```text
+/Users/julianvisser/.herdr/worktrees/app/atlas/<owner>/<repo>/pr-<number>/nvim-<pid>
+```
+
+Components are sanitized; non-PR views use `head-<sha>` and missing repository
+metadata falls back to `local/<checkout-name>`. Each Neovim process has its own
+leaf because Atlas's active-worktree claims are only process-local. Atlas adds
+suffixes for simultaneous views within a process. `node_modules` is symlinked
+from the source checkout, not copied; dependency contents are shared.
+
+These leaves are disposable: Atlas uses `git worktree remove --force` on close.
+Never configure the source checkout or the `atlas/` parent as the worktree leaf,
+and do not keep edits there. Crashes or failed cleanup can leave worktrees; inspect
+them before any manual cleanup. This config does not install/start language servers.
+
+Script changes apply on the next action/hook invocation. The palette title may
+need a plugin reload; startup restoration runs on the next normal Herdr startup.
+New Neovim processes load the Atlas config; existing Neovim instances/watchers
+are not restarted or migrated automatically. Offline checks do not establish live
+Herdr layout, CodeDiff navigation or LSP attachment.
 
 `ci-watch.sh <owner/repo> <pr-number> <pi-pane>` wraps:
 
@@ -13,7 +64,7 @@ model process or workflow engine is required.
 ## Completion
 
 A stable completed pass or failure produces a Herdr notification and a durable
-feedback item for the unique Pi in the workspace's `ai` tab. The item includes
+feedback item for the unique Pi in the source development workspace's `ai` tab. The item includes
 the commit SHA, counts, and failed-check names and links. Existing delivery
 permissions still apply: a notification does not authorize edits, pushes,
 comments or reruns, and submission is not processing acknowledgement.
@@ -31,7 +82,9 @@ immediately; start it again after checks appear.
 
 The script exits after this completion and its bounded delivery attempts. It
 **does not automatically watch later pushes or reruns**. Run the same command
-again in the CI pane for another cycle, or close and reopen the PR review tab.
+again in the CI pane for another cycle, or close the review workspace and reopen
+from the source development workspace. Reopening an existing review workspace
+does not restart a finished watcher.
 An already-running old watcher must be stopped and restarted to use this version.
 
 If Pi is busy, delivery is retried every 30 seconds for up to five minutes,
@@ -90,8 +143,13 @@ queued feedback can still be flushed after an API error.
 
 ```sh
 python3 -m unittest discover -s ~/.config/herdr/local-plugins/pr-review -p 'test_*.py' -v
-bash -n ~/.config/herdr/local-plugins/pr-review/ci-watch.sh
+for script in ~/.config/herdr/local-plugins/pr-review/*.sh ~/.config/herdr/local-plugins/workspace-setup/setup.sh; do
+  bash -n "$script" || exit
+done
 ```
 
 Tests use temporary state and fake `gh`/`herdr` commands; they do not access
-GitHub, submit real prompts or produce real notifications.
+GitHub, submit real prompts or produce real notifications. Workspace tests cover
+identity reuse, stale IDs, source-anchor feedback, setup exclusion and legacy
+restoration. Atlas path tests use LuaJIT with a minimal `vim` stub (skipped when
+LuaJIT is unavailable); they never load plugins or create/delete worktrees.

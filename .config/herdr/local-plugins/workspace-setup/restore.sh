@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Startup hook: after a server restart herdr restores tabs as plain shells.
-# Restart lazygit in "lazygit" tabs and the serve command in "serve" tabs.
+# Restart lazygit in "lazygit" tabs and rerun the serve steps in "serve" tabs.
 set -euo pipefail
 source "$(dirname "$0")/lib.sh"
 
@@ -14,12 +14,8 @@ source "$(dirname "$0")/lib.sh"
         '[.result.panes[] | select(.tab_id == $tab)][0] | "\(.pane_id) \(.cwd)"' <<<"$panes")
 
       case "$label" in
-        lazygit) cmd=lazygit ;;
-        serve) cmd=$(serve_cmd "$cwd") ;;
+        lazygit) "$herdr" pane run "$pane" lazygit >/dev/null ;;
+        serve) run_serve_steps "$pane" "$cwd" ;;
       esac
-
-      if [ -n "$cmd" ]; then
-        "$herdr" pane run "$pane" "$cmd" >/dev/null
-      fi
     done
 done

@@ -5,6 +5,33 @@ plugin_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 state_root="${PR_REVIEW_STATE:-$HOME/.cache/pr-review}"
 interval=300 # seconds between watcher refreshes
 
+review_command() {
+  printf 'nvim -c %q' "Atlas review $1"
+}
+
+review_workspace_live() (
+  local file=$1 ws tab label pane live
+  jq -e '
+    all(.workspace, .tab, .label, .source_workspace, .source_pane, .cwd, .repo, .pr;
+        type == "string" and length > 0) and
+    (.label | startswith("review - ")) and (.commands | length == 3) and
+    all(.commands[]; (.pane | type == "string" and length > 0) and
+                    (.command | type == "string" and length > 0)) and
+    ([.commands[].pane] | unique | length == 3)' "$file" >/dev/null 2>&1 || return 1
+  ws=$(jq -r .workspace "$file"); tab=$(jq -r .tab "$file"); label=$(jq -r .label "$file")
+  live=$("$herdr" workspace get "$ws" 2>/dev/null) || return 1
+  jq -e --arg ws "$ws" --arg label "$label" '
+    .result.workspace | .workspace_id == $ws and .label == $label' <<<"$live" >/dev/null || return 1
+  live=$("$herdr" tab get "$tab" 2>/dev/null) || return 1
+  jq -e --arg ws "$ws" --arg tab "$tab" '
+    .result.tab | .workspace_id == $ws and .tab_id == $tab and .label == "PR review"' <<<"$live" >/dev/null || return 1
+  while IFS= read -r pane; do
+    live=$("$herdr" pane get "$pane" 2>/dev/null) || return 1
+    jq -e --arg ws "$ws" --arg tab "$tab" --arg pane "$pane" '
+      .result.pane | .workspace_id == $ws and .tab_id == $tab and .pane_id == $pane' <<<"$live" >/dev/null || return 1
+  done < <(jq -r '.commands[].pane' "$file")
+)
+
 # state_dir <owner/repo> <number>: per-PR state, e.g. what pi was already told.
 state_dir() {
   local dir="$state_root/$(printf '%s' "$1" | tr '/' '_')_$2"

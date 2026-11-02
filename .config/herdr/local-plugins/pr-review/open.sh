@@ -1,51 +1,66 @@
 #!/usr/bin/env bash
-# Open a "PR review" tab next to pi: tuicr on the PR (left), the CI watcher
-# (right top) and the comments watcher (right bottom). Opens in the background
-# with a notification; does nothing if the workspace already has the tab.
-#
-#   open.sh <repo-dir> [<pr number or url>] <pi-pane>
-#
-# Without a PR, uses the PR of the checked-out branch.
+# open.sh <source-checkout> [<pr number or url>] <source-pi-pane>
 set -euo pipefail
 source "$(dirname "$0")/lib.sh"
 
 dir=$1 ref=${2:-} pi=$3
 cd "$dir"
+dir=$PWD
 
 url=$(gh pr view ${ref:+"$ref"} --json url -q .url)
-repo=$(sed -E 's#^https://github.com/([^/]+/[^/]+)/pull/.*#\1#' <<<"$url")
-pr=${url##*/}
+if [[ ! "$url" =~ ^https://github\.com/([A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+)/pull/([0-9]+)$ ]]; then
+  echo "invalid GitHub PR URL: $url" >&2
+  exit 1
+fi
+repo=${BASH_REMATCH[1]} pr=${BASH_REMATCH[2]}
+ws=$("$herdr" pane get "$pi" | jq -er '.result.pane.workspace_id')
+label="review - ${repo#*/}#$pr"
 
-ws=$("$herdr" pane get "$pi" | jq -r '.result.pane.workspace_id')
-
-existing=$("$herdr" tab list --workspace "$ws" |
-  jq -r '.result.tabs[] | select(.label == "PR review") | .tab_id' | head -1)
-if [ -n "$existing" ]; then
-  echo "workspace $ws already has a PR review tab ($existing)"
-  exit 0
+key=$(printf '%s\n' "$ws" "$repo" "$pr" | shasum -a 256)
+key=${key%% *}
+mkdir -p "$state_root/workspaces"
+record="$state_root/workspaces/$key.json"
+lock="$state_root/workspaces/$key.lock"
+queue_lock "$lock"
+trap 'rmdir "$lock" 2>/dev/null || true' EXIT
+if [ -f "$record" ]; then
+  if jq -e --arg ws "$ws" --arg repo "$repo" --arg pr "$pr" '
+      .source_workspace == $ws and .repo == $repo and .pr == $pr' "$record" >/dev/null &&
+    review_workspace_live "$record"; then
+    echo "PR review for $repo#$pr already open in $(jq -r .workspace "$record")"
+    exit 0
+  fi
+  rm -f "$record"
 fi
 
-tuicr_pane=$("$herdr" tab create --workspace "$ws" --cwd "$dir" --label "PR review" --no-focus |
-  jq -r '.result.root_pane.pane_id')
-tab=$("$herdr" pane get "$tuicr_pane" | jq -r '.result.pane.tab_id')
-ci_pane=$("$herdr" pane split "$tuicr_pane" --direction right --ratio 0.6 --cwd "$dir" |
-  jq -r '.result.pane.pane_id')
-comments_pane=$("$herdr" pane split "$ci_pane" --direction down --cwd "$dir" |
-  jq -r '.result.pane.pane_id')
+created=$("$herdr" workspace create --cwd "$dir" --label "$label" --no-focus)
+review_ws=$(jq -er '.result.workspace.workspace_id' <<<"$created")
+review_pane=$(jq -er '.result.root_pane.pane_id' <<<"$created")
+tab=$(jq -er '.result.tab.tab_id' <<<"$created")
+"$herdr" tab rename "$tab" "PR review" >/dev/null
+ci_pane=$("$herdr" pane split "$review_pane" --direction right --ratio 0.6 --cwd "$dir" --no-focus |
+  jq -er '.result.pane.pane_id')
+comments_pane=$("$herdr" pane split "$ci_pane" --direction down --cwd "$dir" --no-focus |
+  jq -er '.result.pane.pane_id')
 
 q() { printf '%q' "$1"; }
-tuicr_cmd="tuicr pr $url"
-ci_cmd="$(q "$plugin_dir/ci-watch.sh") $repo $pr $pi"
-comments_cmd="$(q "$plugin_dir/comments-watch.sh") $repo $pr $pi"
+review_cmd=$(review_command "$url")
+ci_cmd="$(q "$plugin_dir/ci-watch.sh") $(q "$repo") $(q "$pr") $(q "$pi")"
+comments_cmd="$(q "$plugin_dir/comments-watch.sh") $(q "$repo") $(q "$pr") $(q "$pi")"
 
-"$herdr" pane run "$tuicr_pane" "$tuicr_cmd" >/dev/null
+"$herdr" pane run "$review_pane" "$review_cmd" >/dev/null
 "$herdr" pane run "$ci_pane" "$ci_cmd" >/dev/null
 "$herdr" pane run "$comments_pane" "$comments_cmd" >/dev/null
 
-# What runs where, so restore.sh can restart it after a herdr restart.
-mkdir -p "$state_root/tabs"
-printf '%s\t%s\n' "$tuicr_pane" "$tuicr_cmd" "$ci_pane" "$ci_cmd" "$comments_pane" "$comments_cmd" \
-  >"$state_root/tabs/$tab"
+jq -n --arg workspace "$review_ws" --arg label "$label" --arg tab "$tab" \
+  --arg source_workspace "$ws" --arg source_pane "$pi" --arg cwd "$dir" \
+  --arg repo "$repo" --arg pr "$pr" --arg review_pane "$review_pane" --arg review_cmd "$review_cmd" \
+  --arg ci_pane "$ci_pane" --arg ci_cmd "$ci_cmd" --arg comments_pane "$comments_pane" --arg comments_cmd "$comments_cmd" '
+  {workspace:$workspace, label:$label, tab:$tab, source_workspace:$source_workspace,
+   source_pane:$source_pane, cwd:$cwd, repo:$repo, pr:$pr,
+   commands:[{pane:$review_pane, command:$review_cmd}, {pane:$ci_pane, command:$ci_cmd},
+             {pane:$comments_pane, command:$comments_cmd}]}' >"$record.tmp"
+mv "$record.tmp" "$record"
 
-"$herdr" notification show "PR review opened" --body "$repo#$pr in workspace $ws" >/dev/null || true
-echo "opened PR review for $repo#$pr in $tab"
+"$herdr" notification show "PR review opened" --body "$repo#$pr in workspace $review_ws" >/dev/null || true
+echo "opened PR review for $repo#$pr in $review_ws"
