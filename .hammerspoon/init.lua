@@ -154,7 +154,7 @@ screenSharingBorder:canvasMouseEvents(false, false, false, false)
 screenSharingBorder[1] = {
   type = 'rectangle',
   action = 'stroke',
-  strokeColor = { red = 1, green = 0.1, blue = 0.1, alpha = 1 },
+  strokeColor = { hex = '#664fff', alpha = 1 },
   strokeWidth = 4,
   frame = { x = 2, y = 2, w = 1, h = 1 },
 }

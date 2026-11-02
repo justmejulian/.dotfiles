@@ -7,3 +7,4 @@ function config {
 config checkout
 config submodule update --init
 config config status.showUntrackedFiles no
+config config --local user.email '12615757+justmejulian@users.noreply.github.com'
