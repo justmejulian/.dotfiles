@@ -14,7 +14,9 @@ fs.mkdirSync(fixture);
 fs.symlinkSync(path.join(source, 'npm'), path.join(fixture, 'npm'));
 for (const directory of ['agents', 'launchers']) fs.cpSync(path.join(source, directory), path.join(fixture, directory), { recursive: true });
 fs.mkdirSync(path.join(fixture, 'extensions'));
-fs.copyFileSync(path.join(source, 'extensions/agent-commands.ts'), path.join(fixture, 'extensions/agent-commands.ts'));
+for (const name of ['agent-commands', 'slack', 'linear']) {
+  fs.copyFileSync(path.join(source, `extensions/${name}.ts`), path.join(fixture, `extensions/${name}.ts`));
+}
 fs.mkdirSync(path.join(fixture, 'git/github.com/edxeth/pi-subagents/src'), { recursive: true });
 fs.writeFileSync(path.join(fixture, 'git/github.com/edxeth/pi-subagents/src/index.ts'), 'export default () => {};');
 fs.writeFileSync(path.join(fixture, 'settings.json'), JSON.stringify({ defaultProvider: 'openai-codex', defaultModel: 'gpt-6.1-sol', secretForTest: 'do-not-copy' }));
@@ -46,8 +48,8 @@ function fakeContext(cwd = root) {
 test('profile derives nested visibility without altering canonical agents or copying credentials', async () => {
   const before = fs.readFileSync(path.join(fixture, 'agents/scout.md'), 'utf8');
   const prepared = await prepareAgent('implementer', { source: fixture });
-  assert.deepEqual(prepared.manifest.direct, ['scout', 'fixer']);
-  assert.equal(Object.keys(prepared.manifest.hashes).length, 2);
+  assert.deepEqual(prepared.manifest.direct, ['scout', 'fixer', 'browser-tester']);
+  assert.equal(Object.keys(prepared.manifest.hashes).length, 3);
   assert.match(fs.readFileSync(path.join(prepared.profile, 'agents/scout.md'), 'utf8'), /visible-to: root/);
   assert.equal(fs.readFileSync(path.join(fixture, 'agents/scout.md'), 'utf8'), before);
   assert.equal(fs.readlinkSync(path.join(prepared.profile, 'auth.json')), path.join(fixture, 'auth.json'));
@@ -74,7 +76,7 @@ test('unknown agents and unrecognized profiles fail without overwriting user dat
 
 test('every personal agent can be prepared as a standalone profile', async () => {
   const agents = await readAgents(fixture);
-  assert.equal(agents.length, 11);
+  assert.equal(agents.length, 14);
   assert.ok(!agents.some(agent => agent.name.startsWith('exp-dev-')));
   for (const agent of agents) {
     const prepared = await prepareAgent(agent.name, { source: fixture });
@@ -82,6 +84,40 @@ test('every personal agent can be prepared as a standalone profile', async () =>
     assert.equal(launchEnvironment(prepared).PI_SUBAGENT_AGENT, undefined);
     assert.ok(prepared.extensions.every(file => fs.existsSync(file)), agent.name);
   }
+});
+
+test('browser tester loads the native browser tool, is callable by testing roles and cannot write or spawn', async () => {
+  const prepared = await prepareAgent('browser-tester', { source: fixture });
+  const browserPath = prepared.extensions.find(file => file.endsWith('/dist/extensions/agent-browser/index.js'));
+  assert.ok(browserPath);
+  const browser = await loadExtensions([browserPath], root);
+  assert.deepEqual(browser.errors, []);
+  assert.ok(browser.extensions[0].tools.has('agent_browser'));
+  assert.deepEqual(prepared.manifest.direct, []);
+
+  for (const name of ['implementer', 'verifier', 'reviewer', 'checker']) {
+    const parent = await prepareAgent(name, { source: fixture });
+    assert.ok(parent.manifest.direct.includes('browser-tester'), name);
+    const helper = (await readAgents(fixture)).find(agent => agent.name === 'browser-tester');
+    assert.ok(helper.metadata['visible-to'].split(',').map(value => value.trim()).includes(name), name);
+    assert.match(fs.readFileSync(path.join(parent.profile, 'agents/browser-tester.md'), 'utf8'), /^visible-to: root$/m);
+  }
+
+  const loaded = await profileExtension(prepared);
+  const available = ['read', 'bash', 'grep', 'find', 'ls', 'edit', 'write', 'subagent', ...browser.extensions[0].tools.keys()];
+  let active = available;
+  loaded.runtime.getAllTools = () => available.map(name => ({ name }));
+  loaded.runtime.getActiveTools = () => active;
+  loaded.runtime.setActiveTools = tools => { active = tools; };
+  const extension = loaded.extensions[0];
+  const ctx = fakeContext();
+  await extension.handlers.get('session_start')[0]({ reason: 'startup' }, ctx);
+  assert.ok(active.includes('agent_browser'));
+  for (const name of ['edit', 'write', 'subagent', 'agent_browser_electron']) assert.ok(!active.includes(name), name);
+  const check = extension.handlers.get('tool_call')[0];
+  assert.equal(await check({ toolName: 'agent_browser', input: { args: ['snapshot', '-i'] } }, ctx), undefined);
+  assert.equal((await check({ toolName: 'write', input: {} }, ctx)).block, true);
+  assert.equal((await check({ toolName: 'subagent', input: { agent: 'fixer' } }, ctx)).block, true);
 });
 
 test('direct specialist CLI launches one Pi process with no initial message or fabricated child identity', () => {
@@ -99,12 +135,30 @@ test('direct specialist CLI launches one Pi process with no initial message or f
   assert.ok(!launched.args.includes('--print'));
 });
 
-test('native loader registers every personal agent slash command without launching Herdr or a model', async () => {
+test('bounded cyclic spawn catalogs terminate without changing launch-depth grants', async () => {
+  const files = ['cycle-a', 'cycle-b'].map(name => path.join(fixture, 'agents', `${name}.md`));
+  try {
+    for (const [index, file] of files.entries()) {
+      fs.writeFileSync(file, `---\nname: cycle-${index ? 'b' : 'a'}\nextensions: none\ntools: read\nspawning: cycle-${index ? 'a' : 'b'}\nspawn-depth: 1\nvisible-to: all\n---\nTest role.\n`);
+    }
+    const prepared = await prepareAgent('cycle-a', { source: fixture });
+    assert.deepEqual(Object.keys(prepared.manifest.hashes).sort(), ['cycle-a', 'cycle-b']);
+    assert.equal(launchEnvironment(prepared).PI_SUBAGENT_SPAWN_BUDGET, '1');
+  } finally { for (const file of files) fs.unlinkSync(file); }
+});
+
+test('native loader registers agent shortcuts without shadowing connector fetch commands', async () => {
   const loaded = await loadExtensions([path.join(source, 'extensions/agent-commands.ts')], root);
   assert.deepEqual(loaded.errors, []);
   const commands = loaded.extensions[0].commands;
   assert.ok(commands.has('agent'));
-  for (const agent of await readAgents(source)) assert.ok(commands.has(agent.name), agent.name);
+  for (const agent of await readAgents(source)) {
+    assert.equal(commands.has(agent.name), !['slack', 'linear'].includes(agent.name), agent.name);
+  }
+  const combined = await loadExtensions(['agent-commands', 'slack', 'linear'].map(name => path.join(source, `extensions/${name}.ts`)), root);
+  assert.deepEqual(combined.errors, []);
+  assert.equal(combined.extensions.filter(extension => extension.commands.has('slack')).length, 1);
+  assert.equal(combined.extensions.filter(extension => extension.commands.has('linear')).length, 1);
 });
 
 test('standalone specialist profile binds its role/tools and blocks writes or undelegated children', async () => {

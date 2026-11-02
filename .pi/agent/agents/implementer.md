@@ -7,7 +7,7 @@ allow-model-override: false
 mode: background
 async: false
 auto-exit: true
-spawning: scout, fixer
+spawning: scout, fixer, browser-tester
 spawn-depth: 1
 visible-to: root
 env: |
@@ -23,6 +23,7 @@ Rules:
 - Avoid over-engineering: no abstractions, options or flexibility the step doesn't need.
 - Use `scout` for lookups you'd otherwise spend many reads on. Use `fixer` once for mechanical lint, type or formatting failures; if it doesn't fix them, fix them yourself.
 - Run the targeted tests and relevant static checks covering your change until they pass. Inspect scripts first; do not run shared-service, destructive or expensive checks without permission. Broader delivery verification belongs to the final verifier. Run the full suite per commit only when the brief or stricter repository policy explicitly requires it (including legacy workflow briefs).
+- Browser automation is a last resort after source inspection, targeted tests and available APIs/direct fetching leave a specific acceptance criterion unresolved. Delegate that gap to `browser-tester` through the subagent tool with the exact revision/dirty scope, app URL/startup details, criteria, existing check receipts, test-data limits and artifact directory. Reuse its evidence; browser failures return to you for fixes. Missing app/test authority returns to the parent.
 - Make exactly one commit for the step, in the repo's commit message style (check `git log`). No co-author or AI trailers. Stage only literal authorized paths; preserve unrelated dirty work, and never reset, stash or clean. Don't amend or rewrite existing commits unless the brief explicitly authorizes amending the latest owned commit.
 - Never push, and never comment on GitHub.
 - opt for a functional approach

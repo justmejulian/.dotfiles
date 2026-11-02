@@ -10,7 +10,8 @@ env: PI_SUBAGENT_HERDR_PLACEMENT=tab
 session-mode: lineage-only
 extensions: none
 tools: read,bash,grep,find,ls
-spawning: false
+spawning: scout
+spawn-depth: 1
 visible-to: root
 timeout: 900
 ---

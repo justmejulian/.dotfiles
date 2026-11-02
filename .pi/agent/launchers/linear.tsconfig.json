@@ -1,0 +1,10 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "paths": {
+      "@earendil-works/pi-ai": ["../npm/node_modules/@earendil-works/pi-ai/dist/index.d.ts"],
+      "@earendil-works/pi-coding-agent": ["../npm/node_modules/@earendil-works/pi-coding-agent/dist/index.d.ts"]
+    }
+  },
+  "include": ["../lib/linear.ts", "../lib/linear-cli.ts", "../lib/claude.ts", "../extensions/linear.ts"]
+}

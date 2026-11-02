@@ -31,7 +31,7 @@ export default async function agentCommands(pi: ExtensionAPI): Promise<void> {
     ctx.ui.notify(`Opened ${name} for direct chat. This is a standalone session, not a managed child of this conversation.`, "info");
   }
 
-  const registered = new Set(["subagents"]);
+  const registered = new Set(["subagents", "slack", "linear"]);
   if (!registered.has("agent")) {
     pi.registerCommand("agent", {
       description: "Open a named agent directly: /agent NAME [task]. No task opens an idle conversation.",

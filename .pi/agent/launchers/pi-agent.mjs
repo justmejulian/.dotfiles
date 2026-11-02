@@ -78,14 +78,14 @@ export async function prepareAgent(name, options = {}) {
   const agent = findAgent(catalog, name);
   const direct = allowedChildren(agent, catalog);
   const descendants = new Map();
-  function visit(childName, ancestors) {
-    if (ancestors.includes(childName)) throw new Error(`Recursive agent spawn catalog: ${childName}`);
-    const child = findAgent(catalog, childName);
+  function visit(childName) {
     if (descendants.has(childName)) return;
+    const child = findAgent(catalog, childName);
     descendants.set(childName, child);
-    for (const nested of allowedChildren(child, catalog)) visit(nested, [...ancestors, childName]);
+    // Catalog references can cycle; actual launches remain bounded by spawn grants.
+    for (const nested of allowedChildren(child, catalog)) visit(nested);
   }
-  for (const child of direct) visit(child, [name]);
+  for (const child of direct) visit(child);
 
   const profile = path.join(source, 'profiles/agent-cli', name);
   const marker = path.join(profile, '.generated');

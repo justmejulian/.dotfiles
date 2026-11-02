@@ -6,11 +6,11 @@
   "packages": [
     "npm:pi-cursor-sdk@0.5.3",
     "npm:pi-declutter",
-    "npm:@osolmaz/pi-workflows",
     "git:github.com/edxeth/pi-subagents",
     "npm:pi-annotated-reply",
     "npm:pi-vim",
     "npm:pi-web-access",
-    "npm:pi-question-tool@0.1.1"
+    "npm:pi-question-tool@0.1.1",
+    "npm:pi-agent-browser-native@0.9.6"
   ]
 }

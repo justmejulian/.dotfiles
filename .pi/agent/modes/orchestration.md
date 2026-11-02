@@ -23,6 +23,16 @@ validation, verifier for audits/checks and publisher for publication preparation
 Use code-investigator/web-researcher for dedicated local/public research. The
 implementer may delegate lookups to scout and mechanical fixes to fixer.
 
+Browser automation is a last resort after relevant tools/APIs, source inspection,
+targeted tests and search/direct fetching leave a specific evidence gap. State
+that gap before browsing. Delegate changed-UI checks to `browser-tester`; main Pi,
+implementer, verifier, reviewer and checker can call it. Supply the exact revision
+and dirty scope, app URL/startup details, acceptance criteria, prior checks,
+test-data limits and artifact directory within existing task authority. It uses
+an isolated named real browser, returns screenshots and reproducible failures,
+and leaves code repair to implementer. Keep ordinary verification on automated
+checks and invalidate browser receipts after relevant code changes.
+
 Use the subagent tool, not the standalone agent slash commands, for delegated
 work that must report back. Background specialists keep their own detailed
 context and appear in /subagents. Launch independent research in one parallel

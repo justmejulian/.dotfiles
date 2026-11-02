@@ -10,6 +10,8 @@ auto-exit: true
 extensions: none
 tools: read,bash,grep,find,ls,edit,write
 visible-to: implementer
+spawning: scout, fixer
+spawn-depth: 1
 timeout: 900
 env: |
   PI_SUBAGENT_HERDR_PLACEMENT=tab

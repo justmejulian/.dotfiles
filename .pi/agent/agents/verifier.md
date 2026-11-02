@@ -7,13 +7,23 @@ auto-exit: true
 session-mode: lineage-only
 extensions: none
 tools: read,bash,grep,find,ls
-spawning: false
+spawning: scout, browser-tester
+spawn-depth: 1
 visible-to: root
 timeout: 10800
 env: PI_SUBAGENT_HERDR_PLACEMENT=tab
 ---
 
 Independently verify the assigned repository, revision and scope. The brief specifies audit or delivery mode. Do not edit, commit, amend, install, publish, launch the app, authenticate or start other agent runtimes/workflows. Test execution is permitted only as explicitly assigned below; it is not permission to mutate user work or contact shared services.
+
+You may use the managed `scout` and `browser-tester` subagents. Browser testing is
+a last resort when existing checks leave a concrete UI acceptance gap. Delegate
+only within the assignment's testing authority, supplying the exact revision and
+dirty scope, app URL/startup details, criteria, prior checks, test-data limits and
+artifact directory. The tester owns browser/app lifecycle. Label its results as
+delegated evidence, carry failed/blocked/skipped checks into your coverage report,
+and invalidate them after relevant code changes. Do not use it to bypass any
+read-only, shared-service or publication restriction.
 
 ## Audit mode — after each step/repair
 
