@@ -31,15 +31,40 @@ local hyper = { 'cmd', 'alt', 'ctrl' }
 local cmdalt = { 'cmd', 'alt' }
 local cmdaltshift = { 'cmd', 'alt', 'shift' }
 
--- Observe Hyper combinations even when local hotkeys are disabled for Screen Sharing.
-hyperKeyLogger = hs.eventtap.new({ hs.eventtap.event.types.keyDown }, function(event)
+-- Observe Hyper without consuming modifier changes or forwarded keystrokes.
+local hyperIsDown = false
+hyperKeyLogger = hs.eventtap.new({
+  hs.eventtap.event.types.flagsChanged,
+  hs.eventtap.event.types.keyDown,
+  hs.eventtap.event.types.keyUp,
+}, function(event)
   local flags = event:getFlags()
-  if flags.cmd and flags.alt and flags.ctrl then
-    local keycode = event:getKeyCode()
-    local key = hs.keycodes.map[keycode] or tostring(keycode)
-    local app = hs.application.frontmostApplication()
+  local isDown = not not (flags.cmd and flags.alt and flags.ctrl)
+  local app = hs.application.frontmostApplication()
+  local bundleID = app and app:bundleID() or 'unknown'
+  local eventType = event:getType()
+  local keycode = event:getKeyCode()
+  local key = hs.keycodes.map[keycode] or tostring(keycode)
+  if eventType == hs.eventtap.event.types.flagsChanged or keycode == 57 then
+    local modifiers = {}
+    for _, modifier in ipairs { 'cmd', 'ctrl', 'alt', 'shift', 'fn', 'capslock' } do
+      if flags[modifier] then
+        table.insert(modifiers, modifier)
+      end
+    end
+    local kind = eventType == hs.eventtap.event.types.flagsChanged and 'modifiers changed'
+      or eventType == hs.eventtap.event.types.keyDown and 'pressed' or 'released'
+    print(string.format('Key %s (code=%d) %s; modifiers=[%s]; frontmost=%s',
+      key, keycode, kind, table.concat(modifiers, '+'), bundleID))
+  end
+  if isDown ~= hyperIsDown then
+    hyperIsDown = isDown
+    print(string.format('Hyper %s observed; shift=%s; frontmost=%s',
+      isDown and 'pressed' or 'released', tostring(not not flags.shift), bundleID))
+  end
+  if isDown and eventType == hs.eventtap.event.types.keyDown then
     print(string.format('Hyper%s+%s observed; frontmost=%s',
-      flags.shift and '+Shift' or '', key, app and app:bundleID() or 'unknown'))
+      flags.shift and '+Shift' or '', key, bundleID))
   end
   return false
 end)
@@ -52,6 +77,7 @@ local apps = {
   i = 'Google Chrome', -- internet
   -- i = 'Glide', -- internet
   k = 'Ghostty',
+  -- k = 'Rex Beta',
   f = 'Finder',
   b = 'Bitwarden',
   g = 'GitHub Dashboard',
@@ -196,21 +222,50 @@ end
 screenSharingBorderTimer = hs.timer.doEvery(0.1, updateScreenSharingBorder)
 updateScreenSharingBorder()
 
--- Release local shortcuts while Screen Sharing is frontmost.
+-- Forward Hyper shortcuts and release other local shortcuts during Screen Sharing.
 local hotkeys = {}
+
+local function screenSharingKeySequence(modifiers, key)
+  local events, flags = {}, {}
+  for _, modifier in ipairs(modifiers) do
+    flags[modifier] = true
+    table.insert(events, hs.eventtap.event.newKeyEvent(modifier, true):setFlags(flags))
+  end
+  table.insert(events, hs.eventtap.event.newKeyEvent(key, true):setFlags(flags))
+  table.insert(events, hs.eventtap.event.newKeyEvent(key, false):setFlags(flags))
+  for index = #modifiers, 1, -1 do
+    local modifier = modifiers[index]
+    flags[modifier] = nil
+    table.insert(events, hs.eventtap.event.newKeyEvent(modifier, false):setFlags(flags))
+  end
+  return events
+end
 
 -- Set { keepInScreenSharing = true } as the fourth argument to reserve a
 -- combination locally, even while controlling the remote Mac.
 local function bind(modifiers, key, callback, options)
+  local isHyper = modifiers == hyper
+  local keepInScreenSharing = options and options.keepInScreenSharing or false
   local hotkey = hs.hotkey.bind(modifiers, key, function()
-    if modifiers == hyper then
+    local app = hs.application.frontmostApplication()
+    if isHyper and not keepInScreenSharing and app and app:bundleID() == 'com.apple.ScreenSharing' then
+      -- Target the app directly so generated events do not trigger this hotkey again.
+      -- Separate modifier events let Screen Sharing see the complete chord.
+      for _, event in ipairs(screenSharingKeySequence(modifiers, key)) do
+        event:post(app)
+      end
+      print('Hyper+' .. key .. ' sent to Screen Sharing')
+      return
+    end
+    if isHyper then
       print('Hyper+' .. key .. ' pressed')
     end
     callback()
   end)
   table.insert(hotkeys, {
     hotkey = hotkey,
-    keepInScreenSharing = options and options.keepInScreenSharing or false,
+    keepInScreenSharing = keepInScreenSharing,
+    forwardInScreenSharing = isHyper,
   })
   return hotkey
 end
@@ -220,7 +275,7 @@ local function updateHotkeys()
   local isScreenSharing = app and app:bundleID() == 'com.apple.ScreenSharing'
 
   for _, binding in ipairs(hotkeys) do
-    if isScreenSharing and not binding.keepInScreenSharing then
+    if isScreenSharing and not binding.keepInScreenSharing and not binding.forwardInScreenSharing then
       binding.hotkey:disable()
     else
       binding.hotkey:enable()
