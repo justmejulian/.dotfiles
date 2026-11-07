@@ -1,9 +1,0 @@
-#!/usr/bin/env bash
-# Print the first TCP port at or above $1 (default 8080) with nothing listening.
-set -euo pipefail
-
-port="${1:-8080}"
-while lsof -nP -iTCP:"$port" -sTCP:LISTEN >/dev/null 2>&1; do
-  port=$((port + 1))
-done
-echo "$port"

@@ -1,4 +1,0 @@
-#!/usr/bin/env bash
-# Fetch a Slack message or thread and print it (and an answer to an optional
-# question). Headless Claude, read-only. See lib/slack.ts.
-exec node "$(dirname "$(readlink -f "$0")")/../lib/slack-cli.ts" "$@"
