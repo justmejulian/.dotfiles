@@ -209,6 +209,14 @@
       },
       "edge": "bottom",
       "align": "end"
+    },
+    {
+      "id": "worktree-tabs",
+      "content": {
+        "mod": "worktree-tabs"
+      },
+      "edge": "bottom",
+      "align": "end"
     }
   ]
 }
