@@ -1,0 +1,13 @@
+{
+  "lastChangelogVersion": "1.5.0",
+  "defaultProvider": "openai-codex",
+  "defaultModel": "gpt-6.1-sol",
+  "defaultThinkingLevel": "medium",
+  "packages": [
+    "npm:@andrewjacop/pi-herdr",
+    "npm:pi-questions"
+  ],
+  "extensionChangelogVersions": {
+    "{\"source\":\"npm:@andrewjacop/pi-herdr\",\"scope\":\"user\"}": "0.6.0"
+  }
+}
