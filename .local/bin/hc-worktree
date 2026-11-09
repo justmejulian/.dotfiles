@@ -7,9 +7,9 @@
 #   hc-worktree open <folder>         open a checkout, or show its space
 #   hc-worktree tabs <space-id>       add the tabs to a space Herdr made
 #
-# repo defaults to the git repo of the current folder. Checkouts go where
-# Herdr's own worktree dialog puts them:
-# ~/.herdr/worktrees/<repo>/<branch, slashes as dashes>.
+# repo defaults to the git repo of the current folder. Checkouts go to
+# ~/Documents/git/worktree/<repo>/<branch, slashes as dashes>, the same place
+# as Herdr's own worktree dialog: ~/.herdr/worktrees is a symlink to it.
 set -euo pipefail
 # Run from the Herdr app too, whose PATH may lack these.
 PATH="$HOME/.local/bin:/opt/homebrew/bin:$PATH"
@@ -57,7 +57,7 @@ new_worktree() {
   local branch=$1 src=${2:-$PWD} repo dir
   # The main checkout, even when run from inside another worktree.
   repo=$(dirname "$(git -C "$src" rev-parse --path-format=absolute --git-common-dir)")
-  dir="$HOME/.herdr/worktrees/$(basename "$repo")/$(slug "$branch")"
+  dir="$HOME/Documents/git/worktree/$(basename "$repo")/$(slug "$branch")"
   if [ -e "$dir" ]; then
     echo "hc-worktree: $dir already exists" >&2
     exit 1
