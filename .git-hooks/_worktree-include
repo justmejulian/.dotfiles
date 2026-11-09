@@ -1,0 +1,38 @@
+#!/bin/sh
+#
+# Copies the untracked files that the main checkout's .worktreeinclude lists
+# (gitignore patterns, e.g. `.env` or `packages/*/.env.local`) into a new
+# worktree. post-checkout calls this; `git worktree add` runs post-checkout.
+# Files the worktree already has are kept. Never fails the checkout.
+#
+# Run it by hand (no arguments) inside an existing worktree to fill it too.
+
+# post-checkout passes <old HEAD> <new HEAD> <1 if branch checkout>. Old HEAD
+# is all zeros only for a fresh checkout: a new worktree, or a clone.
+if [ $# -gt 0 ]; then
+    case $1 in *[!0]*) exit 0 ;; esac
+    [ "$3" = 1 ] || exit 0
+fi
+
+dest=$(git rev-parse --show-toplevel 2>/dev/null) || exit 0
+common=$(git rev-parse --path-format=absolute --git-common-dir 2>/dev/null) || exit 0
+# Bare repos (like the dotfiles) have no main checkout to copy from.
+[ "$(basename "$common")" = .git ] || exit 0
+main=$(dirname "$common")
+dest=$(cd "$dest" && pwd -P)
+main=$(cd "$main" && pwd -P)
+[ "$dest" != "$main" ] || exit 0
+[ -f "$main/.worktreeinclude" ] || exit 0
+
+# git worktree add runs the hook with GIT_DIR etc. set to the new worktree.
+unset GIT_DIR GIT_WORK_TREE GIT_INDEX_FILE
+
+copied=$(
+    git -C "$main" ls-files --others --ignored --exclude-from="$main/.worktreeinclude" |
+        while IFS= read -r f; do
+            [ -e "$dest/$f" ] && continue
+            mkdir -p "$dest/$(dirname "$f")" && cp -p "$main/$f" "$dest/$f" && echo "$f"
+        done | wc -l | tr -d ' '
+)
+[ "$copied" -gt 0 ] && echo "worktree-include: copied $copied file(s) from $main" >&2
+exit 0
