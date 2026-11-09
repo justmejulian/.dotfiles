@@ -28,3 +28,10 @@ Temporary Items
 
 */nodes_modules
 .dotfiles
+
+# pi local state
+.pi/agent/auth.json
+.pi/agent/bin/
+.pi/agent/models-store.json
+.pi/agent/sessions/
+.pi/agent/npm/
