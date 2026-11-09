@@ -1,0 +1,81 @@
+#!/usr/bin/env bash
+# Git worktrees as Herdr spaces, with tabs for pi, lazygit and a shell.
+#
+# Usage:
+#   hc-worktree new <branch> [repo]   fetch origin/main, check the branch out
+#                                     (new ones start from origin/main), open it
+#   hc-worktree open <folder>         open a checkout, or show its space
+#   hc-worktree tabs <space-id>       add the tabs to a space Herdr made
+#
+# repo defaults to the git repo of the current folder. Checkouts go where
+# Herdr's own worktree dialog puts them:
+# ~/.herdr/worktrees/<repo>/<branch, slashes as dashes>.
+set -euo pipefail
+# Run from the Herdr app too, whose PATH may lack these.
+PATH="$HOME/.local/bin:/opt/homebrew/bin:$PATH"
+
+usage() {
+  sed -n '4,8p' "$0" | sed 's/^# \{0,1\}//' >&2
+  exit 2
+}
+
+slug() {
+  printf '%s' "$1" | sed -E 's/[^A-Za-z0-9._-]+/-/g; s/^-+|-+$//g'
+}
+
+# A space showing the folder already, or a new one with the three tabs.
+open_space() {
+  local dir space
+  dir=$(cd "$1" && pwd -P)
+  space=$(herdr-app ls | jq -r --arg dir "$dir" 'first(.spaces[] | select(.folder == $dir) | .id) // empty')
+  if [ -n "$space" ]; then
+    herdr-app do space.select --id "$space" >/dev/null
+    return
+  fi
+  # Unnamed, like Herdr's own: the space follows its folder and nests under the repo.
+  space=$(herdr-app do space.new --folder "$dir" --tab pi --argv '["pi"]' | jq -er .space)
+  herdr-app do tab.new --space "$space" --name lazygit --folder "$dir" --argv '["lazygit"]' >/dev/null
+  herdr-app do tab.new --space "$space" --name shell --folder "$dir" >/dev/null
+  herdr-app do space.select --id "$space" >/dev/null
+  herdr-app do tab.select --index 1 >/dev/null
+}
+
+# Herdr's own New/Open worktree made the space with one shell tab: add pi
+# and lazygit in front of it (the worktree-tabs mod calls this).
+add_tabs() {
+  local space=$1 dir shell pi
+  read -r dir shell < <(herdr-app ls | jq -r --arg id "$space" '.spaces[] | select(.id == $id) | "\(.folder) \(.tabs[0].id)"')
+  [ -n "$shell" ] || { echo "hc-worktree: no space $space" >&2; exit 1; }
+  pi=$(herdr-app do tab.new --space "$space" --name pi --folder "$dir" --argv '["pi"]' | jq -er .tab)
+  herdr-app do tab.new --space "$space" --name lazygit --folder "$dir" --argv '["lazygit"]' >/dev/null
+  herdr-app do tab.rename --id "$shell" --name shell >/dev/null
+  herdr-app do tab.move --id "$shell" --index 3 >/dev/null
+  herdr-app do tab.select --id "$pi" >/dev/null
+}
+
+new_worktree() {
+  local branch=$1 src=${2:-$PWD} repo dir
+  # The main checkout, even when run from inside another worktree.
+  repo=$(dirname "$(git -C "$src" rev-parse --path-format=absolute --git-common-dir)")
+  dir="$HOME/.herdr/worktrees/$(basename "$repo")/$(slug "$branch")"
+  if [ -e "$dir" ]; then
+    echo "hc-worktree: $dir already exists" >&2
+    exit 1
+  fi
+
+  git -C "$repo" fetch origin main
+  if git -C "$repo" show-ref --verify --quiet "refs/heads/$branch"; then
+    git -C "$repo" worktree add "$dir" "$branch"
+  else
+    git -C "$repo" worktree add --no-track -b "$branch" "$dir" origin/main
+  fi
+  open_space "$dir"
+  echo "$dir"
+}
+
+case "${1:-}" in
+  new) [ -n "${2:-}" ] || usage; new_worktree "$2" "${3:-}" ;;
+  open) [ -n "${2:-}" ] || usage; open_space "$2" ;;
+  tabs) [ -n "${2:-}" ] || usage; add_tabs "$2" ;;
+  *) usage ;;
+esac
