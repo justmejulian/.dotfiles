@@ -4,8 +4,8 @@
   "defaultModel": "gpt-6.1-sol",
   "defaultThinkingLevel": "medium",
   "packages": [
-    "npm:@andrewjacop/pi-herdr",
-    "npm:pi-questions"
+    "npm:pi-questions",
+    "git:github.com/justmejulian/pi-herdr"
   ],
   "extensionChangelogVersions": {
     "{\"source\":\"npm:@andrewjacop/pi-herdr\",\"scope\":\"user\"}": "0.6.0"
